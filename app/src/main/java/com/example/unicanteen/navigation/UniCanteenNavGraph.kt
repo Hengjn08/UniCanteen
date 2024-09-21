@@ -22,6 +22,7 @@ import com.example.unicanteen.HengJunEn.SellerHomeScreen
 import com.example.unicanteen.HengJunEn.SellerProfileScreen
 import com.example.unicanteen.R
 import com.example.unicanteen.SelectFoodDestination
+import com.example.unicanteen.SelectFoodScreen
 import com.example.unicanteen.SelectRestaurantDestination
 import com.example.unicanteen.SelectRestaurantScreen
 import com.example.unicanteen.Seller
@@ -39,7 +40,7 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = BottomBarScreen.SellerHome.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = SelectRestaurantDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
         val sampleSellers = listOf(
@@ -71,7 +72,7 @@ fun UniCanteenNavHost(
 
         // Customer-specific routes
         composable(route = BottomBarScreen.CustomerHome.route) {
-            SelectRestaurantDestination(
+            SelectRestaurantScreen(
                 navController = navController,
                 currentDestination = currentDestination,
                 onRestaurantClick = {navController.navigate("${SelectFoodDestination.route}/${it.name}")},
@@ -86,6 +87,20 @@ fun UniCanteenNavHost(
         }
 
         //Customer module route
+        //select restaurant screen
+        composable(
+            route = SelectRestaurantDestination.route
+        ) {
+            SelectRestaurantScreen(
+                sampleSellers = sampleSellers,
+                navController = navController,
+                currentDestination = currentDestination,
+                onRestaurantClick = { seller ->
+                    // Navigate to food screen, passing restaurant name
+                    navController.navigate("${SelectFoodDestination.route}/${seller.name}")
+                }
+            )
+        }
         // Food Selection Screen
         composable(
             route = SelectFoodDestination.routeWithArgs,
@@ -108,7 +123,7 @@ fun UniCanteenNavHost(
             )
 
             // Render SelectFoodScreen and pass the restaurant name
-            SelectFoodDestination(
+            SelectFoodScreen(
                 sampleFoods = sampleFoods,
                 restaurantName = restaurantName,
                 navController = navController

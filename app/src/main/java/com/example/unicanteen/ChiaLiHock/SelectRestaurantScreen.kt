@@ -22,7 +22,7 @@ import com.example.unicanteen.navigation.NavigationDestination
 
 import com.example.unicanteen.ui.theme.UniCanteenTheme
 
-object SelectRestaurantScreen : NavigationDestination {
+object SelectRestaurantDestination : NavigationDestination {
     override val route = "restaurant_select"
     override val title = ""
     const val sellerIdArg = "sellerId"  // Change to sellerId to avoid confusion with foodId
@@ -31,7 +31,7 @@ object SelectRestaurantScreen : NavigationDestination {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SelectRestaurantDestination(
+fun SelectRestaurantScreen(
     sampleSellers: List<Seller>,
     navController: NavController,  // Use the same NavController
     currentDestination: NavDestination?,

@@ -28,7 +28,7 @@ object SelectFoodDestination : NavigationDestination {
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SelectFoodDestination(
+fun SelectFoodScreen(
     sampleFoods: List<Food>,
     restaurantName: String?,
     navController: NavController // Add NavController to handle navigation
