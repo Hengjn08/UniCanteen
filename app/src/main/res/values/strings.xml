@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">UniCanteen</string>
+    <string name="Cancel">cancel</string>
+    <string name="Save">save</string>
+    <string name="Name">name</string>
+    <string name="Description">description</string>
+    <string name="Price">Price</string>
+    <string name="foodList">Food List</string>
+    <string name="addFood">Add Food</string>
+    <string name="editFood">Edit Food</string>
+    <string name="orderList">Order List</string>
+    <string name="appName">UniCanteen</string>
+    <string name="rm">"RM %.2f"</string>
+</resources>
