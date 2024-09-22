@@ -1,10 +1,11 @@
-package com.example.assgntmobile0921.database
+package com.example.unicanteen.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.example.unicanteen.database.User
 import java.sql.Date
 
 @Entity(

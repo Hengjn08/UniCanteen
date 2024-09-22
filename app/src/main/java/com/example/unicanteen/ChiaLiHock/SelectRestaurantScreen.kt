@@ -124,9 +124,9 @@ fun PreviewRestaurantList() {
         // Add more sample sellers as needed
     )
     UniCanteenTheme {
-//        SelectRestaurantScreen(sampleSellers, rememberNavController()) { seller ->
-//            // Handle restaurant click, e.g., navigate to food selection screen
-//            println("Clicked on: ${seller.name}")
-//        }
+        SelectRestaurantScreen(sampleSellers, rememberNavController(), null) { seller ->
+            // Handle restaurant click, e.g., navigate to food selection screen
+            println("Clicked on: ${seller.name}")
+        }
     }
 }
