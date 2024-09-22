@@ -1,11 +1,15 @@
-package com.example.assgntmobile0921.database
+package com.example.unicanteen.database
 
 import android.content.Context
-import androidx.databinding.adapters.Converters
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
+//import android.content.Context
+//import androidx.databinding.adapters.Converters
+//import androidx.room.Database
+//import androidx.room.Room
+//import androidx.room.RoomDatabase
+//import androidx.room.TypeConverters
 
 @Database(
     entities = [User::class, Seller::class, FoodList::class, Order::class, OrderList::class, Payment::class, PaymentDetails::class],
