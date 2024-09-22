@@ -151,7 +151,7 @@ fun PreviewFoodList() {
         )
     )
     UniCanteenTheme {
-        //SelectFoodScreen(sampleFoods,"restaurantName", rememberNavController())
+        SelectFoodScreen(sampleFoods,"restaurantName", rememberNavController())
 
     }
 
