@@ -1,4 +1,4 @@
-package com.example.assgntmobile0921.database
+package com.example.unicanteen.database
 
 import androidx.annotation.DrawableRes
 import androidx.room.ColumnInfo
