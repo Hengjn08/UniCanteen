@@ -10,6 +10,8 @@ import com.example.unicanteen.database.User
 
 @Dao
 interface UserDao {
+    @Query("SELECT * FROM user")
+    fun getAll(): List<User> // This will return a list of all users
     // Insert a new user
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUser(user: User): Long
@@ -24,30 +26,31 @@ interface UserDao {
 
     // Fetch a user by userId
     @Query("SELECT * FROM user WHERE userId = :userId")
-    suspend fun getUserById(userId: Int): User?
+    fun getUserById(userId: Long): User?
 
     // Fetch a user by email
     @Query("SELECT * FROM user WHERE email = :email")
-    suspend fun getUserByEmail(email: String): User?
+    fun getUserByEmail(email: String): User?
 
     // Fetch a user by userName (for login purposes)
     @Query("SELECT * FROM user WHERE userName = :userName AND password = :password")
-    suspend fun getUserForLogin(userName: String, password: String): User?
+    fun getUserForLogin(userName: String, password: String): User?
 
     // Fetch all users (if needed)
     @Query("SELECT * FROM user")
-    suspend fun getAllUsers(): List<User>
+    fun getAllUsers(): List<User>
 
     // Delete all users (useful for testing or cleanup)
     @Query("DELETE FROM user")
-    suspend fun deleteAllUsers()
+   fun deleteAllUsers()
 
     // Check if a user with a specific email exists
     @Query("SELECT COUNT(*) FROM user WHERE email = :email")
-    suspend fun isEmailTaken(email: String): Int
+     fun isEmailTaken(email: String): Int
 
     // Check if a user with a specific userName exists
     @Query("SELECT COUNT(*) FROM user WHERE userName = :userName")
-    suspend fun isUserNameTaken(userName: String): Int
+    fun isUserNameTaken(userName: String): Int
+
 
 }

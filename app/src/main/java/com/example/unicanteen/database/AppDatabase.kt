@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+
 //import android.content.Context
 //import androidx.databinding.adapters.Converters
 //import androidx.room.Database
@@ -16,7 +18,7 @@ import androidx.room.RoomDatabase
     version = 1,
     exportSchema = false
 )
-
+@TypeConverters(Converters::class) // Add this line
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun userDao(): UserDao
@@ -36,9 +38,9 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "app_database"
+                    "uniDatabase"
                 )
-                    .createFromAsset("dummy_data.sql")
+                    .createFromAsset("database/uniDatabase.db")
                     .build()
                 INSTANCE = instance
                 instance
