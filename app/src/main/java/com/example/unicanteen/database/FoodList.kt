@@ -6,7 +6,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import java.sql.Date
+import java.util.Date // Change this to java.util.Date
 
 @Entity(
     tableName = "foodList",
@@ -19,14 +19,14 @@ import java.sql.Date
     indices = [Index(value = ["sellerId"])]
 )
 data class FoodList(
-    @PrimaryKey(autoGenerate = true) val foodId: Long = 0, // Primary key
-    @ColumnInfo(name = "sellerId") val sellerId: Long, // Foreign key to Seller entity
+    @PrimaryKey(autoGenerate = true) val foodId: Int = 0, // Primary key
+    @ColumnInfo(name = "sellerId") val sellerId: Int, // Foreign key to Seller entity
 
     @ColumnInfo(name = "foodName") val foodName: String,
     @ColumnInfo(name = "type") val type: String, // E.g., "Vegetarian", "Non-Vegetarian", "Vegan", etc.
     @ColumnInfo(name = "price") val price: Double,
 
-    @ColumnInfo(name = "createDate") val createDate: Date,
+    @ColumnInfo(name = "createDate") val createDate: Date, // Change to java.util.Date
     @ColumnInfo(name = "modifyDate") val modifyDate: Date? = null, // Nullable field for the last modification date
     @ColumnInfo(name = "status") val status: String, // E.g., "Available", "Out of Stock"
 

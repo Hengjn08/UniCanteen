@@ -24,15 +24,15 @@ interface PaymentDao {
 
     // Fetch a payment by paymentId
     @Query("SELECT * FROM payments WHERE paymentId = :paymentId")
-    suspend fun getPaymentById(paymentId: Long): Payment?
+    suspend fun getPaymentById(paymentId: Int): Payment?
 
     // Fetch all payments for a specific user by userId
     @Query("SELECT * FROM payments WHERE userId = :userId")
-    suspend fun getPaymentsByUserId(userId: Long): List<Payment>
+    suspend fun getPaymentsByUserId(userId: Int): List<Payment>
 
     // Fetch all payments for a specific order by orderId
     @Query("SELECT * FROM payments WHERE orderId = :orderId")
-    suspend fun getPaymentsByOrderId(orderId: Long): List<Payment>
+    suspend fun getPaymentsByOrderId(orderId: Int): List<Payment>
 
     // Fetch all payments
     @Query("SELECT * FROM payments")

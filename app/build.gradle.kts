@@ -51,8 +51,7 @@ android {
 }
 
 dependencies {
-    kapt("androidx.room:room-compiler:2.5.2")
-    implementation("androidx.room:room-runtime:2.5.2")
+
     implementation(libs.support.annotations) // Keep this version
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -72,7 +71,12 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-   
+
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0") // Check for the latest version
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0") // Check for the latest version
+    kapt("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
 
     //view model
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")

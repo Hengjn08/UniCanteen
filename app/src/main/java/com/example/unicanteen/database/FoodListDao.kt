@@ -1,11 +1,12 @@
 package com.example.unicanteen.database
 
+import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-
+@Dao
 interface FoodListDao {
     // Insert a new food item
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -21,29 +22,29 @@ interface FoodListDao {
 
     // Fetch a food item by foodId
     @Query("SELECT * FROM foodList WHERE foodId = :foodId")
-    suspend fun getFoodItemById(foodId: Long): FoodList?
+    fun getFoodItemById(foodId: Long): FoodList?
 
     // Fetch all food items for a specific seller by sellerId
     @Query("SELECT * FROM foodList WHERE sellerId = :sellerId")
-    suspend fun getFoodItemsBySellerId(sellerId: Long): List<FoodList>
+    fun getFoodItemsBySellerId(sellerId: Long): List<FoodList>
 
     // Fetch all available food items (status = 'Available')
     @Query("SELECT * FROM foodList WHERE status = 'Available'")
-    suspend fun getAvailableFoodItems(): List<FoodList>
+    fun getAvailableFoodItems(): List<FoodList>
 
     // Fetch food items by type (e.g., "Vegetarian", "Vegan")
     @Query("SELECT * FROM foodList WHERE type = :type")
-    suspend fun getFoodItemsByType(type: String): List<FoodList>
+    fun getFoodItemsByType(type: String): List<FoodList>
 
     // Fetch food items by price range
     @Query("SELECT * FROM foodList WHERE price BETWEEN :minPrice AND :maxPrice")
-    suspend fun getFoodItemsByPriceRange(minPrice: Double, maxPrice: Double): List<FoodList>
+    fun getFoodItemsByPriceRange(minPrice: Double, maxPrice: Double): List<FoodList>
 
     // Fetch food items with a rating above a certain threshold
     @Query("SELECT * FROM foodList WHERE rating >= :rating")
-    suspend fun getFoodItemsWithHighRating(rating: Double): List<FoodList>
+    fun getFoodItemsWithHighRating(rating: Double): List<FoodList>
 
     // Fetch all food items
     @Query("SELECT * FROM foodList")
-    suspend fun getAllFoodItems(): List<FoodList>
+    fun getAllFoodItems(): List<FoodList>
 }
