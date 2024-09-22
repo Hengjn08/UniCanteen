@@ -6,7 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.unicanteen.database.User
-import java.sql.Date
+import java.util.Date
 
 @Entity(
     tableName = "orders",
@@ -19,8 +19,8 @@ import java.sql.Date
     indices = [Index(value = ["userId"])]
 )
 data class Order(
-    @PrimaryKey(autoGenerate = true) val orderId: Long = 0, // Primary key
-    @ColumnInfo(name = "userId") val userId: Long, // Foreign key to OrderList entity
+    @PrimaryKey(autoGenerate = true) val orderId: Int = 0, // Primary key
+    @ColumnInfo(name = "userId") val userId: Int, // Foreign key to OrderList entity
 
     @ColumnInfo(name = "orderType") val orderType: String, // E.g., "Pick up" or "Delivery"
     @ColumnInfo(name = "tableNo") val tableNo: Int? = null, // Nullable field for table number if dining in

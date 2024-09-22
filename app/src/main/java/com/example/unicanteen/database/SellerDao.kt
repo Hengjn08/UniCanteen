@@ -24,25 +24,25 @@ interface SellerDao {
 
     // Fetch a seller by sellerId
     @Query("SELECT * FROM sellers WHERE sellerId = :sellerId")
-    suspend fun getSellerById(sellerId: Long): Seller?
+    suspend fun getSellerById(sellerId: Int): Seller
 
     // Fetch all sellers associated with a specific userId
     @Query("SELECT * FROM sellers WHERE userId = :userId")
-    suspend fun getSellersByUserId(userId: Long): List<Seller>
+    fun getSellersByUserId(userId: Int): List<Seller>
 
     // Fetch all sellers
     @Query("SELECT * FROM sellers")
-    suspend fun getAllSellers(): List<Seller>
+    fun getAllSellers(): List<Seller>
 
     // Delete sellers based on userId (if necessary)
     @Query("DELETE FROM sellers WHERE userId = :userId")
-    suspend fun deleteSellersByUserId(userId: Long)
+    fun deleteSellersByUserId(userId: Int)
 
     // Fetch sellers by status (e.g., "Open", "Closed")
     @Query("SELECT * FROM sellers WHERE shopStatus = :status")
-    suspend fun getSellersByStatus(status: String): List<Seller>
+     fun getSellersByStatus(status: String): List<Seller>
 
     // Fetch sellers with rating higher than a given threshold
     @Query("SELECT * FROM sellers WHERE shopRating >= :rating")
-    suspend fun getSellersWithHighRating(rating: Double): List<Seller>
+     fun getSellersWithHighRating(rating: Double): List<Seller>
 }

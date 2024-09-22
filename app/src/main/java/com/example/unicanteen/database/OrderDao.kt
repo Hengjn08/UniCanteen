@@ -24,13 +24,13 @@ interface OrderDao {
 
     // Fetch an order by orderId
     @Query("SELECT * FROM orders WHERE orderId = :orderId")
-    suspend fun getOrderById(orderId: Long): Order?
+    suspend fun getOrderById(orderId: Int): Order?
 
     // Fetch all orders for a specific user by userId
     @Query("SELECT * FROM orders WHERE userId = :userId")
-    suspend fun getOrdersByUserId(userId: Long): List<Order>
+    fun getOrdersByUserId(userId: Int): List<Order>
 
     // Fetch all orders
     @Query("SELECT * FROM orders")
-    suspend fun getAllOrders(): List<Order>
+    fun getAllOrders(): List<Order>
 }

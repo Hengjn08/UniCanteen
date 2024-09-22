@@ -6,21 +6,23 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
-//import android.content.Context
-//import androidx.databinding.adapters.Converters
-//import androidx.room.Database
-//import androidx.room.Room
-//import androidx.room.RoomDatabase
-//import androidx.room.TypeConverters
-
 @Database(
-    entities = [User::class, Seller::class, FoodList::class, Order::class, OrderList::class, Payment::class, PaymentDetails::class],
-    version = 1,
-    exportSchema = false
+    entities = arrayOf(
+        User::class,
+        Seller::class,
+        FoodList::class,
+        Order::class,
+        OrderList::class,
+        Payment::class,
+        PaymentDetails::class
+    ),
+    version = 1, // Increment version if needed
+   // exportSchema = false
 )
-@TypeConverters(Converters::class) // Add this line
+@TypeConverters(Converters::class) // Correct placement of TypeConverters annotation
 abstract class AppDatabase : RoomDatabase() {
 
+    // Abstract methods to access DAOs
     abstract fun userDao(): UserDao
     abstract fun sellerDao(): SellerDao
     abstract fun foodListDao(): FoodListDao
@@ -38,10 +40,11 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "uniDatabase"
+                    "app_database"
                 )
-                    .createFromAsset("database/uniDatabase.db")
+                    .createFromAsset("Database/uniDatabase.db") // Ensure this file is in the assets folder
                     .build()
+
                 INSTANCE = instance
                 instance
             }

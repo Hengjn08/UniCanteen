@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import java.util.Date
 
 @Dao
 interface OrderListDao {
@@ -24,19 +25,19 @@ interface OrderListDao {
 
     // Fetch an order list item by orderListId
     @Query("SELECT * FROM orderList WHERE orderListId = :orderListId")
-    suspend fun getOrderListById(orderListId: Long): OrderList?
+    suspend fun getOrderListById(orderListId: Int): OrderList? // Use Long if it matches your schema
 
     // Fetch all order list items for a specific order by orderId
     @Query("SELECT * FROM orderList WHERE orderId = :orderId")
-    suspend fun getOrderListByOrderId(orderId: Long): List<OrderList>
+    fun getOrderListByOrderId(orderId: Int): List<OrderList> // Use Long if it matches your schema
 
     // Fetch all order list items for a specific user by userId
     @Query("SELECT * FROM orderList WHERE userId = :userId")
-    suspend fun getOrderListByUserId(userId: Long): List<OrderList>
+    fun getOrderListByUserId(userId: Int): List<OrderList> // Use Long if it matches your schema
 
     // Fetch all order list items
     @Query("SELECT * FROM orderList")
-    suspend fun getAllOrderListItems(): List<OrderList>
+     fun getAllOrderListItems(): List<OrderList>
 
     // Fetch total sales for each seller grouped by month
     @Query("""
@@ -46,24 +47,24 @@ interface OrderListDao {
         GROUP BY sellerId, month
         ORDER BY month
     """)
-    suspend fun getMonthlySalesForSellers(startDate: String, endDate: String): List<SalesData>
+    fun getMonthlySalesForSellers(startDate: String, endDate: String): List<SalesData>
 
     data class SalesData(
-        val sellerId: Long,
+        val sellerId: Int,
         val month: String,
         val totalSales: Double
     )
 
     // Fetch total sales for each food type for a specific month
     @Query("""
-        SELECT type, SUM(totalPrice) AS totalSales
-        FROM orderList
-        INNER JOIN foodList ON orderList.foodId = foodList.foodId
-        WHERE strftime('%Y-%m', orderList.createDate) = :month
-        GROUP BY type
+        SELECT f.type AS foodType, SUM(o.totalPrice) AS totalSales
+        FROM orderList o
+        INNER JOIN foodList f ON o.foodId = f.foodId
+        WHERE strftime('%Y-%m', o.createDate) = :month
+        GROUP BY f.type
         ORDER BY totalSales DESC
     """)
-    suspend fun getMonthlySalesByFoodType(month: String): List<FoodTypeSales>
+   fun getMonthlySalesByFoodType(month: String): List<FoodTypeSales>
 
     data class FoodTypeSales(
         val foodType: String,
@@ -72,20 +73,20 @@ interface OrderListDao {
 
     // Fetch daily sales for each seller grouped by food type
     @Query("""
-        SELECT o.sellerId, f.type, SUM(o.totalPrice) AS totalSales, DATE(o.createDate) AS saleDate
+        SELECT o.sellerId, f.type AS foodType, SUM(o.totalPrice) AS totalSales, DATE(o.createDate) AS saleDate
         FROM orderList o
         INNER JOIN foodList f ON o.foodId = f.foodId
         WHERE o.createDate BETWEEN :startDate AND :endDate
         GROUP BY o.sellerId, f.type, saleDate
         ORDER BY saleDate, o.sellerId
     """)
-    suspend fun getDailySalesBySellerAndFoodType(startDate: String, endDate: String): List<DailySalesData>
+    fun getDailySalesBySellerAndFoodType(startDate: String, endDate: String): List<DailySalesData>
 
     data class DailySalesData(
-        val sellerId: Long,
+        val sellerId: Int,
         val foodType: String,
         val totalSales: Double,
-        val saleDate: String // Format: YYYY-MM-DD
+        val saleDate: Date // Format: YYYY-MM-DD
     )
 
     // Fetch monthly sales growth for each seller
@@ -96,13 +97,11 @@ interface OrderListDao {
         GROUP BY sellerId, month
         ORDER BY month, sellerId
     """)
-    suspend fun getMonthlySalesGrowthBySeller(startDate: String, endDate: String): List<MonthlySalesGrowthData>
+    fun getMonthlySalesGrowthBySeller(startDate: String, endDate: String): List<MonthlySalesGrowthData>
 
     data class MonthlySalesGrowthData(
-        val sellerId: Long,
+        val sellerId: Int,
         val month: String,
         val totalSales: Double
     )
-
-
 }
