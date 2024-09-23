@@ -46,6 +46,7 @@ import com.example.unicanteen.BottomNavigationBar
 import com.example.unicanteen.R
 import com.example.unicanteen.UniCanteenTopBar
 import com.example.unicanteen.data.Datasource
+import com.example.unicanteen.database.FoodList
 import com.example.unicanteen.model.Food
 import com.example.unicanteen.ui.theme.UniCanteenTheme
 
@@ -59,11 +60,6 @@ fun SellerHomeScreen(
     //onEditClick: () -> Unit,
     //onRemoveClick: () -> Unit,
 ){
-    //val navController = rememberNavController()
-    //val backStackEntry by navController.currentBackStackEntryAsState()
-    //val currentDestination = backStackEntry?.destination
-    //val currentRoute = backStackEntry?.destination?.route
-
     var available by remember { mutableStateOf(false)}
     var foodToRemove by remember { mutableStateOf<Food?>(null) }
     //var showDialog by remember { mutableStateOf(false) }
@@ -71,39 +67,14 @@ fun SellerHomeScreen(
     Scaffold (
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            UniCanteenTopBar(
-                //title = "UniCanteen",
-                //canNavigateBack = false,
-                //navController.previousBackStackEntry != null,
-                //actions =
-            )
-//            Column {
-//                Header(sellerName = "Noodles")
-//                FoodListAppbar(
-//                    currentRoute = currentRoute,
-//                    navController = navController,
-//                    canNavigateBack = navController.previousBackStackEntry != null,
-//                    onEditClick = {
-//                        val foodId = backStackEntry?.arguments?.getInt("foodId")
-//                        navController.navigate("editFood/$foodId")
-//                    },
-//                    onRemoveClick = {
-//                        val foodId = backStackEntry?.arguments?.getInt("foodId")
-//                        foodToRemove = Datasource.foods.find { it?.id == foodId }
-//                        showDialog = true
-//                    },
-//                )
-//            }
-
+            UniCanteenTopBar()
         },
         bottomBar = {
-            //if(currentRoute in getBottomBarRoutes()) {
             BottomNavigationBar(
                 navController = navController,
                 currentDestination = currentDestination,
                 isSeller = true
             )
-            //}
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -114,8 +85,7 @@ fun SellerHomeScreen(
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add icon",
-
-                    )
+                )
             }
         }
     ){ innerPadding ->
@@ -124,21 +94,6 @@ fun SellerHomeScreen(
             modifier = modifier.padding(innerPadding)
         )
     }
-
-//    if (showDialog) {
-//        showDeleteConfirmationDialog(
-//            onConfirm = {
-//                foodToRemove?.let { food ->
-//                    Datasource.foods.remove(food)
-//                    navController.navigateUp()
-//                }
-//                showDialog = false // Dismiss dialog
-//            },
-//            onDismiss = {
-//                showDialog = false // Dismiss dialog
-//            }
-//        )
-//    }
 }
 
 //@OptIn(ExperimentalMaterial3Api::class)
@@ -218,31 +173,31 @@ fun SellerHomeScreen(
 //    }
 //}
 
-@Composable
-fun showDeleteConfirmationDialog(
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Delete Confirmation") },
-        text = { Text("Are you sure you want to delete this food item?") },
-        confirmButton = {
-            TextButton(
-                onClick = onConfirm
-            ) {
-                Text("Confirm")
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismiss
-            ) {
-                Text("Cancel")
-            }
-        }
-    )
-}
+//@Composable
+//fun showDeleteConfirmationDialog(
+//    onConfirm: () -> Unit,
+//    onDismiss: () -> Unit
+//) {
+//    AlertDialog(
+//        onDismissRequest = onDismiss,
+//        title = { Text("Delete Confirmation") },
+//        text = { Text("Are you sure you want to delete this food item?") },
+//        confirmButton = {
+//            TextButton(
+//                onClick = onConfirm
+//            ) {
+//                Text("Confirm")
+//            }
+//        },
+//        dismissButton = {
+//            TextButton(
+//                onClick = onDismiss
+//            ) {
+//                Text("Cancel")
+//            }
+//        }
+//    )
+//}
 
 @Composable
 fun SellerHomeBody(
@@ -295,16 +250,49 @@ fun SellerHomeBody(
 //    }
 //}
 
+//To display list of food cards
+@Composable
+fun FoodList(
+    //available: Boolean,
+    //onAvailableChanged: (Boolean) -> Unit,
+    //onFoodClick: (FoodList) -> Unit,
+    onFoodClick: (Int) -> Unit,
+    modifier: Modifier = Modifier
+){
+    val data = Datasource.foods
+    LazyColumn(modifier = modifier){
+        itemsIndexed(data) { index, food ->
+            FoodCard(
+                food = food,
+                modifier = Modifier.clickable{onFoodClick(food.id)}
+                //available = available,
+                //onAvailableChanged = onAvailableChanged,
+                //onClick = { onFoodClick(food.id)}
+            )
+            if (index < data.size - 1) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(
+                        vertical = 12.dp,
+                        horizontal = 8.dp
+                    ),
+                    thickness = 1.dp,
+                    color = Color.Gray
+                )
+            }
+        }
+    }
+}
+
 @Composable
 fun FoodCard(
     food: Food,
     //available: Boolean,
     //onAvailableChanged: (Boolean) -> Unit,
-    onClick: () -> Unit,
+    //onClick: () -> Unit,
     modifier: Modifier = Modifier
 ){
     Card(
-        modifier = Modifier
+        modifier = modifier
             //.fillMaxWidth()
             .padding(8.dp)
     ){
@@ -321,7 +309,7 @@ fun FoodCard(
                 modifier = Modifier
                     //.padding(8.dp)
                     .size(80.dp)
-                    .clickable(onClick = onClick)
+                    //.clickable(onClick = onClick)
                     .clip(
                         RoundedCornerShape(8.dp)
                     )
@@ -353,37 +341,6 @@ fun FoodCard(
 //                    text = "Available"
 //                )
 //            }
-        }
-    }
-}
-
-//To display list of food cards
-@Composable
-fun FoodList(
-    //available: Boolean,
-    //onAvailableChanged: (Boolean) -> Unit,
-    onFoodClick: (Int) -> Unit,
-    modifier: Modifier = Modifier
-){
-    val data = Datasource.foods
-    LazyColumn(modifier = modifier){
-        itemsIndexed(data) { index, food ->
-            FoodCard(
-                food = food,
-                //available = available,
-                //onAvailableChanged = onAvailableChanged,
-                onClick = { onFoodClick(food.id)}
-            )
-            if (index < data.size - 1) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(
-                        vertical = 12.dp,
-                        horizontal = 8.dp
-                    ),
-                    thickness = 1.dp,
-                    color = Color.Gray
-                )
-            }
         }
     }
 }
