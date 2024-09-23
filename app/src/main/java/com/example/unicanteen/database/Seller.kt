@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import java.sql.Date
+import java.util.Date
 
 
 @Entity(
@@ -18,14 +18,16 @@ import java.sql.Date
     indices = [Index(value = ["userId"])]
 )
 data class Seller(
-    @PrimaryKey(autoGenerate = true) val sellerId: Long = 0,
-    @ColumnInfo(name = "userId") val userId: Long, // Foreign key to UserEntity
+    @PrimaryKey(autoGenerate = true) val sellerId: Int = 0,
+    @ColumnInfo(name = "userId") val userId: Int, // Foreign key to User entity
 
     @ColumnInfo(name = "shopType") val shopType: String,
     @ColumnInfo(name = "shopName") val shopName: String,
-    @ColumnInfo(name = "createdDate") val createdDate: Date,
+    @ColumnInfo(name = "createdDate") val createdDate: Date, // java.util.Date
     @ColumnInfo(name = "shopStatus") val shopStatus: String, // E.g., "Open", "Closed", "Suspended"
-    @ColumnInfo(name = "shopRating") val shopRating: Double = 0.0, // Rating of the shop
-    @ColumnInfo(name = "totalOrders") val totalOrders: Int = 0, // Track the total number of orders
-    @ColumnInfo(name = "updatedDate") val updatedDate: Date? = null // For tracking the last time the shop details were updated
+    @ColumnInfo(name = "shopRating") val shopRating: Double = 0.0, // Default rating is 0
+    @ColumnInfo(name = "totalOrders") val totalOrders: Int = 0, // Total number of orders
+    @ColumnInfo(name = "updatedDate") val updatedDate: Date? = null, // Nullable, tracks the last update
+    @ColumnInfo(name = "descr") val description: String? = null, // Description of the seller
+    @ColumnInfo(name = "imageUrl") val imageUrl: String // URL for the seller's image
 )
