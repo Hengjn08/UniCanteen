@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -49,7 +50,12 @@ import com.example.unicanteen.model.Food
 import coil.compose.AsyncImage
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.ui.text.font.FontWeight
 import com.example.unicanteen.UniCanteenTopBar
 import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.UniCanteenTheme
@@ -150,23 +156,13 @@ fun AddFoodScreen(
                 }
                 onSaveButtonClicked()
                 Toast.makeText(context, "Food item saved successfully!", Toast.LENGTH_SHORT).show()
-            }
+            },
+            navigateBack = navigateBack
         )
     }
 
 
 
-}
-
-@Composable
-fun testing(
-    modifier: Modifier = Modifier
-){
-    Column(
-        modifier = modifier
-    ) {
-        Text(text = "testing")
-    }
 }
 
 @Composable
@@ -183,18 +179,25 @@ fun AddFoodBody(
     onTypeSelected: (String) -> Unit,
     onImageClick: () -> Unit,
     onCancelButtonClicked: () -> Unit,
-    onSaveButtonClicked: () -> Unit
+    onSaveButtonClicked: () -> Unit,
+    navigateBack: () -> Unit
 ){
     Column (
         modifier = modifier.verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.SpaceBetween
     ){
+        NavigateBackIconWithTitle(
+            title = AddFoodDestination.title ,
+            navigateBack = navigateBack,
+            modifier = Modifier.padding(top = 16.dp)
+        )
+
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
+
             ImageUploadBox(
                 imageUri = imageUri,
-                onImageClick = onImageClick
+                onImageClick = onImageClick,
 //                {
 //                    when (PackageManager.PERMISSION_GRANTED) {
 //                        ContextCompat.checkSelfPermission(
@@ -344,6 +347,7 @@ fun AddFoodBody(
     }
 }
 
+
 fun launchImagePicker(launcher: ActivityResultLauncher<String>) {
     launcher.launch("image/*")
 }
@@ -351,7 +355,8 @@ fun launchImagePicker(launcher: ActivityResultLauncher<String>) {
 @Composable
 fun ImageUploadBox(
     imageUri: Uri?,
-    onImageClick: () -> Unit
+    onImageClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Box(
         modifier = Modifier

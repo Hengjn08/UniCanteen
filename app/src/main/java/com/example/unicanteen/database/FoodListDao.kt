@@ -1,11 +1,14 @@
 package com.example.unicanteen.database
 
+import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
+@Dao
 interface FoodListDao {
     // Insert a new food item
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -21,15 +24,15 @@ interface FoodListDao {
 
     // Fetch a food item by foodId
     @Query("SELECT * FROM foodList WHERE foodId = :foodId")
-    suspend fun getFoodItemById(foodId: Long): FoodList?
+    suspend fun getFoodItemById(foodId: Long): Flow<FoodList?>
 
     // Fetch all food items for a specific seller by sellerId
     @Query("SELECT * FROM foodList WHERE sellerId = :sellerId")
-    suspend fun getFoodItemsBySellerId(sellerId: Long): List<FoodList>
+    fun getFoodItemsBySellerId(sellerId: Long): Flow<List<FoodList>>
 
     // Fetch all available food items (status = 'Available')
     @Query("SELECT * FROM foodList WHERE status = 'Available'")
-    suspend fun getAvailableFoodItems(): List<FoodList>
+    suspend fun getAvailableFoodItems(): Flow<List<FoodList>>
 
     // Fetch food items by type (e.g., "Vegetarian", "Vegan")
     @Query("SELECT * FROM foodList WHERE type = :type")
