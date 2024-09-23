@@ -2,11 +2,14 @@ package com.example.unicanteen.HengJunEn
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.unicanteen.UniCanteenTopBar
 import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.UniCanteenTheme
@@ -26,27 +29,29 @@ fun EditFoodScreen(
     Scaffold (
         topBar = {
             UniCanteenTopBar(
-                //canNavigateBack = true,
-                //navigateUp = navigateBack,
             )
         }
     ) {
             innerPadding ->
         EditFoodBody(
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            navigateBack = navigateBack,
         )
     }
 }
 
 @Composable
 fun EditFoodBody(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navigateBack: () -> Unit,
 ){
     Column (
-        modifier = modifier
+        modifier = modifier.verticalScroll(rememberScrollState())
     ){
-        Text(
-            text = "Edit food"
+        NavigateBackIconWithTitle(
+            title = EditFoodDestination.title ,
+            navigateBack = navigateBack,
+            modifier = Modifier.padding(top = 16.dp)
         )
     }
 }
