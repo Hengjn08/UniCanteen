@@ -16,6 +16,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -27,22 +29,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.unicanteen.R
 import com.example.unicanteen.UniCanteenTopBar
 import com.example.unicanteen.data.Datasource
 import com.example.unicanteen.model.Food
 import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.UniCanteenTheme
+import kotlinx.coroutines.coroutineScope
 
 object FoodDetailsDestination : NavigationDestination {
     override val route = "food_details"
@@ -62,6 +70,8 @@ fun FoodDetailsScreen(
     //onRemoveClick: () -> Unit,
     //onBackClick: () -> Unit
 ) {
+    //val coroutineScope = rememberCoroutineScope()
+
     Scaffold(
         topBar = {
             UniCanteenTopBar(
@@ -73,7 +83,12 @@ fun FoodDetailsScreen(
     ) {innerpadding ->
         foodDetailsBody(
             food = food,
-            onDelete = {},
+            onDelete = {
+//                coroutineScope.laucnh {
+//                    viewModel.deleteItem()
+//                    navigateBack
+//                }
+            },
             onEditClick = onEditClick,
             navigateBack = navigateBack,
             modifier = Modifier.padding(innerpadding)
@@ -104,7 +119,7 @@ fun foodDetailsBody(
     navigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var showDialog by remember { mutableStateOf(false) }
+    var showDialog by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -118,12 +133,16 @@ fun foodDetailsBody(
         )
         FoodDetails(
             food = food,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth(),
         )
 
         Button(
             onClick = onEditClick,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth(),
             shape = MaterialTheme.shapes.small,
         ) {
             Text("Edit")
@@ -131,7 +150,9 @@ fun foodDetailsBody(
         OutlinedButton(
             onClick = { showDialog = true },
             shape = MaterialTheme.shapes.small,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
         ) {
             Text("Delete")
         }
@@ -184,41 +205,47 @@ fun FoodDetails(
     food: Food?,
     modifier: Modifier = Modifier
 ){
-    Column(
-        modifier = modifier
-            //.fillMaxSize()
-            .padding(16.dp)
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = colorResource(R.color.purple_80)
+        )
     ) {
-        if (food != null) {
-            Image(
-                painter = painterResource(food.foodImage.toInt()),
-                contentDescription = null,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .clip(RoundedCornerShape(8.dp))
-            )
+        Column(
+            modifier = Modifier
+                //.fillMaxSize()
+                .padding(16.dp)
+        ) {
+            if (food != null) {
+                Image(
+                    painter = painterResource(food.foodImage.toInt()),
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
 
-            FoodDetailsRow(
-                label = "Name",
-                foodDetails = food.foodName,
-                modifier = Modifier.padding(16.dp)
-            )
+                FoodDetailsRow(
+                    label = "Name",
+                    foodDetails = food.foodName,
+                    modifier = Modifier.padding(16.dp)
+                )
 
-            FoodDetailsRow(
-                label = "Description",
-                foodDetails = food.foodDesc,
-                modifier = Modifier
-                    .padding(16.dp)
-            )
+                FoodDetailsRow(
+                    label = "Description",
+                    foodDetails = food.foodDesc,
+                    modifier = Modifier
+                        .padding(16.dp)
+                )
 
-            FoodDetailsRow(
-                label = "Price",
-                foodDetails = stringResource(R.string.rm, food.price),
-                modifier = Modifier
-                    .padding(16.dp)
-            )
+                FoodDetailsRow(
+                    label = "Price",
+                    foodDetails = stringResource(R.string.rm, food.price),
+                    modifier = Modifier
+                        .padding(16.dp)
+                )
 //            Text(
 //                text = food.foodName,
 //                style = MaterialTheme.typography.headlineMedium,
@@ -236,8 +263,10 @@ fun FoodDetails(
 //                style = MaterialTheme.typography.headlineSmall,
 //                modifier = Modifier.padding(bottom = 16.dp)
 //            )
+            }
         }
     }
+
 }
 
 @Composable
@@ -249,12 +278,16 @@ fun FoodDetailsRow(
     Row(
         modifier = modifier
     ){
-        Text(text = label)
+        Text(
+            text = label,
+            fontSize = 20.sp
+        )
         Spacer(modifier = Modifier.weight(1f))
         Text(
             text = foodDetails,
-//            style = MaterialTheme.typography.headlineMedium,
-//            modifier = Modifier.padding(vertical = 16.dp)
+            fontWeight = FontWeight.Bold,
+            fontSize = 20.sp
+            //style = MaterialTheme.typography.headlineMedium,
         )
     }
 }
