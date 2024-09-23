@@ -20,12 +20,12 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         GlobalScope.launch {
             AppDatabase.getDatabase(applicationContext).userDao().getAll()
-            AppDatabase.getDatabase(applicationContext).sellerDao().getAllSellers()
-            AppDatabase.getDatabase(applicationContext).foodListDao().getAllFoodItems()
-            AppDatabase.getDatabase(applicationContext).orderDao().getAllOrders()
-            AppDatabase.getDatabase(applicationContext).orderListDao().getAllOrderListItems()
-            AppDatabase.getDatabase(applicationContext).paymentDao().getAllPayments()
-            AppDatabase.getDatabase(applicationContext).paymentDetailsDao().getAllPaymentDetails()
+//            AppDatabase.getDatabase(applicationContext).sellerDao().getAllSellers()
+//            AppDatabase.getDatabase(applicationContext).foodListDao().getAllFoodItems()
+//            AppDatabase.getDatabase(applicationContext).orderDao().getAllOrders()
+//            AppDatabase.getDatabase(applicationContext).orderListDao().getAllOrderListItems()
+//            AppDatabase.getDatabase(applicationContext).paymentDao().getAllPayments()
+//            AppDatabase.getDatabase(applicationContext).paymentDetailsDao().getAllPaymentDetails()
 
         }
         setContent {

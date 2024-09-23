@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -17,8 +19,13 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
+import com.example.unicanteen.database.Seller
 import com.example.unicanteen.navigation.NavigationDestination
-
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.unicanteen.database.SellerDao
+import com.example.unicanteen.database.SellerRepository
+import com.example.unicanteen.ui.theme.AppViewModelProvider
 
 import com.example.unicanteen.ui.theme.UniCanteenTheme
 
@@ -32,18 +39,34 @@ object SelectRestaurantDestination : NavigationDestination {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectRestaurantScreen(
-    sampleSellers: List<Seller>,
-    navController: NavController,  // Use the same NavController
+    navController: NavController,
     currentDestination: NavDestination?,
-    onRestaurantClick: (Seller) -> Unit
+    onRestaurantClick: (Seller) -> Unit,
+    sellerRepository: SellerRepository  // Pass repository here
 ) {
+    val viewModel: SelectRestaurantViewModel = viewModel(
+        factory = AppViewModelProvider.Factory(sellerRepository)
+    )
+
+    val sellers by viewModel.sellers.collectAsState()
+
     Column {
         UniCanteenTopBar()
-        SearchBar(onSearch = {})
+        SearchBar(onSearch = { query ->
+            // You can implement search functionality here if needed
+        })
         Column(modifier = Modifier.weight(1f)) {
-            RestaurantList(sellers = sampleSellers, navController = navController, onRestaurantClick = onRestaurantClick)
+            RestaurantList(
+                sellers = sellers,
+                navController = navController,
+                onRestaurantClick = onRestaurantClick
+            )
         }
-        BottomNavigationBar(navController = navController, currentDestination = currentDestination,isSeller = false)
+        BottomNavigationBar(
+            navController = navController,
+            currentDestination = currentDestination,
+            isSeller = false
+        )
     }
 }
 
@@ -71,17 +94,17 @@ fun RestaurantCard(seller: Seller, onClick: () -> Unit) {
                     .weight(1f)
             ) {
                 Text(
-                    text = seller.name,
+                    text = seller.shopName,
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
                 Text(
-                    text = seller.description,
+                    text = seller.description ?: "",
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
             Image(
-                painter = painterResource(seller.imageRes),
+                painter = rememberAsyncImagePainter(seller.shopImage),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -115,18 +138,7 @@ fun RestaurantList(
 @Preview(showBackground = true)
 @Composable
 fun PreviewRestaurantList() {
-    val sampleSellers = listOf(
-        Seller(
-            name = "Malaysian Traditional Food",
-            description = "Authentic Malaysian cuisine.",
-            imageRes = R.drawable.pan_mee
-        ),
-        // Add more sample sellers as needed
-    )
-    UniCanteenTheme {
-        SelectRestaurantScreen(sampleSellers, rememberNavController(), null) { seller ->
-            // Handle restaurant click, e.g., navigate to food selection screen
-            println("Clicked on: ${seller.name}")
-        }
-    }
+
+
+
 }
