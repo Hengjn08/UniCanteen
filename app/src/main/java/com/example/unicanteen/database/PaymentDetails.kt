@@ -15,7 +15,12 @@ import java.util.Date
         ForeignKey(entity = Seller::class, parentColumns = ["sellerId"], childColumns = ["sellerId"], onDelete = ForeignKey.CASCADE),
         ForeignKey(entity = Payment::class, parentColumns = ["paymentId"], childColumns = ["paymentId"], onDelete = ForeignKey.CASCADE)
     ],
-    indices = [Index(value = ["orderId"]), Index(value = ["orderListId"]), Index(value = ["sellerId"]), Index(value = ["paymentId"])]
+    indices = [
+        Index(value = ["orderListId"]),
+        Index(value = ["sellerId"]),
+        Index(value = ["paymentId"]),
+        Index(value = ["orderId"])
+    ]
 )
 data class PaymentDetails(
     @PrimaryKey(autoGenerate = true) val paymentDetailsId: Int = 0, // Primary key
@@ -23,8 +28,7 @@ data class PaymentDetails(
     @ColumnInfo(name = "orderListId") val orderListId: Int, // Foreign key to OrderList entity
     @ColumnInfo(name = "sellerId") val sellerId: Int, // Foreign key to Seller entity
     @ColumnInfo(name = "paymentId") val paymentId: Int, // Foreign key to Payment entity
-
-    @ColumnInfo(name = "amount") val amount: Double, // Amount paid to the seller
-    @ColumnInfo(name = "createDate") val createDate: Date, // Date the payment detail was created
+    @ColumnInfo(name = "amount") val amount: Double, // Amount for this payment detail
+    @ColumnInfo(name = "createDate") val createDate: String, // Date the payment detail was created
     @ColumnInfo(name = "status") val status: String // E.g., "Pending", "Completed"
 )

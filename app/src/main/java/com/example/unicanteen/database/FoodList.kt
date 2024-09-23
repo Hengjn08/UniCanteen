@@ -26,13 +26,13 @@ data class FoodList(
     @ColumnInfo(name = "type") val type: String, // E.g., "Vegetarian", "Non-Vegetarian", "Vegan", etc.
     @ColumnInfo(name = "price") val price: Double,
 
-    @ColumnInfo(name = "createDate") val createDate: Date, // Change to java.util.Date
-    @ColumnInfo(name = "modifyDate") val modifyDate: Date? = null, // Nullable field for the last modification date
-    @ColumnInfo(name = "status") val status: String, // E.g., "Available", "Out of Stock"
+    @ColumnInfo(name = "createDate") val createDate: String, // Store as ISO 8601 formatted string
+    @ColumnInfo(name = "modifyDate") val modifyDate: String? = null, // Nullable field for the last modification date
+    @ColumnInfo(name = "status") val status: String = "Available", // Default status
 
     // Additional recommended fields
     @ColumnInfo(name = "description") val description: String? = null, // Description of the food item
-    @ColumnInfo(name = "imageUrl") @DrawableRes val imageRes: Int, // URL for the food item's image
+    @ColumnInfo(name = "imageUrl") val imageUrl: String, // URL for the food item's image
     @ColumnInfo(name = "rating") val rating: Double = 0.0, // Average rating for the food item
     @ColumnInfo(name = "calories") val calories: Int? = null // Optional field for calorie count
 )
