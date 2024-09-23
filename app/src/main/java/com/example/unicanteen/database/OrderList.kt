@@ -23,7 +23,7 @@ import java.util.Date
     ]
 )
 data class OrderList(
-    @PrimaryKey(autoGenerate = true) val orderListId: Int = 0, // Keep as Int for consistency with the database
+    @PrimaryKey(autoGenerate = true) val orderListId: Int = 0, // Primary key
     @ColumnInfo(name = "sellerId") val sellerId: Int, // Foreign key to Seller entity
     @ColumnInfo(name = "foodId") val foodId: Int, // Foreign key to FoodList entity
     @ColumnInfo(name = "userId") val userId: Int, // Foreign key to User entity
@@ -33,5 +33,5 @@ data class OrderList(
     @ColumnInfo(name = "totalPrice") val totalPrice: Double, // Total price for this order item
 
     @ColumnInfo(name = "status") val status: String, // E.g., "Waiting", "Preparing", "Complete"
-    @ColumnInfo(name = "createDate") val createDate: Date // Date the order was created
+    @ColumnInfo(name = "createDate") val createDate: String // Date the order was created (as a string)
 )

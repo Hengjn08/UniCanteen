@@ -22,6 +22,6 @@ data class Payment(
     @ColumnInfo(name = "userId") val userId: Int, // Foreign key to User entity
 
     @ColumnInfo(name = "totalAmt") val totalAmt: Double, // Total amount for the payment
-    @ColumnInfo(name = "createDate") val createDate: Date, // Date the payment was created
+    @ColumnInfo(name = "createDate") val createDate: String, // Date the payment was created (as a string)
     @ColumnInfo(name = "status") val status: String // E.g., "Pending", "Completed"
 )
