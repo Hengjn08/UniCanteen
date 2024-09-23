@@ -25,7 +25,7 @@ interface OrderListDao {
 
     // Fetch an order list item by orderListId
     @Query("SELECT * FROM orderList WHERE orderListId = :orderListId")
-    suspend fun getOrderListById(orderListId: Int): OrderList? // Use Long if it matches your schema
+    fun getOrderListById(orderListId: Int): OrderList? // Use Long if it matches your schema
 
     // Fetch all order list items for a specific order by orderId
     @Query("SELECT * FROM orderList WHERE orderId = :orderId")
@@ -37,7 +37,7 @@ interface OrderListDao {
 
     // Fetch all order list items
     @Query("SELECT * FROM orderList")
-     fun getAllOrderListItems(): List<OrderList>
+    fun getAllOrderListItems(): List<OrderList>
 
     // Fetch total sales for each seller grouped by month
     @Query("""

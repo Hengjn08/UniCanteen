@@ -6,7 +6,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.example.unicanteen.database.Seller
 
 @Dao
 interface SellerDao {
@@ -24,7 +23,7 @@ interface SellerDao {
 
     // Fetch a seller by sellerId
     @Query("SELECT * FROM sellers WHERE sellerId = :sellerId")
-    suspend fun getSellerById(sellerId: Int): Seller
+    fun getSellerById(sellerId: Int): Seller
 
     // Fetch all sellers associated with a specific userId
     @Query("SELECT * FROM sellers WHERE userId = :userId")
