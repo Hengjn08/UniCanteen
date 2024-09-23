@@ -24,7 +24,7 @@ interface PaymentDetailsDao {
 
     // Fetch a payment detail by paymentDetailsId
     @Query("SELECT * FROM paymentDetails WHERE paymentDetailsId = :paymentDetailsId")
-    suspend fun getPaymentDetailsById(paymentDetailsId: Int): PaymentDetails?
+    fun getPaymentDetailsById(paymentDetailsId: Int): PaymentDetails?
 
     // Fetch all payment details for a specific order by orderId
     @Query("SELECT * FROM paymentDetails WHERE orderId = :orderId")

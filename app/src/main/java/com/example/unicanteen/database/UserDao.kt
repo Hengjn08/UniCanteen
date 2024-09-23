@@ -10,7 +10,7 @@ import androidx.room.Update
 @Dao
 interface UserDao {
         @Query("SELECT * FROM user")
-         fun getAll(): List<User>
+        suspend fun getAll(): List<User>
 
         @Insert(onConflict = OnConflictStrategy.REPLACE)
         suspend fun insertUser(user: User): Long
@@ -22,13 +22,13 @@ interface UserDao {
         suspend fun deleteUser(user: User)
 
         @Query("SELECT * FROM user WHERE userId = :userId")
-        suspend fun getUserById(userId: Int): User?
+        fun getUserById(userId: Int): User?
 
         @Query("SELECT * FROM user WHERE email = :email")
-        suspend fun getUserByEmail(email: String): User?
+        fun getUserByEmail(email: String): User?
 
         @Query("SELECT * FROM user WHERE userName = :userName AND password = :password")
-        suspend fun getUserForLogin(userName: String, password: String): User?
+        fun getUserForLogin(userName: String, password: String): User?
 
         @Query("SELECT COUNT(*) FROM user WHERE email = :email")
         suspend fun isEmailTaken(email: String): Int
