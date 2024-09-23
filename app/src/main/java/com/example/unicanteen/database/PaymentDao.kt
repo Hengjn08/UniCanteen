@@ -28,13 +28,13 @@ interface PaymentDao {
 
     // Fetch all payments for a specific user by userId
     @Query("SELECT * FROM payments WHERE userId = :userId")
-    suspend fun getPaymentsByUserId(userId: Int): List<Payment>
+    fun getPaymentsByUserId(userId: Int): List<Payment>
 
     // Fetch all payments for a specific order by orderId
     @Query("SELECT * FROM payments WHERE orderId = :orderId")
-    suspend fun getPaymentsByOrderId(orderId: Int): List<Payment>
+    fun getPaymentsByOrderId(orderId: Int): List<Payment>
 
     // Fetch all payments
     @Query("SELECT * FROM payments")
-    suspend fun getAllPayments(): List<Payment>
+    fun getAllPayments(): List<Payment>
 }

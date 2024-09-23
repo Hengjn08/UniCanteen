@@ -29,15 +29,15 @@ interface OrderListDao {
 
     // Fetch all order list items for a specific order by orderId
     @Query("SELECT * FROM orderList WHERE orderId = :orderId")
-    suspend fun getOrderListByOrderId(orderId: Int): List<OrderList> // Use Long if it matches your schema
+    fun getOrderListByOrderId(orderId: Int): List<OrderList> // Use Long if it matches your schema
 
     // Fetch all order list items for a specific user by userId
     @Query("SELECT * FROM orderList WHERE userId = :userId")
-    suspend fun getOrderListByUserId(userId: Int): List<OrderList> // Use Long if it matches your schema
+    fun getOrderListByUserId(userId: Int): List<OrderList> // Use Long if it matches your schema
 
     // Fetch all order list items
     @Query("SELECT * FROM orderList")
-    suspend fun getAllOrderListItems(): List<OrderList>
+     fun getAllOrderListItems(): List<OrderList>
 
     // Fetch total sales for each seller grouped by month
     @Query("""
@@ -47,7 +47,7 @@ interface OrderListDao {
         GROUP BY sellerId, month
         ORDER BY month
     """)
-    suspend fun getMonthlySalesForSellers(startDate: String, endDate: String): List<SalesData>
+    fun getMonthlySalesForSellers(startDate: String, endDate: String): List<SalesData>
 
     data class SalesData(
         val sellerId: Int,
@@ -64,7 +64,7 @@ interface OrderListDao {
         GROUP BY f.type
         ORDER BY totalSales DESC
     """)
-    suspend fun getMonthlySalesByFoodType(month: String): List<FoodTypeSales>
+   fun getMonthlySalesByFoodType(month: String): List<FoodTypeSales>
 
     data class FoodTypeSales(
         val foodType: String,
@@ -80,7 +80,7 @@ interface OrderListDao {
         GROUP BY o.sellerId, f.type, saleDate
         ORDER BY saleDate, o.sellerId
     """)
-    suspend fun getDailySalesBySellerAndFoodType(startDate: String, endDate: String): List<DailySalesData>
+    fun getDailySalesBySellerAndFoodType(startDate: String, endDate: String): List<DailySalesData>
 
     data class DailySalesData(
         val sellerId: Int,
@@ -97,7 +97,7 @@ interface OrderListDao {
         GROUP BY sellerId, month
         ORDER BY month, sellerId
     """)
-    suspend fun getMonthlySalesGrowthBySeller(startDate: String, endDate: String): List<MonthlySalesGrowthData>
+    fun getMonthlySalesGrowthBySeller(startDate: String, endDate: String): List<MonthlySalesGrowthData>
 
     data class MonthlySalesGrowthData(
         val sellerId: Int,

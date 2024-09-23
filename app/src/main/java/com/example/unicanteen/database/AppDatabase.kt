@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 @Database(
-    entities = [
+    entities = arrayOf(
         User::class,
         Seller::class,
         FoodList::class,
@@ -15,9 +15,9 @@ import androidx.room.TypeConverters
         OrderList::class,
         Payment::class,
         PaymentDetails::class
-    ],
+    ),
     version = 1, // Increment version if needed
-    exportSchema = false
+   // exportSchema = false
 )
 @TypeConverters(Converters::class) // Correct placement of TypeConverters annotation
 abstract class AppDatabase : RoomDatabase() {
@@ -26,10 +26,10 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun sellerDao(): SellerDao
     abstract fun foodListDao(): FoodListDao
-  //  abstract fun orderDao(): OrderDao
-  //  abstract fun orderListDao(): OrderListDao
-  //  abstract fun paymentDao(): PaymentDao
-  //  abstract fun paymentDetailsDao(): PaymentDetailsDao
+    abstract fun orderDao(): OrderDao
+    abstract fun orderListDao(): OrderListDao
+    abstract fun paymentDao(): PaymentDao
+    abstract fun paymentDetailsDao(): PaymentDetailsDao
 
     companion object {
         @Volatile
