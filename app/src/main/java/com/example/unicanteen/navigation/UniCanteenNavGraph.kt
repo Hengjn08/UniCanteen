@@ -20,6 +20,8 @@ import com.example.unicanteen.HengJunEn.FoodDetailsScreen
 import com.example.unicanteen.HengJunEn.OrderListScreen
 import com.example.unicanteen.HengJunEn.SellerHomeScreen
 import com.example.unicanteen.HengJunEn.SellerProfileScreen
+import com.example.unicanteen.Pierre.FoodSalesDetailDestination
+import com.example.unicanteen.Pierre.FoodSalesDetailScreen
 import com.example.unicanteen.Pierre.PickupOrDeliveryScreen
 import com.example.unicanteen.Pierre.SaleMonthlyScreen
 import com.example.unicanteen.Pierre.pickUpChoose
@@ -33,6 +35,7 @@ import com.example.unicanteen.SelectRestaurantViewModel
 import com.example.unicanteen.data.Datasource
 import com.example.unicanteen.database.AppDatabase
 import com.example.unicanteen.database.FoodListRepositoryImpl
+import com.example.unicanteen.database.PierreAdminRepositoryImpl
 import com.example.unicanteen.database.SellerRepository
 import com.example.unicanteen.database.SellerRepositoryImpl
 
@@ -48,7 +51,7 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = BottomBarScreen.CustomerHome.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = reportSaleCheck.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
 //        val sampleSellers = listOf(
@@ -79,17 +82,17 @@ fun UniCanteenNavHost(
         }
 
         // Customer-specific routes
-        composable(route = BottomBarScreen.CustomerHome.route) {
-            SelectRestaurantScreen(
-                navController = navController,
-                currentDestination = currentDestination,
-                onRestaurantClick = { seller ->
-                    // Navigate to food selection screen, passing the seller's ID
-                    navController.navigate("${SelectFoodDestination.route}/${seller.sellerId}")
-                },
-                sellerRepository = SellerRepositoryImpl(AppDatabase.getDatabase(context = navController.context).sellerDao())
-            )
-        }
+//        composable(route = BottomBarScreen.CustomerHome.route) {
+//            SelectRestaurantScreen(
+//                navController = navController,
+//                currentDestination = currentDestination,
+//                onRestaurantClick = { seller ->
+//                    // Navigate to food selection screen, passing the seller's ID
+//                    navController.navigate("${SelectFoodDestination.route}/${seller.sellerId}")
+//                },
+//                sellerRepository = SellerRepositoryImpl(AppDatabase.getDatabase(context = navController.context).sellerDao())
+//            )
+//        }
         composable(route = BottomBarScreen.CustomerOrderList.route) {
             //CustomerOrderListScreen(navController = navController, currentDestination = currentDestination)       //放customer的order list screen
         }
@@ -99,17 +102,17 @@ fun UniCanteenNavHost(
 
         //Customer module route
         //select restaurant screen
-        composable(route = SelectRestaurantDestination.route) {
-            SelectRestaurantScreen(
-                navController = navController,
-                currentDestination = navController.currentDestination,
-                onRestaurantClick = { seller ->
-                    // Navigate to food selection screen, passing the seller's ID
-                    navController.navigate("${SelectFoodDestination.route}/${seller.sellerId}")
-                },
-                sellerRepository = SellerRepositoryImpl(AppDatabase.getDatabase(navController.context).sellerDao())
-            )
-        }
+//        composable(route = SelectRestaurantDestination.route) {
+//            SelectRestaurantScreen(
+//                navController = navController,
+//                currentDestination = navController.currentDestination,
+//                onRestaurantClick = { seller ->
+//                    // Navigate to food selection screen, passing the seller's ID
+//                    navController.navigate("${SelectFoodDestination.route}/${seller.sellerId}")
+//                },
+//                sellerRepository = SellerRepositoryImpl(AppDatabase.getDatabase(navController.context).sellerDao())
+//            )
+//        }
 
         composable(
             route = SelectFoodDestination.routeWithArgs,
@@ -184,8 +187,31 @@ fun UniCanteenNavHost(
             SaleMonthlyScreen(
                 navController = navController,
                 currentDestination = navController.currentDestination,
-                month = "2024-09",  // Provide a sample month
-                sellerId = 1  // Provide a sample seller ID
+                sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
+                sellerId = 1
+            )
+        }
+
+        // Add the composable for FoodSalesDetailScreen
+        composable(
+            route = FoodSalesDetailDestination.route,
+            arguments = listOf(
+                navArgument("foodType") { type = NavType.StringType },
+                navArgument("month") { type = NavType.StringType } // Add month as a string argument
+            )
+        ) { backStackEntry ->
+            val foodType = backStackEntry.arguments?.getString("foodType") ?: ""
+            val month = backStackEntry.arguments?.getString("month")
+
+            // Call the FoodSalesDetailScreen
+            FoodSalesDetailScreen(
+                navController = navController,
+                currentDestination = navController.currentDestination,
+                foodType = foodType,
+//                foodType = "Beverage",
+                sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
+                sellerId = 1,
+                month = month
             )
         }
     }

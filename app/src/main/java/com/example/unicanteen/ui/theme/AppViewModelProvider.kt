@@ -5,9 +5,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.unicanteen.ChiaLiHock.SelectFoodViewModel
+import com.example.unicanteen.Pierre.AdminViewModel
 import com.example.unicanteen.SelectRestaurantViewModel
 import com.example.unicanteen.UniCanteenApp
 import com.example.unicanteen.database.FoodListRepository
+import com.example.unicanteen.database.PierreAdminRepository
 import com.example.unicanteen.database.SellerRepository
 
 
@@ -18,18 +20,21 @@ object AppViewModelProvider {
     @Suppress("UNCHECKED_CAST")
     class Factory(
         private val repository: SellerRepository? = null,
-        private val repository2: FoodListRepository? = null
+        private val repository2: FoodListRepository? = null,
+        private val repository3: PierreAdminRepository? = null
 
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(SelectRestaurantViewModel::class.java)) {
                 return repository?.let { SelectRestaurantViewModel(it) } as T
-            }
-            else if( modelClass.isAssignableFrom(SelectFoodViewModel::class.java)){
+            } else if (modelClass.isAssignableFrom(SelectFoodViewModel::class.java)) {
                 return repository2?.let { SelectFoodViewModel(it) } as T
+            } else if (modelClass.isAssignableFrom(AdminViewModel::class.java)) {
+                return repository3?.let {AdminViewModel(it)} as T // Add this line to handle AdminViewModel
             }
             throw IllegalArgumentException("Unknown ViewModel class")
         }
+    }
     }
 //    val Factory = viewModelFactory {
 //        initializer {
@@ -40,4 +45,3 @@ object AppViewModelProvider {
 //        initializer {
 //            SelectFoodViewModel(foodListRepository = foodListRepository)
 //    }
-}
