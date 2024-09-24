@@ -44,4 +44,7 @@ interface SellerDao {
     // Fetch sellers with rating higher than a given threshold
     @Query("SELECT * FROM sellers WHERE shopRating >= :rating")
     suspend fun getSellersWithHighRating(rating: Double): List<Seller>
+    // Search sellers by name (case-insensitive)
+    @Query("SELECT * FROM sellers WHERE shopName LIKE '%' || :query || '%'")
+    suspend fun searchSellersByName(query: String): List<Seller>
 }
