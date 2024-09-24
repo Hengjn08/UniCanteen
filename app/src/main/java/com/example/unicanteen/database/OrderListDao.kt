@@ -107,7 +107,16 @@ interface OrderListDao {
     )
 
     @Query("""
-    SELECT f.type AS foodType, strftime('%Y-%m', o.createDate) AS month, SUM(o.totalPrice) AS totalQuantity
+    WITH TotalSales AS (
+        SELECT SUM(o.totalPrice) AS totalSales
+        FROM orderList o
+        WHERE strftime('%Y-%m', o.createDate) = :month
+        AND o.sellerId = :sellerId
+    )
+    SELECT f.type AS foodType, 
+           strftime('%Y-%m', o.createDate) AS month, 
+           SUM(o.totalPrice) AS totalQuantity,
+           (SUM(o.totalPrice) * 100.0 / (SELECT totalSales FROM TotalSales)) AS percentage
     FROM orderList o
     JOIN foodList f ON o.foodId = f.foodId
     WHERE strftime('%Y-%m', o.createDate) = :month
@@ -116,10 +125,12 @@ interface OrderListDao {
     ORDER BY month
 """)
     fun getMonthlySalesByFoodType(month: String, sellerId: Int): LiveData<List<FoodTypeSalesData>>
+
     data class FoodTypeSalesData(
         val foodType: String,
         val month: String,
-        val totalQuantity: Int
+        val totalQuantity: Int,
+        val percentage: Double  // New field for percentage
     )
 
 

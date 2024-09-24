@@ -3,11 +3,9 @@ package com.example.unicanteen.Pierre
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -19,7 +17,6 @@ import com.example.unicanteen.UniCanteenTopBar
 import com.example.unicanteen.ui.theme.UniCanteenTheme
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.unicanteen.database.OrderListDao
 import com.github.tehras.charts.piechart.PieChart
@@ -30,12 +27,7 @@ import com.example.unicanteen.navigation.NavigationDestination
 import com.github.tehras.charts.piechart.animation.simpleChartAnimation
 import com.github.tehras.charts.piechart.renderer.SimpleSliceDrawer
 import kotlin.random.Random
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 
 
 object reportSaleCheck : NavigationDestination {
@@ -74,13 +66,31 @@ fun SaleMonthlyScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
+            // Title: Sales Report <<Month>>
+            Text(
+                text = "Sales Report for $month",  // Display dynamic month in title
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier
+                    .padding(12.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
             // Display the pie chart if there are sales data
             if (salesData.isNotEmpty()) {
                 MonthlySalesPieChart(salesData = salesData)
             } else {
                 Text("No sales data available for this month.", modifier = Modifier.padding(16.dp))
             }
-
+            // Label row for Food Type and Sale RM
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(1.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = "Food Type", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(2f) .padding(start = 15.dp) )
+                Text(text = "Sale RM", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1.5f))
+                Text(text = "%", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
+            }
             // Display the list of sales data below the pie chart
             MonthlySalesList(salesData = salesData)
         }
@@ -93,10 +103,11 @@ fun MonthlySalesList(salesData: List<OrderListDao.FoodTypeSalesData>) {
             .fillMaxWidth()
             .padding(11.dp)
     ) {
-        salesData.forEachIndexed { index, data ->
+        salesData.forEach { data ->
             SalesItemRow(
                 foodType = data.foodType,
                 totalQuantity = data.totalQuantity,
+                percentage = data.percentage,
                 color = getColorForItem(data.foodType) // Get color for each item
             )
         }
@@ -104,7 +115,7 @@ fun MonthlySalesList(salesData: List<OrderListDao.FoodTypeSalesData>) {
 }
 
 @Composable
-fun SalesItemRow(foodType: String, totalQuantity: Int, color: Color) {
+fun SalesItemRow(foodType: String, totalQuantity: Int, color: Color, percentage: Double) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -113,8 +124,9 @@ fun SalesItemRow(foodType: String, totalQuantity: Int, color: Color) {
             .padding(11.dp), // Inner padding
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = foodType, style = MaterialTheme.typography.bodyMedium, color = Color.White)
-        Text(text = totalQuantity.toString(), style = MaterialTheme.typography.bodyMedium, color = Color.White)
+        Text(text = foodType, style = MaterialTheme.typography.bodyMedium, color = Color.White, modifier = Modifier.weight(2f) )
+        Text(text =  String.format("%.2f", totalQuantity.toDouble()), style = MaterialTheme.typography.bodyMedium, color = Color.White, modifier = Modifier.weight(1.5f) )
+        Text(text = String.format("%.2f", percentage), style = MaterialTheme.typography.bodyMedium, color = Color.White, modifier = Modifier.weight(1f) )
     }
 }
 
