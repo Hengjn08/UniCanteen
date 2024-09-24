@@ -1,5 +1,7 @@
 package com.example.unicanteen.database
 
+import kotlinx.coroutines.flow.Flow
+
 
 class SellerRepositoryImpl(private val sellerDao: SellerDao) : SellerRepository {
 
@@ -23,7 +25,7 @@ class SellerRepositoryImpl(private val sellerDao: SellerDao) : SellerRepository 
         return sellerDao.getSellersByUserId(userId)
     }
 
-    override suspend fun getAllSellers(): List<Seller> {
+    override fun getAllSellers(): Flow<List<Seller>> {
         return sellerDao.getAllSellers()
     }
 

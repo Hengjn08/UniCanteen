@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SellerDao {
@@ -31,7 +32,7 @@ interface SellerDao {
 
     // Fetch all sellers
     @Query("SELECT * FROM sellers")
-    suspend fun getAllSellers(): List<Seller>
+    fun getAllSellers(): Flow<List<Seller>>
 
     // Delete sellers based on userId (if necessary)
     @Query("DELETE FROM sellers WHERE userId = :userId")

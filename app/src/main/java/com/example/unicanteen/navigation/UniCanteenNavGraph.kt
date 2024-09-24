@@ -19,7 +19,7 @@ import com.example.unicanteen.HengJunEn.EditFoodScreen
 import com.example.unicanteen.HengJunEn.FoodDetailsDestination
 import com.example.unicanteen.HengJunEn.FoodDetailsScreen
 import com.example.unicanteen.HengJunEn.OrderListScreen
-import com.example.unicanteen.HengJunEn.SellerHomeScreen
+//import com.example.unicanteen.HengJunEn.SellerHomeScreen
 import com.example.unicanteen.HengJunEn.SellerProfileScreen
 import com.example.unicanteen.R
 import com.example.unicanteen.SelectFoodDestination
@@ -29,6 +29,8 @@ import com.example.unicanteen.SelectRestaurantScreen
 import com.example.unicanteen.SelectRestaurantViewModel
 import com.example.unicanteen.data.Datasource
 import com.example.unicanteen.database.AppDatabase
+import com.example.unicanteen.database.FoodListDao
+import com.example.unicanteen.database.FoodListRepositoryImpl
 import com.example.unicanteen.database.SellerRepository
 import com.example.unicanteen.database.SellerRepositoryImpl
 
@@ -59,14 +61,16 @@ fun UniCanteenNavHost(
 //                imageUrl = ""
 //            )
 //        )
-
-        composable(route = BottomBarScreen.SellerHome.route) {
-            SellerHomeScreen(
-                navController = navController,
-                currentDestination = currentDestination,
-                onFoodClick = { navController.navigate("${FoodDetailsDestination.route}/${it}") }
-            )
-        }
+        val foodListDao = AppDatabase.getDatabase(context = navController.context).foodListDao()
+        val foodListRepository = FoodListRepositoryImpl(foodListDao)
+//        composable(route = BottomBarScreen.SellerHome.route) {
+//            SellerHomeScreen(
+//                navController = navController,
+//                currentDestination = currentDestination,
+//                onFoodClick = { navController.navigate("${FoodDetailsDestination.route}/${it}") },
+//                sellerRepository =
+//            )
+//        }
         composable(route = BottomBarScreen.SellerOrderList.route) {
             OrderListScreen(navController = navController, currentDestination = currentDestination)
         }
@@ -82,7 +86,7 @@ fun UniCanteenNavHost(
                 navController = navController,
                 currentDestination = currentDestination,
                 onRestaurantClick = {navController.navigate("${SelectFoodDestination.route}/${it.shopName}")},
-                sellerRepository = sellerRepository
+                //sellerRepository = sellerRepository
             )
         }
         composable(route = BottomBarScreen.CustomerOrderList.route) {
@@ -104,7 +108,7 @@ fun UniCanteenNavHost(
                     // Navigate to food screen, passing restaurant name
                     navController.navigate("${SelectFoodDestination.route}/${seller.shopName}")
                 },
-                sellerRepository = sellerRepository
+                //sellerRepository = sellerRepository
             )
         }
         // Food Selection Screen

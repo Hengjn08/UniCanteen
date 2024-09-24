@@ -23,6 +23,8 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.unicanteen.database.Seller
 import com.example.unicanteen.navigation.NavigationDestination
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.unicanteen.HengJunEn.SellerHomeViewModel
 import com.example.unicanteen.database.SellerDao
 import com.example.unicanteen.database.SellerRepository
 import com.example.unicanteen.ui.theme.AppViewModelProvider
@@ -42,13 +44,15 @@ fun SelectRestaurantScreen(
     navController: NavController,
     currentDestination: NavDestination?,
     onRestaurantClick: (Seller) -> Unit,
-    sellerRepository: SellerRepository  // Pass repository here
+    selectRestaurantViewModel: SelectRestaurantViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    //sellerRepository: SellerRepository  // Pass repository here
 ) {
-    val viewModel: SelectRestaurantViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(sellerRepository)
-    )
+//    val viewModel: SelectRestaurantViewModel = viewModel(
+//        factory = AppViewModelProvider.Factory(sellerRepository)
+//    )
 
-    val sellers by viewModel.sellers.collectAsState()
+    //val sellers by viewModel.sellers.collectAsState()
+    val selectRestaurantUiState by selectRestaurantViewModel.selectRestaurantUiState.collectAsState()
 
     Column {
         UniCanteenTopBar()
@@ -57,7 +61,7 @@ fun SelectRestaurantScreen(
         })
         Column(modifier = Modifier.weight(1f)) {
             RestaurantList(
-                sellers = sellers,
+                sellers = selectRestaurantUiState.itemList,
                 navController = navController,
                 onRestaurantClick = onRestaurantClick
             )
