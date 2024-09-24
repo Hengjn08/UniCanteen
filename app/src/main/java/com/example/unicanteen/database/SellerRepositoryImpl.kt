@@ -38,4 +38,7 @@ class SellerRepositoryImpl(private val sellerDao: SellerDao) : SellerRepository 
     override suspend fun getSellersWithHighRating(rating: Double): List<Seller> {
         return sellerDao.getSellersWithHighRating(rating)
     }
+    override suspend fun searchSellersByName(query: String): List<Seller> {
+        return sellerDao.searchSellersByName(query)
+    }
 }

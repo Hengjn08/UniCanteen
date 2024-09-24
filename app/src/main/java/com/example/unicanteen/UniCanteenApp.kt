@@ -77,6 +77,7 @@ fun BottomNavigationBar(
         listOf(
             BottomBarScreen.SellerHome,
             BottomBarScreen.SellerOrderList,
+            BottomBarScreen.SellerReport,
             BottomBarScreen.SellerProfile
         )
     }

@@ -7,10 +7,11 @@ import com.example.unicanteen.database.SellerRepository
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class SelectRestaurantViewModel(private val repository: SellerRepository) : ViewModel() {
     private val _sellers = MutableStateFlow<List<Seller>>(emptyList())
-    val sellers: StateFlow<List<Seller>> = _sellers
+    val sellers: StateFlow<List<Seller>> = _sellers.asStateFlow()
 
     init {
         loadSellers() // Call the method to load sellers
@@ -19,6 +20,15 @@ class SelectRestaurantViewModel(private val repository: SellerRepository) : View
     private fun loadSellers() {
         viewModelScope.launch {
             _sellers.value = repository.getAllSellers() // This is a suspend function, safely called here
+        }
+    }
+    fun searchSellersByName(query: String) {
+        viewModelScope.launch {
+            _sellers.value = if (query.isEmpty()) {
+                repository.getAllSellers()
+            } else {
+                repository.searchSellersByName(query)
+            }
         }
     }
 
