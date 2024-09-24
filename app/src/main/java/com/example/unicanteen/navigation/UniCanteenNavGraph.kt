@@ -3,6 +3,7 @@ package com.example.unicanteen.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -29,8 +30,11 @@ import com.example.unicanteen.SelectFoodDestination
 import com.example.unicanteen.SelectFoodScreen
 import com.example.unicanteen.SelectRestaurantDestination
 import com.example.unicanteen.SelectRestaurantScreen
-import com.example.unicanteen.Seller
+import com.example.unicanteen.SelectRestaurantViewModel
 import com.example.unicanteen.data.Datasource
+import com.example.unicanteen.database.AppDatabase
+import com.example.unicanteen.database.SellerRepository
+import com.example.unicanteen.database.SellerRepositoryImpl
 
 
 @Composable
@@ -47,18 +51,18 @@ fun UniCanteenNavHost(
         startDestination = reportSaleCheck.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
-        val sampleSellers = listOf(
-            Seller(
-                name = "Malaysian Traditional Food",
-                description = "Authentic Malaysian cuisine.",
-                imageRes = R.drawable.pan_mee  // Replace with unique image if needed
-            ),
-            Seller(
-                name = "Vegetarian Friendly",
-                description = "Delicious vegetarian dishes.",
-                imageRes = R.drawable.pan_mee   // Use another unique image
-            )
-        )
+//        val sampleSellers = listOf(
+//            Seller(
+//                name = "Malaysian Traditional Food",
+//                description = "Authentic Malaysian cuisine.",
+//                imageUrl = ""
+//            ),
+//            Seller(
+//                name = "Vegetarian Friendly",
+//                description = "Delicious vegetarian dishes.",
+//                imageUrl = ""
+//            )
+//        )
 
         composable(route = BottomBarScreen.SellerHome.route) {
             SellerHomeScreen(
@@ -75,12 +79,14 @@ fun UniCanteenNavHost(
         }
 
         // Customer-specific routes
+        val sellerDao = AppDatabase.getDatabase(context = navController.context).sellerDao()
+        val sellerRepository = SellerRepositoryImpl(sellerDao)
         composable(route = BottomBarScreen.CustomerHome.route) {
             SelectRestaurantScreen(
                 navController = navController,
                 currentDestination = currentDestination,
-                onRestaurantClick = {navController.navigate("${SelectFoodDestination.route}/${it.name}")},
-                sampleSellers = sampleSellers
+                onRestaurantClick = {navController.navigate("${SelectFoodDestination.route}/${it.shopName}")},
+                sellerRepository = sellerRepository
             )
         }
         composable(route = BottomBarScreen.CustomerOrderList.route) {
@@ -96,13 +102,13 @@ fun UniCanteenNavHost(
             route = SelectRestaurantDestination.route
         ) {
             SelectRestaurantScreen(
-                sampleSellers = sampleSellers,
                 navController = navController,
                 currentDestination = currentDestination,
                 onRestaurantClick = { seller ->
                     // Navigate to food screen, passing restaurant name
-                    navController.navigate("${SelectFoodDestination.route}/${seller.name}")
-                }
+                    navController.navigate("${SelectFoodDestination.route}/${seller.shopName}")
+                },
+                sellerRepository = sellerRepository
             )
         }
         // Food Selection Screen
