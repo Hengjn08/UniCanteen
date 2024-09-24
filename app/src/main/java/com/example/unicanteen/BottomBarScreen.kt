@@ -3,6 +3,7 @@ package com.example.unicanteen
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -25,6 +26,11 @@ sealed class BottomBarScreen(
         route = "Profile",
         title = "Profile",
         icon = Icons.Filled.Person
+    )
+    object SellerReport: BottomBarScreen(
+        route = "Report",
+        title = "Report",
+        icon = Icons.Filled.MailOutline
     )
         object CustomerHome : BottomBarScreen(
         route = "Customer Home",

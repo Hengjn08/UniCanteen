@@ -1,5 +1,6 @@
 package com.example.unicanteen.database
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -104,4 +105,22 @@ interface OrderListDao {
         val month: String,
         val totalSales: Double
     )
+
+    @Query("""
+    SELECT f.type AS foodType, strftime('%Y-%m', o.createDate) AS month, SUM(o.totalPrice) AS totalQuantity
+    FROM orderList o
+    JOIN foodList f ON o.foodId = f.foodId
+    WHERE strftime('%Y-%m', o.createDate) = :month
+    AND o.sellerId = :sellerId  -- Filter by seller ID
+    GROUP BY f.type, month
+    ORDER BY month
+""")
+    fun getMonthlySalesByFoodType(month: String, sellerId: Int): LiveData<List<FoodTypeSalesData>>
+    data class FoodTypeSalesData(
+        val foodType: String,
+        val month: String,
+        val totalQuantity: Int
+    )
+
+
 }

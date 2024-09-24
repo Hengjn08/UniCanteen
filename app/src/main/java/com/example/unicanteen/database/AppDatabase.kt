@@ -25,12 +25,20 @@ abstract class AppDatabase : RoomDatabase() {
 
     // Abstract methods to access DAOs
     abstract fun userDao(): UserDao
+
+    abstract fun orderListDao(): OrderListDao
     abstract fun sellerDao(): SellerDao
+    abstract fun foodListDao(): FoodListDao
+    abstract fun orderDao(): OrderDao
+    abstract fun paymentDao(): PaymentDao
+    abstract fun paymentDetailsDao(): PaymentDetailsDao
+
 //    abstract fun foodListDao(): FoodListDao
 //    abstract fun orderDao(): OrderDao
 //    abstract fun orderListDao(): OrderListDao
 //    abstract fun paymentDao(): PaymentDao
 //    abstract fun paymentDetailsDao(): PaymentDetailsDao
+
 
     companion object {
         @Volatile

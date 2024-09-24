@@ -27,6 +27,14 @@ import com.example.unicanteen.ui.theme.UniCanteenTheme
 
 import androidx.compose.material3.Icon
 import androidx.compose.ui.res.colorResource
+import com.example.unicanteen.navigation.NavigationDestination
+
+object pickUpChoose : NavigationDestination {
+    override val route = "picKup"
+    override val title = ""
+    const val deliverMethod = "pickUp"  // Change to sellerId to avoid confusion with foodId
+    val routeWithArgs = "$route/{$deliverMethod}"
+}
 
 @Composable
 fun PickupOrDeliveryScreen(
