@@ -112,48 +112,6 @@ fun FoodList(foods: List<Food>, navController: NavController, modifier: Modifier
 @Preview(showBackground = true)
 @Composable
 fun PreviewFoodList() {
-    val sampleFoods = listOf(
-        Food(
-            name = "Malaysian Traditional Food",
-            description = "Authentic Malaysian cuisine.",
-            imageRes = R.drawable.pan_mee,
-            price = 9.9
-        ),
-        Food(
-            name = "Vegetarian Friendly",
-            description = "Delicious vegetarian dishes.",
-            imageRes = R.drawable.pan_mee,
-            price = 9.9
-        ),
-        Food(
-            name = "Nan Yang Kopitiam",
-            description = "Best coffee and snacks.",
-            imageRes = R.drawable.pan_mee,
-            price = 9.9
-        ),
-        Food(
-            name = "Nan Yang Kopitiam",
-            description = "Best coffee and snacks.",
-            imageRes = R.drawable.pan_mee,
-            price = 0.9
-        ),
-        Food(
-            name = "Nan Yang Kopitiam",
-            description = "Best coffee and snacks.",
-            imageRes = R.drawable.pan_mee,
-            price = 9.9
-        ),
-        Food(
-            name = "Nan Yang Kopitiam",
-            description = "Best coffee and snacks.",
-            imageRes = R.drawable.pan_mee,
-            price = 9.9
-        )
-    )
-    UniCanteenTheme {
-        SelectFoodScreen(sampleFoods,"restaurantName", rememberNavController())
-
-    }
 
 
 }
