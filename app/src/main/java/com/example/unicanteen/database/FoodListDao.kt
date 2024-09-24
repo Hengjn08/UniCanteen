@@ -22,11 +22,11 @@ interface FoodListDao {
 
     // Fetch a food item by foodId
     @Query("SELECT * FROM foodList WHERE foodId = :foodId")
-    fun getFoodItemById(foodId: Long): FoodList?
+    fun getFoodItemById(foodId: Int): FoodList?
 
     // Fetch all food items for a specific seller by sellerId
     @Query("SELECT * FROM foodList WHERE sellerId = :sellerId")
-    fun getFoodItemsBySellerId(sellerId: Long): List<FoodList>
+    suspend fun getFoodItemsBySellerId(sellerId: Int): List<FoodList>
 
     // Fetch all available food items (status = 'Available')
     @Query("SELECT * FROM foodList WHERE status = 'Available'")
@@ -47,4 +47,10 @@ interface FoodListDao {
     // Fetch all food items
     @Query("SELECT * FROM foodList")
     fun getAllFoodItems(): List<FoodList>
+
+    // search related food items by name based on the seller id
+    @Query("SELECT * FROM foodList WHERE sellerId = :sellerId AND foodName LIKE '%' || :query || '%'")
+    suspend fun searchFoodItemsByName(sellerId: Int, query: String): List<FoodList>
+
+
 }

@@ -10,6 +10,8 @@ interface SellerRepository {
     suspend fun deleteSellersByUserId(userId: Int)
     suspend fun getSellersByStatus(status: String): List<Seller>
     suspend fun getSellersWithHighRating(rating: Double): List<Seller>
+    suspend fun searchSellersByName(query: String): List<Seller>
+
 
 
 }
