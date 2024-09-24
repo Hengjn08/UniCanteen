@@ -51,7 +51,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.support.annotations) // Keep this version
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -64,6 +63,7 @@ dependencies {
     implementation(libs.androidx.room.common)
     implementation(libs.androidx.adapters)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.runtime.livedata)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -71,7 +71,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
+    implementation("com.github.tehras:charts:0.2.4-alpha")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0") // Check for the latest version
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0") // Check for the latest version
     kapt("androidx.room:room-compiler:2.6.1")

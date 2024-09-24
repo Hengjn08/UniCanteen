@@ -20,6 +20,10 @@ import com.example.unicanteen.HengJunEn.FoodDetailsScreen
 import com.example.unicanteen.HengJunEn.OrderListScreen
 import com.example.unicanteen.HengJunEn.SellerHomeScreen
 import com.example.unicanteen.HengJunEn.SellerProfileScreen
+import com.example.unicanteen.Pierre.PickupOrDeliveryScreen
+import com.example.unicanteen.Pierre.SaleMonthlyScreen
+import com.example.unicanteen.Pierre.pickUpChoose
+import com.example.unicanteen.Pierre.reportSaleCheck
 import com.example.unicanteen.R
 import com.example.unicanteen.SelectFoodDestination
 import com.example.unicanteen.SelectFoodScreen
@@ -40,7 +44,7 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = SelectRestaurantDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = reportSaleCheck.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
         val sampleSellers = listOf(
@@ -166,6 +170,28 @@ fun UniCanteenNavHost(
             val food = Datasource.foods.find { it.id == foodId }
             EditFoodScreen(
                 navigateBack = {navController.navigateUp()}
+            )
+        }
+
+        composable(
+            route = pickUpChoose.route,
+        ){
+            PickupOrDeliveryScreen(
+                navController = navController,
+                currentDestination = currentDestination,
+            )
+        }
+
+        composable(
+            route = reportSaleCheck.route,
+            arguments = listOf(navArgument(reportSaleCheck.chart) { type = NavType.StringType })
+        ) { backStackEntry ->
+            val chartId = backStackEntry.arguments?.getString(reportSaleCheck.chart)
+            SaleMonthlyScreen(
+                navController = navController,
+                currentDestination = navController.currentDestination,
+                month = "2024-09",  // Provide a sample month
+                sellerId = 1  // Provide a sample seller ID
             )
         }
     }
