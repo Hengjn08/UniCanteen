@@ -49,7 +49,7 @@ fun FoodDetailsScreenCustomer(
         factory = AppViewModelProvider.Factory(null, foodListRepository)
     )
     val addOnViewModel: AddOnViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(null, null, addOnRepository)
+        factory = AppViewModelProvider.Factory(repository4 = addOnRepository)
     )
 
     val foodDetails by foodDetailViewModel.foodDetails.collectAsState()
