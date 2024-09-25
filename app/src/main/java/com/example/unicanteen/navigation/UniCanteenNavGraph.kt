@@ -20,8 +20,14 @@ import com.example.unicanteen.HengJunEn.FoodDetailsScreen
 import com.example.unicanteen.HengJunEn.OrderListScreen
 import com.example.unicanteen.HengJunEn.SellerHomeScreen
 import com.example.unicanteen.HengJunEn.SellerProfileScreen
+import com.example.unicanteen.LimSiangShin.AddUserDestination
+import com.example.unicanteen.LimSiangShin.LoginDestination
+import com.example.unicanteen.LimSiangShin.LoginScreen
+import com.example.unicanteen.LimSiangShin.RegistrationScreen
 import com.example.unicanteen.Pierre.FoodSalesDetailDestination
 import com.example.unicanteen.Pierre.FoodSalesDetailScreen
+import com.example.unicanteen.Pierre.OrderListStatusDestination
+import com.example.unicanteen.Pierre.OrderListStatusScreen
 import com.example.unicanteen.Pierre.PickupOrDeliveryScreen
 import com.example.unicanteen.Pierre.SaleMonthlyScreen
 import com.example.unicanteen.Pierre.pickUpChoose
@@ -38,6 +44,7 @@ import com.example.unicanteen.database.FoodListRepositoryImpl
 import com.example.unicanteen.database.PierreAdminRepositoryImpl
 import com.example.unicanteen.database.SellerRepository
 import com.example.unicanteen.database.SellerRepositoryImpl
+import com.example.unicanteen.database.UserRepositoryImpl
 
 
 @Composable
@@ -51,7 +58,7 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = reportSaleCheck.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = OrderListStatusDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
 //        val sampleSellers = listOf(
@@ -98,6 +105,24 @@ fun UniCanteenNavHost(
         }
         composable(route = BottomBarScreen.CustomerProfile.route) {
             //CustomerProfileScreen()                                                                               //放customer的profile screen
+        }
+
+        composable(route = LoginDestination.route){
+            LoginScreen(
+                userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
+                navController = navController,
+                onSignUpTextClicked = {navController.navigate(AddUserDestination.route)},
+                onSignInClicked = {navController.navigate(BottomBarScreen.SellerHome.route) }
+            )
+        }
+
+
+        composable(route = AddUserDestination.route){
+            RegistrationScreen(
+                userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
+                navController = navController,
+                onSaveButtonClicked = {navController.navigate(LoginDestination.route)}
+            )
         }
 
         //Customer module route
@@ -212,6 +237,28 @@ fun UniCanteenNavHost(
                 sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
                 sellerId = 1,
                 month = month
+            )
+        }
+
+        // Add the composable for OrderListStatusScreen
+        composable(
+            route = OrderListStatusDestination.route, // Define the route with placeholders for orderId and userId
+            arguments = listOf(
+                navArgument("orderId") { type = NavType.IntType },   // Add orderId as an Int argument
+                navArgument("userId") { type = NavType.IntType }     // Add userId as an Int argument
+            )
+        ) { backStackEntry ->
+            // Get the orderId and userId from the backStackEntry arguments
+            val orderId = backStackEntry.arguments?.getInt("orderId") ?: 0
+            val userId = backStackEntry.arguments?.getInt("userId") ?: 0
+
+            // Call the OrderListStatusScreen with the retrieved arguments
+            OrderListStatusScreen(
+                navController = navController,
+                currentDestination = navController.currentDestination,
+                sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
+                userId = 5,  // Pass userId to the screen
+                orderId = 3 // Pass orderId to the screen
             )
         }
     }

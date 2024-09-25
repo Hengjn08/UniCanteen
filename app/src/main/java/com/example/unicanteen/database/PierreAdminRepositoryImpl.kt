@@ -10,4 +10,8 @@ class PierreAdminRepositoryImpl(private val orderListDao: OrderListDao) : Pierre
     override suspend fun getSalesByFoodType(foodType: String, sellerId: Int, month: String): LiveData<List<OrderListDao.FoodSalesData>> {
         return orderListDao.getSalesByFoodType(foodType, sellerId, month)
     }
+    override suspend fun getOrderDetailsByOrderIdAndUserId(orderId: Int, userId: Int): LiveData<List<OrderListDao.OrderDetailsData>> {
+        return orderListDao.getOrderDetailsByOrderIdAndUserId(orderId, userId)
+    }
+
 }
