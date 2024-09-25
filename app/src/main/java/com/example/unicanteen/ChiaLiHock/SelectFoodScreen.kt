@@ -28,8 +28,8 @@ import com.example.unicanteen.ui.theme.AppViewModelProvider
 object SelectFoodDestination : NavigationDestination {
     override val route = "food_select"
     override val title = ""
-    const val sellerIdArg = "sellerId" // This should refer to the seller's ID
-    val routeWithArgs = "$route/{$sellerIdArg}" // Full route with arguments
+    const val userIdArg = "userId" // This should refer to the seller's ID
+    val routeWithArgs = "$route/{$userIdArg}" // Full route with arguments
 }
 
 

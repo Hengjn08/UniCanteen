@@ -38,7 +38,7 @@ import com.example.unicanteen.ui.theme.AppViewModelProvider
 object SelectRestaurantDestination : NavigationDestination {
     override val route = "restaurant_select"
     override val title = ""
-    const val sellerIdArg = "sellerId"  // This should refer to the seller's ID
+    const val userIdArg = "userId"  // This should refer to the seller's ID
     const val restaurantNameArg = "restaurantName" // Name of the restaurant
 }
 

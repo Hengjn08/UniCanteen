@@ -13,5 +13,11 @@ class PierreAdminRepositoryImpl(private val orderListDao: OrderListDao) : Pierre
     override suspend fun getOrderDetailsByOrderIdAndUserId(orderId: Int, userId: Int): LiveData<List<OrderListDao.OrderDetailsData>> {
         return orderListDao.getOrderDetailsByOrderIdAndUserId(orderId, userId)
     }
+    override suspend fun updateOrderTableNo(userId: Int, orderId: Int, tableNo: Int) {
+        return orderListDao.updateOrderTableNo(userId, orderId, tableNo)
+    }
+    override suspend fun updateOrderType(orderId: Int, userId: Int, orderType: String) {
+        orderListDao.updateOrderType(orderId, userId, orderType)
+    }
 
 }

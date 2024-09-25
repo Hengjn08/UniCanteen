@@ -264,21 +264,6 @@ fun OrderHistoryDetail(
             }
         }
     }
-//    OutlinedTextField(
-//        value = value,
-//        onValueChange = onValueChange,
-//        label = {Text(label)},
-//        singleLine = true,
-//        placeholder = {Text(placeholder)},
-//        visualTransformation = visualTransformation,
-//        keyboardOptions = keyboardOptions,
-//        colors = TextFieldDefaults.colors(unfocusedContainerColor = color,
-//            focusedContainerColor = color,
-//            focusedLabelColor = color),
-//        shape = shape,
-//        //isError = value.isNullOrEmpty(),                          <--- need to do back
-//        modifier = modifier
-//    )
 }
 
 @Preview(showBackground = true)
