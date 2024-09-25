@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.unicanteen.ChiaLiHock.AddOnViewModel
 import com.example.unicanteen.ChiaLiHock.FoodDetailViewModel
 import com.example.unicanteen.ChiaLiHock.SelectFoodViewModel
+import com.example.unicanteen.LimSiangShin.UserViewModel
 import com.example.unicanteen.Pierre.AdminViewModel
 import com.example.unicanteen.SelectRestaurantViewModel
 import com.example.unicanteen.UniCanteenApp
@@ -14,6 +15,7 @@ import com.example.unicanteen.database.AddOnRepository
 import com.example.unicanteen.database.FoodListRepository
 import com.example.unicanteen.database.PierreAdminRepository
 import com.example.unicanteen.database.SellerRepository
+import com.example.unicanteen.database.UserRepository
 
 
 /**
@@ -27,6 +29,7 @@ object AppViewModelProvider {
         private val repository3: PierreAdminRepository? = null,
         private val repository4: AddOnRepository? = null
 
+
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(SelectRestaurantViewModel::class.java)) {
@@ -38,6 +41,8 @@ object AppViewModelProvider {
             }
             else if (modelClass.isAssignableFrom(AdminViewModel::class.java)) {
                 return repository3?.let {AdminViewModel(it)} as T // Add this line to handle AdminViewModel
+            } else if (modelClass.isAssignableFrom(UserViewModel::class.java)) {
+                return repository4?.let { UserViewModel(it) } as T // Add this line to handle AdminViewModel
             }
             else if( modelClass.isAssignableFrom(AddOnViewModel::class.java)){
                 return repository4?.let { AddOnViewModel(it) } as T
