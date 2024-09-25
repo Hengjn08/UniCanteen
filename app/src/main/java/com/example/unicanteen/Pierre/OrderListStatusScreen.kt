@@ -62,7 +62,7 @@ fun OrderListStatusScreen(
     modifier: Modifier = Modifier,
 ) {
     val viewModel: AdminViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(repository3 = sellerAdminRepository)
+        factory = AppViewModelProvider.Factory(pierreAdminRepository = sellerAdminRepository)
     )
 
     // Load the order details using the orderId and userId

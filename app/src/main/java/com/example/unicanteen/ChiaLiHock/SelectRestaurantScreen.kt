@@ -51,7 +51,7 @@ fun SelectRestaurantScreen(
 
 ) {
     val viewModel: SelectRestaurantViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(sellerRepository)
+        factory = AppViewModelProvider.Factory(sellerRepository = sellerRepository)
     )
     val sellers by viewModel.sellers.collectAsState()
 

@@ -46,10 +46,10 @@ fun FoodDetailsScreenCustomer(
     currentDestination: NavDestination?
 ) {
     val foodDetailViewModel: FoodDetailViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(null, foodListRepository)
+        factory = AppViewModelProvider.Factory(foodListRepository = foodListRepository)
     )
     val addOnViewModel: AddOnViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(repository4 = addOnRepository)
+        factory = AppViewModelProvider.Factory(addOnRepository = addOnRepository)
     )
 
     val foodDetails by foodDetailViewModel.foodDetails.collectAsState()

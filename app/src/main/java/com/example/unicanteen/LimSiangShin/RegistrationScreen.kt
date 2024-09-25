@@ -91,7 +91,7 @@ fun RegistrationScreen(
     modifier: Modifier = Modifier
 ){
     val viewModel: UserViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(null,null,null,userRepository)
+        factory = AppViewModelProvider.Factory(userRepository = userRepository)
     )
     var userName by remember { mutableStateOf(user?.userName?:"")}
     var email by remember { mutableStateOf(user?.email?:"") }
