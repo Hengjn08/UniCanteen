@@ -28,10 +28,14 @@ import com.example.unicanteen.LimSiangShin.LoginScreen
 import com.example.unicanteen.LimSiangShin.RegistrationScreen
 import com.example.unicanteen.Pierre.FoodSalesDetailDestination
 import com.example.unicanteen.Pierre.FoodSalesDetailScreen
+import com.example.unicanteen.Pierre.InputTableNoDestination
 import com.example.unicanteen.Pierre.OrderListStatusDestination
 import com.example.unicanteen.Pierre.OrderListStatusScreen
+import com.example.unicanteen.Pierre.PaymentSelectionScreen
 import com.example.unicanteen.Pierre.PickupOrDeliveryScreen
 import com.example.unicanteen.Pierre.SaleMonthlyScreen
+import com.example.unicanteen.Pierre.TableNoScreen
+import com.example.unicanteen.Pierre.choosePayment
 import com.example.unicanteen.Pierre.pickUpChoose
 import com.example.unicanteen.Pierre.reportSaleCheck
 import com.example.unicanteen.R
@@ -61,7 +65,7 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = OrderListStatusDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = pickUpChoose.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
 //        val sampleSellers = listOf(
@@ -227,6 +231,50 @@ fun UniCanteenNavHost(
             PickupOrDeliveryScreen(
                 navController = navController,
                 currentDestination = currentDestination,
+                sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
+                userId = 1,
+                orderId = 1
+            )
+        }
+
+        composable(
+            route = InputTableNoDestination.route,  // Define route with placeholders for orderId and userId
+            arguments = listOf(
+                navArgument("orderId") { type = NavType.IntType },   // Add orderId as an Int argument
+                navArgument("userId") { type = NavType.IntType }     // Add userId as an Int argument
+            )
+        ) { backStackEntry ->
+            // Retrieve the orderId and userId from the backStackEntry arguments
+            val orderId = backStackEntry.arguments?.getInt("orderId") ?: 0
+            val userId = backStackEntry.arguments?.getInt("userId") ?: 0
+
+            // Call the TableNoScreen with the retrieved arguments
+            TableNoScreen(
+                navController = navController,
+                currentDestination = navController.currentDestination,
+                sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
+                userId = 1,  // Pass the retrieved userId to the screen
+                orderId = 1  // Pass the retrieved orderId to the screen
+            )
+        }
+        composable(
+            route = choosePayment.route,  // Define route with placeholders for orderId and userId
+            arguments = listOf(
+                navArgument("orderId") { type = NavType.IntType },   // Add orderId as an Int argument
+                navArgument("userId") { type = NavType.IntType }     // Add userId as an Int argument
+            )
+        ) { backStackEntry ->
+            // Retrieve the orderId and userId from the backStackEntry arguments
+            val orderId = backStackEntry.arguments?.getInt("orderId") ?: 0
+            val userId = backStackEntry.arguments?.getInt("userId") ?: 0
+
+            // Call the TableNoScreen with the retrieved arguments
+            PaymentSelectionScreen(
+                navController = navController,
+                currentDestination = navController.currentDestination,
+                sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
+                userId = 1,  // Pass the retrieved userId to the screen
+                orderId = 1  // Pass the retrieved orderId to the screen
             )
         }
 
@@ -287,5 +335,8 @@ fun UniCanteenNavHost(
                 orderId = 3 // Pass orderId to the screen
             )
         }
+
+
+
     }
 }
