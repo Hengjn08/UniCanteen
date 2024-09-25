@@ -107,7 +107,16 @@ interface OrderListDao {
     )
 
     @Query("""
-    SELECT f.type AS foodType, strftime('%Y-%m', o.createDate) AS month, SUM(o.totalPrice) AS totalQuantity
+    WITH TotalSales AS (
+        SELECT SUM(o.totalPrice) AS totalSales
+        FROM orderList o
+        WHERE strftime('%Y-%m', o.createDate) = :month
+        AND o.sellerId = :sellerId
+    )
+    SELECT f.type AS foodType, 
+           strftime('%Y-%m', o.createDate) AS month, 
+           SUM(o.totalPrice) AS totalQuantity,
+           (SUM(o.totalPrice) * 100.0 / (SELECT totalSales FROM TotalSales)) AS percentage
     FROM orderList o
     JOIN foodList f ON o.foodId = f.foodId
     WHERE strftime('%Y-%m', o.createDate) = :month
@@ -116,10 +125,42 @@ interface OrderListDao {
     ORDER BY month
 """)
     fun getMonthlySalesByFoodType(month: String, sellerId: Int): LiveData<List<FoodTypeSalesData>>
+
     data class FoodTypeSalesData(
         val foodType: String,
         val month: String,
-        val totalQuantity: Int
+        val totalQuantity: Double,
+        val percentage: Double  // New field for percentage
+    )
+
+    @Query("""
+    WITH TotalSales AS (
+        SELECT SUM(o.totalPrice) AS totalSales
+        FROM orderList o
+        JOIN foodList f ON o.foodId = f.foodId
+        WHERE f.type = :foodType
+        AND o.sellerId = :sellerId
+        AND strftime('%Y-%m', o.createDate) = :month  -- Filter by month
+    )
+    SELECT f.foodName AS foodType,
+           strftime('%Y-%m', o.createDate) AS month, 
+           SUM(o.totalPrice) AS totalQuantity,
+           (SUM(o.totalPrice) * 100.0 / (SELECT totalSales FROM TotalSales)) AS percentage
+    FROM orderList o
+    JOIN foodList f ON o.foodId = f.foodId
+    WHERE f.type = :foodType
+    AND o.sellerId = :sellerId  -- Filter by seller ID
+    AND strftime('%Y-%m', o.createDate) = :month  -- Filter by month
+    GROUP BY f.foodName, month
+    ORDER BY month
+""")
+    fun getSalesByFoodType(foodType: String, sellerId: Int, month: String): LiveData<List<FoodSalesData>>
+
+    data class FoodSalesData(
+        val foodType: String,
+        val month: String,
+        val totalQuantity: Double,
+        val percentage: Double  // New field for percentage
     )
 
 

@@ -1,7 +1,9 @@
 package com.example.unicanteen.database
 
+import androidx.lifecycle.LiveData
 
-class SellerRepositoryImpl(private val sellerDao: SellerDao) : SellerRepository {
+
+class SellerRepositoryImpl(private val sellerDao: SellerDao, private val orderListDao: OrderListDao) : SellerRepository {
 
     override suspend fun insertSeller(seller: Seller): Long {
         return sellerDao.insertSeller(seller)
@@ -41,4 +43,5 @@ class SellerRepositoryImpl(private val sellerDao: SellerDao) : SellerRepository 
     override suspend fun searchSellersByName(query: String): List<Seller> {
         return sellerDao.searchSellersByName(query)
     }
+
 }
