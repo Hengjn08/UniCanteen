@@ -29,8 +29,6 @@ object AppViewModelProvider {
         private val pierreAdminRepository: PierreAdminRepository? = null,
         private val addOnRepository: AddOnRepository? = null,
         private val userRepository: UserRepository? = null
-
-
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(SelectRestaurantViewModel::class.java)) {
