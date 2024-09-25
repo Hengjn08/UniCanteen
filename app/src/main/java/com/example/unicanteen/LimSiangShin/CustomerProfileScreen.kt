@@ -32,7 +32,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.unicanteen.R
-import com.example.unicanteen.data.Datasource
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -46,11 +45,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import com.example.unicanteen.BottomNavigationBar
 import com.example.unicanteen.model.User
 import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.UniCanteenTheme
@@ -69,7 +63,6 @@ fun CustomerProfileScreen(
     onSaveButtonClicked: () -> Unit = {},
 //    navController: NavController,
 //    currentDestination: NavDestination?,
-    navigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ){
     var userName by remember { mutableStateOf(user?.userName?:"")}
@@ -444,6 +437,6 @@ fun CustomerOptionButton(
 fun CustomerProfilePreview() {
     UniCanteenTheme {
         //val food = Datasource.foods.get(0)
-        CustomerProfileScreen(navigateBack = {})
+        CustomerProfileScreen()
     }
 }

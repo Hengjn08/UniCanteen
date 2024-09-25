@@ -26,12 +26,20 @@ import com.example.unicanteen.UniCanteenTopBar
 import com.example.unicanteen.ui.theme.UniCanteenTheme
 
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Snackbar
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.colorResource
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.unicanteen.database.PierreAdminRepository
 import com.example.unicanteen.navigation.NavigationDestination
+import com.example.unicanteen.ui.theme.AppViewModelProvider
 
 object pickUpChoose : NavigationDestination {
     override val route = "picKup"
-    override val title = ""
+    override val title = "picKup"
     const val deliverMethod = "pickUp"  // Change to sellerId to avoid confusion with foodId
     val routeWithArgs = "$route/{$deliverMethod}"
 }
@@ -39,14 +47,34 @@ object pickUpChoose : NavigationDestination {
 @Composable
 fun PickupOrDeliveryScreen(
     navController: NavController,
-    currentDestination: NavDestination?
+    currentDestination: NavDestination?,
+    sellerAdminRepository: PierreAdminRepository,
+    userId: Int,
+    orderId: Int,
+    modifier: Modifier = Modifier
+
 ) {
+    // Initialize the ViewModel
+    val viewModel: AdminViewModel = viewModel(
+        factory = AppViewModelProvider.Factory(pierreAdminRepository = sellerAdminRepository)
+    )
+    // State for showing messages after update
+    var updateMessage by remember { mutableStateOf<String?>(null) }
     Column(
         modifier = Modifier
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         UniCanteenTopBar()
+        // Display message if there is one
+        updateMessage?.let {
+            Snackbar(
+                modifier = Modifier.padding(8.dp),
+                content = {
+                    Text(text = it, color = if (it.startsWith("Order")) Color.Green else Color.Red)
+                }
+            )
+        }
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
@@ -55,13 +83,37 @@ fun PickupOrDeliveryScreen(
             OptionButton(
                 text = "Pickup",
                 icon = R.drawable.pickup,
-                onClick = { navController.navigate("pickup") }
+                onClick = {
+                    viewModel.updateOrderType(orderId, userId, "Pickup") { success ->
+                        updateMessage = if (success) {
+                            "Order type updated to Pickup"
+                        } else {
+                            "Failed to update order type"
+                        }
+                        // Optionally navigate back or perform other actions
+                        if (success) {
+                            navController.navigate("choosePayment/$userId/$orderId")
+                        }
+                    }
+                }
             )
 
             OptionButton(
                 text = "Delivery",
                 icon = R.drawable.delivery,
-                onClick = { navController.navigate("delivery") }
+                onClick = {
+                    viewModel.updateOrderType(orderId, userId, "Delivery") { success ->
+                        updateMessage = if (success) {
+                            "Order type updated to Delivery"
+                        } else {
+                            "Failed to update order type"
+                        }
+                        // Handle navigation based on success
+                        if (success) {
+                           navController.navigate("input_table/$userId/$orderId")
+                        }
+                    }
+                }
             )
 
             BackButton(
@@ -129,10 +181,4 @@ fun OptionButton(text: String, icon: Int, onClick: () -> Unit) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun ScreenPreview() {
-    UniCanteenTheme {
-        PickupOrDeliveryScreen(navController = NavController(LocalContext.current), currentDestination = null)
-    }
-}
+

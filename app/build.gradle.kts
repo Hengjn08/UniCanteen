@@ -87,4 +87,8 @@ dependencies {
 
     //Image upload
     implementation ("io.coil-kt:coil-compose:2.4.0")
+
+    //extended icon
+    implementation(platform("androidx.compose:compose-bom:2023.06.01"))
+    implementation("androidx.compose.material:material-icons-extended")
 }
