@@ -3,7 +3,7 @@ package com.example.unicanteen.database
 import androidx.lifecycle.LiveData
 
 
-class SellerRepositoryImpl(private val sellerDao: SellerDao, private val orderListDao: OrderListDao) : SellerRepository {
+class SellerRepositoryImpl(private val sellerDao: SellerDao) : SellerRepository {
 
     override suspend fun insertSeller(seller: Seller): Long {
         return sellerDao.insertSeller(seller)
