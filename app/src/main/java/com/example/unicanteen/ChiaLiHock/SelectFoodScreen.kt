@@ -14,19 +14,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import coil.compose.rememberAsyncImagePainter
 import com.example.unicanteen.ChiaLiHock.SelectFoodViewModel
-import com.example.unicanteen.SelectRestaurantDestination.restaurantNameArg
 import com.example.unicanteen.database.FoodList
 import com.example.unicanteen.database.FoodListRepository
-import com.example.unicanteen.database.SellerRepository
 import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 
@@ -37,7 +32,7 @@ object SelectFoodDestination : NavigationDestination {
     val routeWithArgs = "$route/{$sellerIdArg}" // Full route with arguments
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun SelectFoodScreen(
     foodListRepository: FoodListRepository,
@@ -47,7 +42,7 @@ fun SelectFoodScreen(
 ) {
     // Create the ViewModel
     val viewModel: SelectFoodViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(null,foodListRepository)
+        factory = AppViewModelProvider.Factory(repository2=foodListRepository)
     )
 
     // Observe the food list from the ViewModel
@@ -60,7 +55,7 @@ fun SelectFoodScreen(
         }
     }
 
-    Column {
+    Column() {
         // Top Bar with title
         UniCanteenTopBar(title = "Food Menu")
 
@@ -142,8 +137,10 @@ fun FoodList(foods: List<FoodList>, navController: NavController, modifier: Modi
     ) {
         items(foods) { food ->
             FoodCard(food = food, onClick = {
-                navController.navigate("foodDetail/${food.foodName}") // Navigate to food detail
+                navController.navigate("${FoodDetailCustomerDestination.route}/${food.foodId}") // Navigate to food detail with foodId
+
             })
         }
     }
 }
+

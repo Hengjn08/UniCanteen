@@ -1,5 +1,6 @@
 package com.example.unicanteen
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -91,7 +92,7 @@ fun BottomNavigationBar(
 
     Surface(
         color = colorResource(R.color.orange_500),
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
     ) {
 
         NavigationBar(
@@ -106,7 +107,8 @@ fun BottomNavigationBar(
                         Icon(
                             imageVector = item.icon,
                             contentDescription = null,
-                            modifier = Modifier.size(32.dp) // Adjust icon size
+                            modifier = Modifier.size(32.dp), // Adjust icon size
+
                         )
                     },
                     label = {

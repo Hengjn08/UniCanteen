@@ -10,8 +10,8 @@ class FoodListRepositoryImpl( private val foodListDao: FoodListDao): FoodListRep
     override suspend fun deleteFood(foodList: FoodList) {
         foodListDao.deleteFoodItem(foodList)
     }
-    override suspend fun getFoodById(foodIdList: FoodList): FoodList {
-        return foodListDao.getFoodItemById(foodIdList.foodId) ?: throw Exception("Food item not found")
+    override suspend fun getFoodById(foodIdList: Int): FoodList {
+        return foodListDao.getFoodItemById(foodIdList) ?: throw Exception("Food item not found")
     }
     override suspend fun getFoodsBySellerId(sellerId: Int): List<FoodList> {
         return foodListDao.getFoodItemsBySellerId(sellerId)
