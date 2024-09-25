@@ -129,19 +129,19 @@ fun CustomerProfileScreen(
             },
 //            onCancelButtonClicked = onCancelButtonClicked,
             onSaveButtonClicked = {
-                val updatedUser = user?.copy(
-                    userName = userName,
-                    email = email,
-                    pw = pw,
-                ) ?: User(
-                    id = Datasource.foods.size + 1,
-                    userName = userName,
-                    email = email,
-                    pw = pw,
-                )
-                if (user == null) {
-                    Datasource.users.add(updatedUser)
-                }
+//                val updatedUser = user?.copy(
+//                    userName = userName,
+//                    email = email,
+//                    pw = pw,
+//                ) ?: User(
+//                    id = Datasource.foods.size + 1,
+//                    userName = userName,
+//                    email = email,
+//                    pw = pw,
+//                )
+//                if (user == null) {
+//                    Datasource.users.add(updatedUser)
+//                }
                 onSaveButtonClicked()
                 Toast.makeText(context, "Register successfully!", Toast.LENGTH_SHORT).show()
             }
