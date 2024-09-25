@@ -28,7 +28,7 @@ interface UserDao {
         fun getUserByEmail(email: String): User?
 
         @Query("SELECT * FROM user WHERE userName = :userName AND password = :password")
-        fun getUserForLogin(userName: String, password: String): User?
+        suspend fun getUserForLogin(userName: String, password: String): User?
 
         @Query("SELECT COUNT(*) FROM user WHERE email = :email")
         suspend fun isEmailTaken(email: String): Int
@@ -38,6 +38,9 @@ interface UserDao {
 
         @Query("DELETE FROM user")
         suspend fun deleteAllUsers()
+
+        @Query("SELECT sellerId FROM sellers WHERE userId = :userId")
+        suspend fun checkUserIsSeller(userId: Int): Int?
 }
 
 

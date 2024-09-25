@@ -1,16 +1,10 @@
 package com.example.unicanteen.LimSiangShin
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.net.Uri
+import android.content.Context
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,12 +15,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,55 +26,43 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import com.example.unicanteen.R
-import com.example.unicanteen.data.Datasource
-import com.example.unicanteen.model.Food
-import coil.compose.AsyncImage
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navOptions
 import com.example.unicanteen.BottomBarScreen
-import com.example.unicanteen.UniCanteenTopBar
+import com.example.unicanteen.SelectFoodDestination
+import com.example.unicanteen.SelectRestaurantDestination
+import com.example.unicanteen.database.SellerRepository
 import com.example.unicanteen.database.UserRepository
-import com.example.unicanteen.model.User
 import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 import com.example.unicanteen.ui.theme.UniCanteenTheme
-import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 
 object LoginDestination : NavigationDestination {
     override val route = "Login"
@@ -94,18 +73,32 @@ object LoginDestination : NavigationDestination {
 
 @Composable
 fun LoginScreen(
-//    onCancelButtonClicked: () -> Unit = {},
     onSignUpTextClicked:()->Unit = {},
-    onSignInClicked: () -> Unit = {},
     navController: NavController,
     userRepository: UserRepository,
+    sellerRepository: SellerRepository,
     modifier: Modifier = Modifier
 ){
-    val viewModel: UserViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(userRepository = userRepository)
+    val userViewModel: UserViewModel = viewModel(
+        factory = AppViewModelProvider.Factory(userRepository = userRepository, sellerRepository = sellerRepository)
     )
+
+//    val sellerViewModel: SellerRepository = viewModel(
+//        factory = AppViewModelProvider.Factory(sellerRepository = sellerRepository)
+//    )
+    val  loginResult by userViewModel.loginResult.collectAsState()
+    val  currentUserId by userViewModel.currentUserId.collectAsState()
+    val  isSeller by userViewModel.isSeller.collectAsState()
+
+    // Track each login attempt to handle error message properly
+    var loginAttempt by remember { mutableStateOf(0) }
+
+    // Variable to track whether we should show the error message
+    var showLoginFailed by remember { mutableStateOf(false) }
+
     var userName by remember { mutableStateOf("")}
     var pw by remember { mutableStateOf("") }
+    var userId by remember { mutableStateOf(Int)}
 
     val context = LocalContext.current
 
@@ -118,17 +111,43 @@ fun LoginScreen(
             modifier = modifier.padding(innerPadding),
             userName = userName,
             pw = pw,
-//            imageUri = imageUri,
             onUserNameChange = { userName = it },
             onPwChange = { pw = it },
             onSignUpTextClicked = {onSignUpTextClicked() },
-//            onCancelButtonClicked = onCancelButtonClicked,
             onSignInClicked = {
-                viewModel.Login(userName,pw)
-                onSignInClicked()
-                Toast.makeText(context, "Register successfully!", Toast.LENGTH_SHORT).show()
+                userViewModel.login(userName,pw)
+                loginAttempt++
             }
         )
+
+        // LaunchedEffect to handle login result and display the right message after each attempt
+        LaunchedEffect(loginResult, loginAttempt) {
+            if (loginResult) {
+                // If login is successful, show welcome message and navigate to the next screen
+                Toast.makeText(context, "Welcome Back, $userName!", Toast.LENGTH_SHORT).show()
+                if (isSeller) {
+                    navController.navigate(BottomBarScreen.SellerHome.route)
+                } else {
+                    navController.navigate(SelectRestaurantDestination.route)
+                }
+            } else if (loginAttempt > 0) {
+                // Only show error message if login attempt has been made
+                showLoginFailed = true
+                Toast.makeText(context, "Login failed. Please try again.", Toast.LENGTH_SHORT).show()
+                // Clear the username and password for another try
+                userName = ""
+                pw = ""
+            }
+        }
+
+        // Optionally, reset showLoginFailed after some delay to allow multiple error messages
+        if (showLoginFailed) {
+            LaunchedEffect(Unit) {
+                kotlinx.coroutines.delay(2000) // Example delay before hiding the error message
+                showLoginFailed = false
+            }
+        }
+
     }
 
 
@@ -142,10 +161,7 @@ fun LoginBody(
     userName: String,
     pw: String,
     onUserNameChange: (String) -> Unit,
-//    onEmailChange: (String) -> Unit,
     onPwChange: (String) -> Unit,
-//    onConfirmPwChange: (String) -> Unit,
-//    onImageClick: () -> Unit,
     onSignUpTextClicked: () -> Unit,
     onSignInClicked: () -> Unit
 ) {
@@ -189,8 +205,10 @@ fun LoginBody(
                     Text(text = "Sign Up",
                         color = colorResource(R.color.white))
                 }
+
                 Spacer(modifier = Modifier.height(16.dp))
-                EditTextField(
+
+                LoginUserName(
                     value = userName,
                     onValueChange = onUserNameChange,
                     label = "UserName",
@@ -222,19 +240,18 @@ fun LoginBody(
                         .fillMaxWidth()
                 )
 
-                Button(onClick = { onSignInClicked() },
+                LoginButton(
+                    onSignInClicked = { onSignInClicked() },
                     modifier = Modifier
                         .padding(top = 20.dp)
                         .fillMaxSize()
                         .height(60.dp),
                     shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(Color.LightGray),
-                    border = BorderStroke(1.dp,Color.Black)
-                ) {
-                    Text(text = "Sign In",
-                        color = Color.Black,
-                        fontSize = 20.sp)
-                }
+                    color = ButtonDefaults.buttonColors(Color.LightGray),
+                    borderStroke = BorderStroke(1.dp,Color.Black),
+                    value = "Sign In",
+                    textColor = Color.Black
+                )
 
                 Row (modifier = Modifier) {
                     TextButton(onClick = {onSignUpTextClicked()}) {
@@ -297,51 +314,6 @@ fun LoginBody(
     }
 }
 
-//fun launchImagePicker(launcher: ActivityResultLauncher<String>) {
-//    launcher.launch("image/*")
-//}
-
-//@Composable
-//fun ImageUploadBox(
-//    imageUri: Uri?,
-//    onImageClick: () -> Unit
-//) {
-//    Box(
-//        modifier = Modifier
-//            .height(200.dp)
-//            .fillMaxWidth()
-//            .background(Color.LightGray, RoundedCornerShape(8.dp))
-//            .clickable(onClick = onImageClick),
-//        contentAlignment = Alignment.Center
-//    ) {
-//        if (imageUri != null) {
-//            AsyncImage(
-//                model = imageUri,
-//                contentDescription = "Selected food image",
-//                modifier = Modifier
-//                    .fillMaxSize()
-//                    .clip(RoundedCornerShape(8.dp)),
-//                contentScale = ContentScale.Crop
-//            )
-//        } else {
-//            Column(
-//                horizontalAlignment = Alignment.CenterHorizontally
-//            ) {
-//                Icon(
-//                    painter = painterResource(R.drawable.baseline_upload_24),
-//                    contentDescription = "Upload icon",
-//                    modifier = Modifier.size(50.dp),
-//                    tint = Color.Gray
-//                )
-//                Spacer(modifier = Modifier.height(8.dp))
-//                Text(
-//                    text = "Upload picture",
-//                    color = Color.Gray
-//                )
-//            }
-//        }
-//    }
-//}
 @Composable
 fun LoginUserName(
     value: String,
@@ -364,38 +336,31 @@ fun LoginUserName(
             focusedContainerColor = color,
             focusedLabelColor = color),
         shape = shape,
-        //isError = value.isNullOrEmpty(),                          <--- need to do back
         modifier = modifier
     )
 }
 
 @Composable
-fun LoginPassword(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    placeholder: String,
-    keyboardOptions: KeyboardOptions,
-    color: Color,
-    shape: RoundedCornerShape,
-    visualTransformation: PasswordVisualTransformation,
-    modifier: Modifier = Modifier
+fun LoginButton(
+onSignInClicked: () -> Unit,
+modifier: Modifier = Modifier,
+shape: RoundedCornerShape,
+color: ButtonColors,
+borderStroke: BorderStroke,
+value: String,
+textColor: Color
 ){
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = {Text(label)},
-        singleLine = true,
-        placeholder = {Text(placeholder)},
-        visualTransformation = visualTransformation,
-        keyboardOptions = keyboardOptions,
-        colors = TextFieldDefaults.colors(unfocusedContainerColor = color,
-            focusedContainerColor = color,
-            focusedLabelColor = color),
+    Button(
+        onClick = { onSignInClicked() },
+        modifier = modifier,
         shape = shape,
-        //isError = value.isNullOrEmpty(),                          <--- need to do back
-        modifier = modifier
-    )
+        colors = color,
+        border = borderStroke
+    ) {
+        Text(text = value,
+            color = textColor,
+            fontSize = 20.sp)
+    }
 }
 
 @Preview(showBackground = true)

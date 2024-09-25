@@ -28,7 +28,7 @@ class UserRepositoryImpl(private val userDao: UserDao): UserRepository {
         return userDao.getUserByEmail(email)
     }
 
-    override fun getUserForLogin(userName: String, password: String): User? {
+    override suspend fun getUserForLogin(userName: String, password: String): User? {
         return userDao.getUserForLogin(userName,password)
     }
 
@@ -42,5 +42,9 @@ class UserRepositoryImpl(private val userDao: UserDao): UserRepository {
 
     override suspend fun deleteAllUsers() {
         return userDao.deleteAllUsers()
+    }
+
+    override suspend fun checkUserIsSeller(userId: Int): Int? {
+        return userDao.checkUserIsSeller(userId)
     }
 }

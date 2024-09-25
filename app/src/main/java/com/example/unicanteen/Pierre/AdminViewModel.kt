@@ -1,6 +1,10 @@
 package com.example.unicanteen.Pierre
 
 import android.app.Application
+import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -26,6 +30,8 @@ class AdminViewModel(
     val orderDetailsData: StateFlow<List<OrderListDao.OrderDetailsData>> = _orderDetailsData  // Expose order details data
 
     private var sellerId: Int? = null  // Store sellerId when restaurant is selected
+    var updateStatusMessage by mutableStateOf<String?>(null)
+        private set
 
 
     // Function to load monthly sales data
@@ -55,6 +61,45 @@ class AdminViewModel(
             // Fetch order details using the repository method
             pierreAdminRepository.getOrderDetailsByOrderIdAndUserId(orderId, userId).observeForever { orderDetails ->
                 _orderDetailsData.value = orderDetails  // Update the order details data
+            }
+        }
+    }
+
+    // Modify the updateTableNo function to take a callback
+//    fun updateTableNo(userId: Int, orderId: Int, tableNo: Int, onResult: (Boolean) -> Unit) {
+//        viewModelScope.launch {
+//            try {
+//                // Call the repository method to update table number
+//                pierreAdminRepository.updateOrderTableNo(1, 1, 3)
+//                // Success logic
+//            } catch (e: Exception) {
+//                // Handle the exception, possibly logging it
+//            }
+//        }
+//    }
+    // Function to update the table number in the database
+    fun updateTableNo(userId: Int, orderId: Int, tableNo: Int) {
+        viewModelScope.launch {
+            try {
+                // Call the repository method to update the table number
+                pierreAdminRepository.updateOrderTableNo(userId, orderId, tableNo)
+                updateStatusMessage = "Table number updated successfully" // Success logic
+            } catch (e: Exception) {
+                updateStatusMessage = "Failed to update table number" // Handle the exception
+                // Optionally log the error here
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun updateOrderType(orderId: Int, userId: Int, orderType: String, onComplete: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                pierreAdminRepository.updateOrderType(orderId, userId, orderType)
+                onComplete(true)  // Notify success
+            } catch (e: Exception) {
+                e.printStackTrace()
+                onComplete(false)  // Notify failure
             }
         }
     }

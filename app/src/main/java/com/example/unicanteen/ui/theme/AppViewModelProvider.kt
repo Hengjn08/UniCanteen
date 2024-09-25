@@ -29,8 +29,6 @@ object AppViewModelProvider {
         private val pierreAdminRepository: PierreAdminRepository? = null,
         private val addOnRepository: AddOnRepository? = null,
         private val userRepository: UserRepository? = null
-
-
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(SelectRestaurantViewModel::class.java)) {
@@ -43,7 +41,10 @@ object AppViewModelProvider {
             else if (modelClass.isAssignableFrom(AdminViewModel::class.java)) {
                 return pierreAdminRepository?.let {AdminViewModel(it)} as T // Add this line to handle AdminViewModel
             } else if (modelClass.isAssignableFrom(UserViewModel::class.java)) {
-                return userRepository?.let { UserViewModel(it) } as T // Add this line to handle AdminViewModel
+                val userRepo = userRepository ?: throw IllegalArgumentException("UserRepository is required")
+                val sellerRepo = sellerRepository ?: throw IllegalArgumentException("SellerRepository is required")
+
+                return UserViewModel(userRepo, sellerRepo) as T// Add this line to handle AdminViewModel
             }
             else if( modelClass.isAssignableFrom(AddOnViewModel::class.java)){
                 return addOnRepository?.let { AddOnViewModel(it) } as T

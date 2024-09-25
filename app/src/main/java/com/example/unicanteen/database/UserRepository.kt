@@ -7,8 +7,9 @@ interface UserRepository {
     suspend fun deleteUser(user: User)
     fun getUserById(userId: Int): User?
     fun getUserByEmail(email: String): User?
-    fun getUserForLogin(userName: String, password: String): User?
+    suspend fun getUserForLogin(userName: String, password: String): User?
     suspend fun isEmailTaken(email: String): Int
     suspend fun isUserNameTaken(userName: String): Int
     suspend fun deleteAllUsers()
+    suspend fun checkUserIsSeller(userId: Int): Int?
 }
