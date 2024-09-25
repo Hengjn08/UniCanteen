@@ -24,7 +24,6 @@ object AppViewModelProvider {
         private val repository: SellerRepository? = null,
         private val repository2: FoodListRepository? = null,
         private val repository3: PierreAdminRepository? = null,
-        private val repository5: UserRepository? = null
 
 
     ) : ViewModelProvider.Factory {
