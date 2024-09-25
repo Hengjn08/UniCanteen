@@ -102,7 +102,7 @@ fun LoginScreen(
     modifier: Modifier = Modifier
 ){
     val viewModel: UserViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(null,null,null,userRepository)
+        factory = AppViewModelProvider.Factory(userRepository = userRepository)
     )
     var userName by remember { mutableStateOf("")}
     var pw by remember { mutableStateOf("") }

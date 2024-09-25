@@ -62,7 +62,7 @@ fun FoodSalesDetailScreen(
 ) {
     // Initialize the ViewModel
     val viewModel: AdminViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(repository3 = sellerAdminRepository)
+        factory = AppViewModelProvider.Factory(pierreAdminRepository = sellerAdminRepository)
     )
 
     // Set the initial month to "2024-09" if no month is provided
