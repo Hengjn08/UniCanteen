@@ -11,6 +11,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.example.unicanteen.BottomBarScreen
+import com.example.unicanteen.FoodDetailCustomerDestination
+import com.example.unicanteen.FoodDetailsScreenCustomer
 import com.example.unicanteen.HengJunEn.AddFoodDestination
 import com.example.unicanteen.HengJunEn.AddFoodScreen
 import com.example.unicanteen.HengJunEn.EditFoodDestination
@@ -20,6 +22,10 @@ import com.example.unicanteen.HengJunEn.FoodDetailsScreen
 import com.example.unicanteen.HengJunEn.OrderListScreen
 import com.example.unicanteen.HengJunEn.SellerHomeScreen
 import com.example.unicanteen.HengJunEn.SellerProfileScreen
+import com.example.unicanteen.LimSiangShin.AddUserDestination
+import com.example.unicanteen.LimSiangShin.LoginDestination
+import com.example.unicanteen.LimSiangShin.LoginScreen
+import com.example.unicanteen.LimSiangShin.RegistrationScreen
 import com.example.unicanteen.Pierre.FoodSalesDetailDestination
 import com.example.unicanteen.Pierre.FoodSalesDetailScreen
 import com.example.unicanteen.Pierre.OrderListStatusDestination
@@ -35,11 +41,13 @@ import com.example.unicanteen.SelectRestaurantDestination
 import com.example.unicanteen.SelectRestaurantScreen
 import com.example.unicanteen.SelectRestaurantViewModel
 import com.example.unicanteen.data.Datasource
+import com.example.unicanteen.database.AddOnRepositoryImpl
 import com.example.unicanteen.database.AppDatabase
 import com.example.unicanteen.database.FoodListRepositoryImpl
 import com.example.unicanteen.database.PierreAdminRepositoryImpl
 import com.example.unicanteen.database.SellerRepository
 import com.example.unicanteen.database.SellerRepositoryImpl
+import com.example.unicanteen.database.UserRepositoryImpl
 
 
 @Composable
@@ -102,6 +110,24 @@ fun UniCanteenNavHost(
             //CustomerProfileScreen()                                                                               //放customer的profile screen
         }
 
+        composable(route = LoginDestination.route){
+            LoginScreen(
+                userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
+                navController = navController,
+                onSignUpTextClicked = {navController.navigate(AddUserDestination.route)},
+                onSignInClicked = {navController.navigate(BottomBarScreen.SellerHome.route) }
+            )
+        }
+
+
+        composable(route = AddUserDestination.route){
+            RegistrationScreen(
+                userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
+                navController = navController,
+                onSaveButtonClicked = {navController.navigate(LoginDestination.route)}
+            )
+        }
+
         //Customer module route
         //select restaurant screen
 //        composable(route = SelectRestaurantDestination.route) {
@@ -116,6 +142,15 @@ fun UniCanteenNavHost(
 //            )
 //        }
 
+        //select restaurant screen
+        composable(route = SelectRestaurantDestination.route) {
+            SelectRestaurantScreen(
+                navController = navController,
+                currentDestination = navController.currentDestination,
+                sellerRepository = SellerRepositoryImpl(AppDatabase.getDatabase(navController.context).sellerDao())
+            )
+        }
+
         composable(
             route = SelectFoodDestination.routeWithArgs,
             arguments = listOf(navArgument(SelectFoodDestination.sellerIdArg) { type = NavType.IntType }) // Ensure argument type matches
@@ -129,6 +164,20 @@ fun UniCanteenNavHost(
                 navController = navController,
                 currentDestination = navController.currentDestination
             )
+        }
+        composable(
+            route = FoodDetailCustomerDestination.routeWithArgs,
+            arguments = listOf(navArgument(FoodDetailCustomerDestination.foodIdArg) { type = NavType.IntType })
+        ) { backStackEntry ->
+            val foodId = backStackEntry.arguments?.getInt(FoodDetailCustomerDestination.foodIdArg)
+            FoodDetailsScreenCustomer(
+                foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
+                addOnRepository = AddOnRepositoryImpl(AppDatabase.getDatabase(navController.context).addOnDao()),
+                foodId = foodId ?: return@composable,
+                navController = navController,
+                currentDestination = navController.currentDestination
+            )
+
         }
 
 
