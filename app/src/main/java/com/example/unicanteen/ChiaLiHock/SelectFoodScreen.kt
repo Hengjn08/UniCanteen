@@ -42,7 +42,7 @@ fun SelectFoodScreen(
 ) {
     // Create the ViewModel
     val viewModel: SelectFoodViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(repository2=foodListRepository)
+        factory = AppViewModelProvider.Factory(foodListRepository=foodListRepository)
     )
 
     // Observe the food list from the ViewModel

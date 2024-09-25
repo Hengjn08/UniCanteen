@@ -22,6 +22,10 @@ import com.example.unicanteen.HengJunEn.FoodDetailsScreen
 import com.example.unicanteen.HengJunEn.OrderListScreen
 import com.example.unicanteen.HengJunEn.SellerHomeScreen
 import com.example.unicanteen.HengJunEn.SellerProfileScreen
+import com.example.unicanteen.LimSiangShin.AddUserDestination
+import com.example.unicanteen.LimSiangShin.LoginDestination
+import com.example.unicanteen.LimSiangShin.LoginScreen
+import com.example.unicanteen.LimSiangShin.RegistrationScreen
 import com.example.unicanteen.Pierre.FoodSalesDetailDestination
 import com.example.unicanteen.Pierre.FoodSalesDetailScreen
 
@@ -42,6 +46,7 @@ import com.example.unicanteen.database.FoodListRepositoryImpl
 import com.example.unicanteen.database.PierreAdminRepositoryImpl
 import com.example.unicanteen.database.SellerRepository
 import com.example.unicanteen.database.SellerRepositoryImpl
+import com.example.unicanteen.database.UserRepositoryImpl
 
 
 @Composable
@@ -102,6 +107,24 @@ fun UniCanteenNavHost(
         }
         composable(route = BottomBarScreen.CustomerProfile.route) {
             //CustomerProfileScreen()                                                                               //放customer的profile screen
+        }
+
+        composable(route = LoginDestination.route){
+            LoginScreen(
+                userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
+                navController = navController,
+                onSignUpTextClicked = {navController.navigate(AddUserDestination.route)},
+                onSignInClicked = {navController.navigate(BottomBarScreen.SellerHome.route) }
+            )
+        }
+
+
+        composable(route = AddUserDestination.route){
+            RegistrationScreen(
+                userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
+                navController = navController,
+                onSaveButtonClicked = {navController.navigate(LoginDestination.route)}
+            )
         }
 
         //Customer module route

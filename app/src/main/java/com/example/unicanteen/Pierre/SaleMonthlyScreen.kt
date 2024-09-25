@@ -60,7 +60,7 @@ fun SaleMonthlyScreen(
     modifier: Modifier = Modifier,
 ) {
     val viewModel: AdminViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(repository3 = sellerAdminRepository)
+        factory = AppViewModelProvider.Factory(pierreAdminRepository = sellerAdminRepository)
     )
     val month = "2024-09"  // Set your initial month here or make it dynamic
 
