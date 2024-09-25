@@ -1,5 +1,8 @@
 package com.example.unicanteen.database
 
+import androidx.lifecycle.LiveData
+import com.example.unicanteen.database.OrderListDao.FoodTypeSalesData
+
 interface SellerRepository {
     suspend fun insertSeller(seller: Seller): Long
     suspend fun updateSeller(seller: Seller)
@@ -11,7 +14,4 @@ interface SellerRepository {
     suspend fun getSellersByStatus(status: String): List<Seller>
     suspend fun getSellersWithHighRating(rating: Double): List<Seller>
     suspend fun searchSellersByName(query: String): List<Seller>
-
-
-
 }
