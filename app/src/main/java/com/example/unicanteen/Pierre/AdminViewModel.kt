@@ -36,6 +36,8 @@ class AdminViewModel(
     val paymentOrderDetailsData: StateFlow<List<OrderListDao.paymentOrderDetailsData>> = _paymentOrderDetailsData
     private val _tableNo = MutableStateFlow<Int>(0)  // State flow for table number
     val tableNo: StateFlow<Int> = _tableNo
+    private val _OrderId = MutableStateFlow<Int>(0)  // State flow for table number
+    val OrderId: StateFlow<Int> = _OrderId
     private var sellerId: Int? = null  // Store sellerId when restaurant is selected
     var updateStatusMessage by mutableStateOf<String?>(null)
         private set
@@ -107,6 +109,18 @@ class AdminViewModel(
                 _tableNo.value = tableNumber  // Update the state with the fetched table number
             } catch (e: Exception) {
                 _tableNo.value = 0  // Reset table number on error
+                e.printStackTrace()
+            }
+        }
+    }
+    // New function to get the orderId
+    fun getOrderId(userId: Int) {
+        viewModelScope.launch {
+            try {
+                val OrderId = pierreAdminRepository.getLatestOrderId(userId)
+                _OrderId.value = OrderId  // Update the state with the fetched table number
+            } catch (e: Exception) {
+                _OrderId.value = 0  // Reset table number on error
                 e.printStackTrace()
             }
         }

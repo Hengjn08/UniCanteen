@@ -294,6 +294,8 @@ interface OrderListDao {
         updateOrderStatusToPreparing(userId, orderId)
         updateOrderListStatusToPreparing(userId, orderId)
     }
+    @Query("SELECT orderId FROM orders WHERE userId = :userId ORDER BY orderId DESC LIMIT 1")
+    suspend fun getLatestOrderId(userId: Int): Int
 
 
 }

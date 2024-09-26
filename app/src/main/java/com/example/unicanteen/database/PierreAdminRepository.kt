@@ -12,4 +12,5 @@ interface PierreAdminRepository {
     suspend fun createPayment(orderId: Int, userId: Int, payType: String)
     suspend fun getLatestPaymentDetails(userId: Int, orderId: Int): LiveData<List<OrderListDao.PaymentDetails>> // New method for latest payment details
     suspend fun getPaymentOrderDetails(userId: Int, orderId: Int): LiveData<List<OrderListDao.paymentOrderDetailsData>>
+    suspend fun getLatestOrderId(userId: Int): Int
 }
