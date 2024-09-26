@@ -38,7 +38,7 @@ import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 
 object pickUpChoose : NavigationDestination {
-    override val route = "pickUp"
+    override val route = "pickUp/{userId}/{orderId}"
     override val title = "pickUp"
     fun routeWithArgs(userId: Int, orderId: Int): String {
         return "pickUp/$userId/$orderId"

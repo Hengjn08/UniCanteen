@@ -1,13 +1,16 @@
 package com.example.unicanteen.database
 
+import android.icu.text.SimpleDateFormat
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import java.util.Date
+import java.util.Locale
 
 @Dao
 interface OrderListDao {
@@ -255,6 +258,44 @@ interface OrderListDao {
 
     @Query("SELECT orderId FROM orderList WHERE userId = :userId AND status = :status LIMIT 1")
     suspend fun getExistingOrderIdForUser(userId: Int, status: String): Int?
+    @Query("SELECT ROUND(totalPrice, 2) FROM orders WHERE orderId = :orderId LIMIT 1")
+    suspend fun getOrderTotalAmount(orderId: Int): Double
+
+    @Query("SELECT tableNo FROM orders WHERE userId = :userId AND orderId = :orderId")
+    suspend fun getTableNoByUserAndOrder(userId: Int, orderId: Int): Int
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPayment(payment: Payment)
+
+    // Update the status in both the orders and orderList tables for the specified userId and orderId
+    @Query("UPDATE orders SET status = 'Preparing' WHERE userId = :userId AND orderId = :orderId")
+    suspend fun updateOrderStatusToPreparing(userId: Int, orderId: Int)
+
+    @Query("UPDATE orderList SET status = 'Preparing' WHERE userId = :userId AND orderId = :orderId")
+    suspend fun updateOrderListStatusToPreparing(userId: Int, orderId: Int)
+
+    @Transaction
+    suspend fun createPaymentRecord(orderId: Int, userId: Int, payType: String) {
+        // Step 1: Get the total price from the `orders` table
+        val totalAmt = getOrderTotalAmount(orderId)
+
+        // Step 2: Create the payment entity with required details
+        val newPayment = Payment(
+            orderId = orderId,
+            userId = userId,
+            totalAmt = totalAmt,
+            createDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date()), // Current date-time
+            status = "Completed", // Set status as Completed
+            payType = payType
+        )
+
+        // Step 3: Insert the new payment record
+        insertPayment(newPayment)
+        updateOrderStatusToPreparing(userId, orderId)
+        updateOrderListStatusToPreparing(userId, orderId)
+    }
+    @Query("SELECT orderId FROM orders WHERE userId = :userId ORDER BY orderId DESC LIMIT 1")
+    suspend fun getLatestOrderId(userId: Int): Int
 
 
 }

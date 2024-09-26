@@ -36,4 +36,8 @@ class PierreAdminRepositoryImpl(private val orderListDao: OrderListDao) : Pierre
         return orderListDao.getPaymentOrderDetails(userId, orderId)
     }
 
+    override suspend fun getLatestOrderId(userId: Int): Int {
+        return orderListDao.getLatestOrderId(userId)
+    }
+
 }

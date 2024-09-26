@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.unicanteen.Pierre.OrderListStatusDestination
 
 sealed class BottomBarScreen(
     val route: String,
@@ -34,12 +35,12 @@ sealed class BottomBarScreen(
     )
 
         object CustomerHome : BottomBarScreen(
-        route = "Customer Home",
+        route = SelectRestaurantDestination.route,
         title = "Home",
         icon = Icons.Filled.Home
     )
     object CustomerOrderList : BottomBarScreen(
-        route = "Customer Order List",
+        route = OrderListStatusDestination.route,
         title = "Order List",
         icon = Icons.AutoMirrored.Filled.List
     )

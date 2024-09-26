@@ -96,7 +96,7 @@ fun CartScreen(
         }
 
         CheckOutButton(totalPrice = totalPrice, orderId = cartItems.firstOrNull()?.orderId ?: 0,
-            cartViewModel=cartViewModel,navController = navController)
+            cartViewModel=cartViewModel,navController = navController,userId)
     }
 }
 
@@ -302,10 +302,11 @@ fun checkAbility(totalPrice: Double):Boolean{
     return totalPrice > 0
 }
 @Composable
-fun CheckOutButton(totalPrice: Double,orderId:Int, cartViewModel: CartViewModel,navController: NavController) {
+fun CheckOutButton(totalPrice: Double,orderId:Int, cartViewModel: CartViewModel,navController: NavController, userId: Int) {
     Button(
         onClick = {
             cartViewModel.updateOrderPrice(orderId,totalPrice)
+            navController.navigate("pickUp/$userId/$orderId")
         },
         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF6AD44)),
         modifier = Modifier
