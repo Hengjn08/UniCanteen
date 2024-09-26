@@ -49,6 +49,8 @@ import com.example.unicanteen.data.Datasource
 import com.example.unicanteen.database.AddOnRepositoryImpl
 import com.example.unicanteen.database.AppDatabase
 import com.example.unicanteen.database.FoodListRepositoryImpl
+import com.example.unicanteen.database.OrderListRepositoryImpl
+import com.example.unicanteen.database.OrderRepositoryImpl
 import com.example.unicanteen.database.PierreAdminRepositoryImpl
 import com.example.unicanteen.database.SellerRepository
 import com.example.unicanteen.database.SellerRepositoryImpl
@@ -167,17 +169,18 @@ fun UniCanteenNavHost(
         composable(
             route = FoodDetailCustomerDestination.routeWithArgs,
             arguments = listOf(navArgument(FoodDetailCustomerDestination.foodIdArg) { type = NavType.IntType },
-                navArgument(LoginDestination.userIdArg){
-                    type= NavType.IntType
-                })
+               )
         ) { backStackEntry ->
             val foodId = backStackEntry.arguments?.getInt(FoodDetailCustomerDestination.foodIdArg)
-            val userId = backStackEntry.arguments?.getInt(LoginDestination.userIdArg)
+            val userId = 1//backStackEntry.arguments?.getInt(LoginDestination.userIdArg)
             FoodDetailsScreenCustomer(
                 foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
                 addOnRepository = AddOnRepositoryImpl(AppDatabase.getDatabase(navController.context).addOnDao()),
+                orderRepository = OrderRepositoryImpl(AppDatabase.getDatabase(navController.context).orderDao()),
+                orderListRepository = OrderListRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
                 foodId = foodId ?: return@composable,
                 userId = userId ?: return@composable,
+                navController = navController
 
             )
 

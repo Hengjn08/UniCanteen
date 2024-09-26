@@ -23,11 +23,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.unicanteen.navigation.NavigationDestination
 
 
 import com.example.unicanteen.ui.theme.AppShapes
 import com.example.unicanteen.ui.theme.UniCanteenTheme
 
+object CartDestination : NavigationDestination {
+    override val route = "Cart"
+    override val title = "Cart"
+    const val orderIdArg = "foodId"
+    val routeWithArgs = "$route/{$orderIdArg}"
+}
 @Composable
 fun CartScreen(cartItems: MutableList<CartItem>) {
     var totalPrice by remember { mutableStateOf(0.0) }
