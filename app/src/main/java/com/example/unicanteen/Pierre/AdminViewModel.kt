@@ -28,7 +28,14 @@ class AdminViewModel(
     // New state flow for order details
     private val _orderDetailsData = MutableStateFlow<List<OrderListDao.OrderDetailsData>>(emptyList())
     val orderDetailsData: StateFlow<List<OrderListDao.OrderDetailsData>> = _orderDetailsData  // Expose order details data
-
+    //payment receipt
+    private val _paymentReceiptData = MutableStateFlow<List<OrderListDao.PaymentDetails>>(emptyList())
+    val paymentReceiptData: StateFlow<List<OrderListDao.PaymentDetails>> = _paymentReceiptData
+    //paymentorderlist receipt
+    private val _paymentOrderDetailsData = MutableStateFlow<List<OrderListDao.paymentOrderDetailsData>>(emptyList())
+    val paymentOrderDetailsData: StateFlow<List<OrderListDao.paymentOrderDetailsData>> = _paymentOrderDetailsData
+    private val _tableNo = MutableStateFlow<Int>(0)  // State flow for table number
+    val tableNo: StateFlow<Int> = _tableNo
     private var sellerId: Int? = null  // Store sellerId when restaurant is selected
     var updateStatusMessage by mutableStateOf<String?>(null)
         private set
@@ -65,25 +72,13 @@ class AdminViewModel(
         }
     }
 
-    // Modify the updateTableNo function to take a callback
-//    fun updateTableNo(userId: Int, orderId: Int, tableNo: Int, onResult: (Boolean) -> Unit) {
-//        viewModelScope.launch {
-//            try {
-//                // Call the repository method to update table number
-//                pierreAdminRepository.updateOrderTableNo(1, 1, 3)
-//                // Success logic
-//            } catch (e: Exception) {
-//                // Handle the exception, possibly logging it
-//            }
-//        }
-//    }
     // Function to update the table number in the database
     fun updateTableNo(userId: Int, orderId: Int, tableNo: Int) {
         viewModelScope.launch {
             try {
+                updateStatusMessage = "Table number updated successfully" // Success logic
                 // Call the repository method to update the table number
                 pierreAdminRepository.updateOrderTableNo(userId, orderId, tableNo)
-                updateStatusMessage = "Table number updated successfully" // Success logic
             } catch (e: Exception) {
                 updateStatusMessage = "Failed to update table number" // Handle the exception
                 // Optionally log the error here
@@ -100,6 +95,51 @@ class AdminViewModel(
             } catch (e: Exception) {
                 e.printStackTrace()
                 onComplete(false)  // Notify failure
+            }
+        }
+    }
+
+    // New function to get the table number based on userId and orderId
+    fun getTableNo(userId: Int, orderId: Int) {
+        viewModelScope.launch {
+            try {
+                val tableNumber = pierreAdminRepository.getTableNoByUserAndOrder(userId, orderId)
+                _tableNo.value = tableNumber  // Update the state with the fetched table number
+            } catch (e: Exception) {
+                _tableNo.value = 0  // Reset table number on error
+                e.printStackTrace()
+            }
+        }
+    }
+    // New function to create a payment record
+    fun createPayment(orderId: Int, userId: Int, payType: String) {
+        viewModelScope.launch {
+            try {
+                updateStatusMessage = "Success Payment" // Success message
+                // Call the repository method to create a payment
+                pierreAdminRepository.createPayment(orderId, userId, payType)
+            } catch (e: Exception) {
+                updateStatusMessage = "Failed to create payment" // Error message
+                e.printStackTrace() // Log the exception
+            }
+        }
+    }
+    // New function to load order details by orderId and userId
+    fun loadPaymentRecipt(orderId: Int, userId: Int) {
+        viewModelScope.launch {
+            // Fetch order details using the repository method
+            pierreAdminRepository.getLatestPaymentDetails(userId , orderId).observeForever { receiptDetail ->
+                _paymentReceiptData.value = receiptDetail  // Update the order details data
+            }
+        }
+    }
+
+    // New function to load order details by orderId and userId
+    fun loadOrderListPaymentRecipt(orderId: Int, userId: Int) {
+        viewModelScope.launch {
+            // Fetch order details using the repository method
+            pierreAdminRepository.getPaymentOrderDetails(userId , orderId).observeForever { receiptDetail ->
+                _paymentOrderDetailsData.value = receiptDetail  // Update the order details data
             }
         }
     }

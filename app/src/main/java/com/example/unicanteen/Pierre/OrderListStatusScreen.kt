@@ -44,11 +44,11 @@ import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 
 object OrderListStatusDestination : NavigationDestination {
-    override val route = "Order_List_Status"
+    override val route = "Order_List_Status/{userId}/{orderId}"
     override val title = "Order_List_Status"
     // Create a function to generate the route with arguments
-    fun routeWithArgs(foodType: String, month: String): String {
-        return "food_sales_detail/$foodType/$month"
+    fun routeWithArgs(userId: Int, orderId: Int): String {
+        return "food_sales_detail/$userId/$orderId"
     }
 }
 
@@ -68,8 +68,11 @@ fun OrderListStatusScreen(
     // Load the order details using the orderId and userId
     LaunchedEffect(orderId, userId) {
         viewModel.loadOrderDetails(orderId, userId)
+        viewModel.getTableNo(userId, orderId)
     }
 
+// Collect the table number state from the ViewModel
+    val tableNo by viewModel.tableNo.collectAsState()
     // Collect StateFlow for monthly sales data
     val orderListData by viewModel.orderDetailsData.collectAsState()
 
@@ -82,7 +85,7 @@ fun OrderListStatusScreen(
             BottomNavigationBar(
                 navController = navController,
                 currentDestination = currentDestination,
-                isSeller = true
+                isSeller = false
             )
         },
         content = { paddingValues ->
@@ -117,7 +120,10 @@ fun OrderListStatusScreen(
                             .align(Alignment.CenterHorizontally)
                     ) {
                         Text(
-                            text = "Order Type: $orderType",
+                            text = if(orderType == "Delivery"){"Order Type: $orderType, Table No: $tableNo "}
+                            else {
+                                "Order Type: $orderType"
+                            },
                             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
                             color = Color.Black  // Set text color
                         )

@@ -59,15 +59,12 @@ fun PaymentSelectionScreen(
 ){
     // State for showing messages after payment selection
     var updateMessage by remember { mutableStateOf<String?>(null) }
-
+// Initialize the ViewModel
+    val viewModel: AdminViewModel = viewModel(
+        factory = AppViewModelProvider.Factory(pierreAdminRepository = sellerAdminRepository)
+    )
     Scaffold(
-        bottomBar = {
-            BottomNavigationBar(
-                navController = navController,
-                currentDestination = currentDestination,  // Handle destination as needed
-                isSeller = true
-            )
-        }
+
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -82,7 +79,7 @@ fun PaymentSelectionScreen(
                 Snackbar(
                     modifier = Modifier.padding(8.dp),
                     content = {
-                        Text(text = it, color = if (it.startsWith("Updated")) Color.Green else Color.Red)
+                        Text(text = it, color = if (it.startsWith("Success")) Color.Green else Color.Red)
                     }
                 )
             }
@@ -104,7 +101,9 @@ fun PaymentSelectionScreen(
                     icon = R.drawable.touch_ngo_icon, // Replace with your actual icon resource
                     onClick = {
                         // Handle the payment via Touch Ngo
-                        updateMessage = "Selected payment method: Pay by Touch Ngo"
+                        updateMessage = "Success payment method: Pay by Touch Ngo"
+                        viewModel.createPayment(orderId = orderId, userId = userId, payType = "TnGo")
+                        navController.navigate("payment_receipt/$userId/$orderId")
                     }
                 )
 
@@ -113,7 +112,9 @@ fun PaymentSelectionScreen(
                     icon = R.drawable.counter_icon, // Replace with your actual icon resource
                     onClick = {
                         // Handle the payment at counter
-                        updateMessage = "Selected payment method: Pay at Counter"
+                        updateMessage = "Success payment method: Pay at Counter"
+                        viewModel.createPayment(orderId = orderId, userId = userId, payType = "Pay at Counter")
+                        navController.navigate("payment_receipt/$userId/$orderId")
                     }
                 )
 

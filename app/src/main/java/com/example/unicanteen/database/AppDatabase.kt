@@ -45,7 +45,7 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        // Migration strategy from version 1 to 2
+//        // Migration strategy from version 1 to 2
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 // Perform necessary changes in the database schema.
@@ -58,13 +58,15 @@ abstract class AppDatabase : RoomDatabase() {
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
-                    context.applicationContext,
+                    context,
                     AppDatabase::class.java,
-                    "app_database"
+                    "testP1_database"
                 )
                     .createFromAsset("Database/uniDatabase.db") // Load from assets
+
                     .addMigrations(MIGRATION_1_2) // Add migration to handle schema changes
-                    .fallbackToDestructiveMigration() // Use destructive migration during development
+                //    .fallbackToDestructiveMigration() // Use destructive migration during development
+
                     .build()
 
                 INSTANCE = instance
