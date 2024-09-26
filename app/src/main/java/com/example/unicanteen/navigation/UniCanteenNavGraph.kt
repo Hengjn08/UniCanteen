@@ -20,6 +20,7 @@ import com.example.unicanteen.HengJunEn.EditFoodScreen
 import com.example.unicanteen.HengJunEn.FoodDetailsDestination
 import com.example.unicanteen.HengJunEn.FoodDetailsScreen
 import com.example.unicanteen.HengJunEn.OrderListScreen
+import com.example.unicanteen.HengJunEn.SellerHomeDestination.sellerIdArg
 import com.example.unicanteen.HengJunEn.SellerHomeScreen
 import com.example.unicanteen.HengJunEn.SellerProfileScreen
 import com.example.unicanteen.LimSiangShin.AddUserDestination
@@ -81,13 +82,19 @@ fun UniCanteenNavHost(
 //            )
 //        )
 
-        composable(route = BottomBarScreen.SellerHome.route) {
+        composable(
+            route = BottomBarScreen.SellerHome.route,
+            arguments = listOf(navArgument(sellerIdArg) { type = NavType.IntType })
+        ) {
             SellerHomeScreen(
                 navController = navController,
                 currentDestination = currentDestination,
-                onFoodClick = { navController.navigate("${FoodDetailsDestination.route}/${it}") }
+                onFoodClick = { navController.navigate("${FoodDetailsDestination.route}/${it}") },
+                sellerId = 1,
+                foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao())
             )
         }
+
         composable(route = BottomBarScreen.SellerOrderList.route) {
             OrderListScreen(navController = navController, currentDestination = currentDestination)
         }
@@ -194,6 +201,7 @@ fun UniCanteenNavHost(
             AddFoodScreen(
                 onSaveButtonClicked = {navController.navigate(BottomBarScreen.SellerHome.route)},
                 onCancelButtonClicked = {navController.navigate(BottomBarScreen.SellerHome.route)},
+                //foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
                 navigateBack = {navController.navigateUp()},
             )
         }
@@ -205,10 +213,11 @@ fun UniCanteenNavHost(
                 type = NavType.IntType
             })
         ) { backStackEntry ->
-            val foodId = backStackEntry.arguments?.getInt("foodId")
-            val food = Datasource.foods.find { it.id == foodId }
+            val foodId = backStackEntry.arguments?.getInt(FoodDetailsDestination.foodIdArg)
+            //val food = Datasource.foods.find { it.id == foodId }
             FoodDetailsScreen(
-                food = food,
+                foodId = foodId ?: return@composable,
+                foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
                 onEditClick = {navController.navigate(EditFoodDestination.route)},
                 navigateBack = {navController.navigateUp()},
             )
@@ -224,6 +233,7 @@ fun UniCanteenNavHost(
                 navigateBack = {navController.navigateUp()}
             )
         }
+
 
         composable(
             route = pickUpChoose.route,
