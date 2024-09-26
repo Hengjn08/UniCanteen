@@ -267,6 +267,13 @@ interface OrderListDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPayment(payment: Payment)
 
+    // Update the status in both the orders and orderList tables for the specified userId and orderId
+    @Query("UPDATE orders SET status = 'Preparing' WHERE userId = :userId AND orderId = :orderId")
+    suspend fun updateOrderStatusToPreparing(userId: Int, orderId: Int)
+
+    @Query("UPDATE orderList SET status = 'Preparing' WHERE userId = :userId AND orderId = :orderId")
+    suspend fun updateOrderListStatusToPreparing(userId: Int, orderId: Int)
+
     @Transaction
     suspend fun createPaymentRecord(orderId: Int, userId: Int, payType: String) {
         // Step 1: Get the total price from the `orders` table
@@ -284,6 +291,8 @@ interface OrderListDao {
 
         // Step 3: Insert the new payment record
         insertPayment(newPayment)
+        updateOrderStatusToPreparing(userId, orderId)
+        updateOrderListStatusToPreparing(userId, orderId)
     }
 
 
