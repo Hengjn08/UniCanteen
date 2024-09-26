@@ -36,6 +36,9 @@ interface OrderListDao {
     @Query("SELECT * FROM orderList WHERE userId = :userId")
     fun getOrderListByUserId(userId: Int): List<OrderList> // Use Long if it matches your schema
 
+    @Query("SELECT * FROM orderList WHERE sellerId = :sellerId")
+    fun getOrderListBySellerId(sellerId: Int): List<OrderList>
+
     // Fetch all order list items
     @Query("SELECT * FROM orderList")
     fun getAllOrderListItems(): List<OrderList>

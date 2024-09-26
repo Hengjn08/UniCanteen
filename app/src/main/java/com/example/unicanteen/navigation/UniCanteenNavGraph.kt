@@ -66,7 +66,7 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = pickUpChoose.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = BottomBarScreen.SellerOrderList.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
 //        val sampleSellers = listOf(
@@ -98,7 +98,7 @@ fun UniCanteenNavHost(
         composable(route = BottomBarScreen.SellerOrderList.route) {
             OrderListScreen(navController = navController, currentDestination = currentDestination)
         }
-        composable(route = BottomBarScreen.SellerOrderList.route) {
+        composable(route = BottomBarScreen.SellerProfile.route) {
             SellerProfileScreen()
         }
 
