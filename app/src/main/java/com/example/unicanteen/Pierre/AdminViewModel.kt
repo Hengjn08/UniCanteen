@@ -28,7 +28,12 @@ class AdminViewModel(
     // New state flow for order details
     private val _orderDetailsData = MutableStateFlow<List<OrderListDao.OrderDetailsData>>(emptyList())
     val orderDetailsData: StateFlow<List<OrderListDao.OrderDetailsData>> = _orderDetailsData  // Expose order details data
-
+    //payment receipt
+    private val _paymentReceiptData = MutableStateFlow<List<OrderListDao.PaymentDetails>>(emptyList())
+    val paymentReceiptData: StateFlow<List<OrderListDao.PaymentDetails>> = _paymentReceiptData
+    //paymentorderlist receipt
+    private val _paymentOrderDetailsData = MutableStateFlow<List<OrderListDao.paymentOrderDetailsData>>(emptyList())
+    val paymentOrderDetailsData: StateFlow<List<OrderListDao.paymentOrderDetailsData>> = _paymentOrderDetailsData
     private val _tableNo = MutableStateFlow<Int>(0)  // State flow for table number
     val tableNo: StateFlow<Int> = _tableNo
     private var sellerId: Int? = null  // Store sellerId when restaurant is selected
@@ -116,6 +121,25 @@ class AdminViewModel(
             } catch (e: Exception) {
                 updateStatusMessage = "Failed to create payment" // Error message
                 e.printStackTrace() // Log the exception
+            }
+        }
+    }
+    // New function to load order details by orderId and userId
+    fun loadPaymentRecipt(orderId: Int, userId: Int) {
+        viewModelScope.launch {
+            // Fetch order details using the repository method
+            pierreAdminRepository.getLatestPaymentDetails(userId , orderId).observeForever { receiptDetail ->
+                _paymentReceiptData.value = receiptDetail  // Update the order details data
+            }
+        }
+    }
+
+    // New function to load order details by orderId and userId
+    fun loadOrderListPaymentRecipt(orderId: Int, userId: Int) {
+        viewModelScope.launch {
+            // Fetch order details using the repository method
+            pierreAdminRepository.getPaymentOrderDetails(userId , orderId).observeForever { receiptDetail ->
+                _paymentOrderDetailsData.value = receiptDetail  // Update the order details data
             }
         }
     }

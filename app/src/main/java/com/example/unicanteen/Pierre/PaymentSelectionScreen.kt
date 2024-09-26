@@ -103,7 +103,7 @@ fun PaymentSelectionScreen(
                         // Handle the payment via Touch Ngo
                         updateMessage = "Success payment method: Pay by Touch Ngo"
                         viewModel.createPayment(orderId = orderId, userId = userId, payType = "TnGo")
-                        navController.navigate("Order_List_Status/$userId/$orderId")
+                        navController.navigate("payment_receipt/$userId/$orderId")
                     }
                 )
 
@@ -114,7 +114,7 @@ fun PaymentSelectionScreen(
                         // Handle the payment at counter
                         updateMessage = "Success payment method: Pay at Counter"
                         viewModel.createPayment(orderId = orderId, userId = userId, payType = "Pay at Counter")
-                        navController.navigate("Order_List_Status/$userId/$orderId")
+                        navController.navigate("payment_receipt/$userId/$orderId")
                     }
                 )
 

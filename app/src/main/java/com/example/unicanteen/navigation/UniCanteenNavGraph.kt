@@ -36,6 +36,8 @@ import com.example.unicanteen.Pierre.PickupOrDeliveryScreen
 import com.example.unicanteen.Pierre.SaleMonthlyScreen
 import com.example.unicanteen.Pierre.TableNoScreen
 import com.example.unicanteen.Pierre.choosePayment
+import com.example.unicanteen.Pierre.paymentReceiptDestination
+import com.example.unicanteen.Pierre.paymentReceiptScreen
 import com.example.unicanteen.Pierre.pickUpChoose
 import com.example.unicanteen.Pierre.reportSaleCheck
 import com.example.unicanteen.R
@@ -232,8 +234,8 @@ fun UniCanteenNavHost(
                 navController = navController,
                 currentDestination = currentDestination,
                 sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
-                userId = 2,
-                orderId = 2
+                userId = 3,
+                orderId = 3
             )
         }
 
@@ -270,6 +272,26 @@ fun UniCanteenNavHost(
 
             // Call the TableNoScreen with the retrieved arguments
             PaymentSelectionScreen(
+                navController = navController,
+                currentDestination = navController.currentDestination,
+                sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
+                userId = userId,  // Pass the retrieved userId to the screen
+                orderId = orderId  // Pass the retrieved orderId to the screen
+            )
+        }
+        composable(
+            route = paymentReceiptDestination.route,  // Define route with placeholders for orderId and userId
+            arguments = listOf(
+                navArgument("orderId") { type = NavType.IntType },   // Add orderId as an Int argument
+                navArgument("userId") { type = NavType.IntType }     // Add userId as an Int argument
+            )
+        ) { backStackEntry ->
+            // Retrieve the orderId and userId from the backStackEntry arguments
+            val orderId = backStackEntry.arguments?.getInt("orderId") ?: 0
+            val userId = backStackEntry.arguments?.getInt("userId") ?: 0
+
+            // Call the TableNoScreen with the retrieved arguments
+            paymentReceiptScreen(
                 navController = navController,
                 currentDestination = navController.currentDestination,
                 sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),

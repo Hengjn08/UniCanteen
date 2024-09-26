@@ -27,5 +27,13 @@ class PierreAdminRepositoryImpl(private val orderListDao: OrderListDao) : Pierre
     override suspend fun createPayment(orderId: Int, userId: Int, payType: String) {
         orderListDao.createPaymentRecord(orderId, userId, payType)
     }
+    // Implement the new method for getting the latest payment details
+    override suspend fun getLatestPaymentDetails(userId: Int, orderId: Int): LiveData<List<OrderListDao.PaymentDetails>> {
+        return orderListDao.getLatestPaymentDetails(userId, orderId)
+    }
+    // Implement the new method for getting the latest payment details
+    override suspend fun getPaymentOrderDetails(userId: Int, orderId: Int): LiveData<List<OrderListDao.paymentOrderDetailsData>> {
+        return orderListDao.getPaymentOrderDetails(userId, orderId)
+    }
 
 }
