@@ -11,7 +11,15 @@ import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import com.example.unicanteen.BottomNavigationBar
 import com.example.unicanteen.UniCanteenTopBar
+import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.UniCanteenTheme
+
+//object SellerOrderListDestination : NavigationDestination {
+//    override val route = "seller_order_list"
+//    override val title = "Order List"
+//    //const val foodIdArg = "foodId"
+//    //val routeWithArgs = "$route/{$foodIdArg}"
+//}
 
 @Composable
 fun OrderListScreen(
@@ -32,16 +40,15 @@ fun OrderListScreen(
                 isSeller = true
             )
         }
-    ) {
-            innerPadding ->
-        testing1(
+    ) { innerPadding ->
+        OrderListBody(
             modifier = Modifier.padding(innerPadding)
         )
     }
 }
 
 @Composable
-fun testing1(
+fun OrderListBody(
     modifier: Modifier = Modifier
 ){
     Column(modifier = modifier) {

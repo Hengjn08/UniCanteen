@@ -20,6 +20,7 @@ import com.example.unicanteen.HengJunEn.EditFoodScreen
 import com.example.unicanteen.HengJunEn.FoodDetailsDestination
 import com.example.unicanteen.HengJunEn.FoodDetailsScreen
 import com.example.unicanteen.HengJunEn.OrderListScreen
+import com.example.unicanteen.HengJunEn.SellerHomeDestination.sellerIdArg
 import com.example.unicanteen.HengJunEn.SellerHomeScreen
 import com.example.unicanteen.HengJunEn.SellerProfileScreen
 import com.example.unicanteen.LimSiangShin.AddUserDestination
@@ -28,9 +29,14 @@ import com.example.unicanteen.LimSiangShin.LoginScreen
 import com.example.unicanteen.LimSiangShin.RegistrationScreen
 import com.example.unicanteen.Pierre.FoodSalesDetailDestination
 import com.example.unicanteen.Pierre.FoodSalesDetailScreen
-
+import com.example.unicanteen.Pierre.InputTableNoDestination
+import com.example.unicanteen.Pierre.OrderListStatusDestination
+import com.example.unicanteen.Pierre.OrderListStatusScreen
+import com.example.unicanteen.Pierre.PaymentSelectionScreen
 import com.example.unicanteen.Pierre.PickupOrDeliveryScreen
 import com.example.unicanteen.Pierre.SaleMonthlyScreen
+import com.example.unicanteen.Pierre.TableNoScreen
+import com.example.unicanteen.Pierre.choosePayment
 import com.example.unicanteen.Pierre.pickUpChoose
 import com.example.unicanteen.Pierre.reportSaleCheck
 import com.example.unicanteen.R
@@ -60,7 +66,7 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = SelectRestaurantDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = pickUpChoose.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
 //        val sampleSellers = listOf(
@@ -76,13 +82,19 @@ fun UniCanteenNavHost(
 //            )
 //        )
 
-        composable(route = BottomBarScreen.SellerHome.route) {
+        composable(
+            route = BottomBarScreen.SellerHome.route,
+            arguments = listOf(navArgument(sellerIdArg) { type = NavType.IntType })
+        ) {
             SellerHomeScreen(
                 navController = navController,
                 currentDestination = currentDestination,
-                onFoodClick = { navController.navigate("${FoodDetailsDestination.route}/${it}") }
+                onFoodClick = { navController.navigate("${FoodDetailsDestination.route}/${it}") },
+                sellerId = 1,
+                foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao())
             )
         }
+
         composable(route = BottomBarScreen.SellerOrderList.route) {
             OrderListScreen(navController = navController, currentDestination = currentDestination)
         }
@@ -189,6 +201,7 @@ fun UniCanteenNavHost(
             AddFoodScreen(
                 onSaveButtonClicked = {navController.navigate(BottomBarScreen.SellerHome.route)},
                 onCancelButtonClicked = {navController.navigate(BottomBarScreen.SellerHome.route)},
+                //foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
                 navigateBack = {navController.navigateUp()},
             )
         }
@@ -200,10 +213,11 @@ fun UniCanteenNavHost(
                 type = NavType.IntType
             })
         ) { backStackEntry ->
-            val foodId = backStackEntry.arguments?.getInt("foodId")
-            val food = Datasource.foods.find { it.id == foodId }
+            val foodId = backStackEntry.arguments?.getInt(FoodDetailsDestination.foodIdArg)
+            //val food = Datasource.foods.find { it.id == foodId }
             FoodDetailsScreen(
-                food = food,
+                foodId = foodId ?: return@composable,
+                foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
                 onEditClick = {navController.navigate(EditFoodDestination.route)},
                 navigateBack = {navController.navigateUp()},
             )
@@ -220,12 +234,57 @@ fun UniCanteenNavHost(
             )
         }
 
+
         composable(
             route = pickUpChoose.route,
         ){
             PickupOrDeliveryScreen(
                 navController = navController,
                 currentDestination = currentDestination,
+                sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
+                userId = 1,
+                orderId = 1
+            )
+        }
+
+        composable(
+            route = InputTableNoDestination.route,  // Define route with placeholders for orderId and userId
+            arguments = listOf(
+                navArgument("orderId") { type = NavType.IntType },   // Add orderId as an Int argument
+                navArgument("userId") { type = NavType.IntType }     // Add userId as an Int argument
+            )
+        ) { backStackEntry ->
+            // Retrieve the orderId and userId from the backStackEntry arguments
+            val orderId = backStackEntry.arguments?.getInt("orderId") ?: 0
+            val userId = backStackEntry.arguments?.getInt("userId") ?: 0
+
+            // Call the TableNoScreen with the retrieved arguments
+            TableNoScreen(
+                navController = navController,
+                currentDestination = navController.currentDestination,
+                sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
+                userId = 1,  // Pass the retrieved userId to the screen
+                orderId = 1  // Pass the retrieved orderId to the screen
+            )
+        }
+        composable(
+            route = choosePayment.route,  // Define route with placeholders for orderId and userId
+            arguments = listOf(
+                navArgument("orderId") { type = NavType.IntType },   // Add orderId as an Int argument
+                navArgument("userId") { type = NavType.IntType }     // Add userId as an Int argument
+            )
+        ) { backStackEntry ->
+            // Retrieve the orderId and userId from the backStackEntry arguments
+            val orderId = backStackEntry.arguments?.getInt("orderId") ?: 0
+            val userId = backStackEntry.arguments?.getInt("userId") ?: 0
+
+            // Call the TableNoScreen with the retrieved arguments
+            PaymentSelectionScreen(
+                navController = navController,
+                currentDestination = navController.currentDestination,
+                sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
+                userId = 1,  // Pass the retrieved userId to the screen
+                orderId = 1  // Pass the retrieved orderId to the screen
             )
         }
 
@@ -266,25 +325,28 @@ fun UniCanteenNavHost(
         }
 
         // Add the composable for OrderListStatusScreen
-//        composable(
-//            route = OrderListStatusDestination.route, // Define the route with placeholders for orderId and userId
-//            arguments = listOf(
-//                navArgument("orderId") { type = NavType.IntType },   // Add orderId as an Int argument
-//                navArgument("userId") { type = NavType.IntType }     // Add userId as an Int argument
-//            )
-//        ) { backStackEntry ->
-//            // Get the orderId and userId from the backStackEntry arguments
-//            val orderId = backStackEntry.arguments?.getInt("orderId") ?: 0
-//            val userId = backStackEntry.arguments?.getInt("userId") ?: 0
-//
-//            // Call the OrderListStatusScreen with the retrieved arguments
-//            OrderListStatusScreen(
-//                navController = navController,
-//                currentDestination = navController.currentDestination,
-//                sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
-//                userId = 5,  // Pass userId to the screen
-//                orderId = 3 // Pass orderId to the screen
-//            )
-//        }
+        composable(
+            route = OrderListStatusDestination.route, // Define the route with placeholders for orderId and userId
+            arguments = listOf(
+                navArgument("orderId") { type = NavType.IntType },   // Add orderId as an Int argument
+                navArgument("userId") { type = NavType.IntType }     // Add userId as an Int argument
+            )
+        ) { backStackEntry ->
+            // Get the orderId and userId from the backStackEntry arguments
+            val orderId = backStackEntry.arguments?.getInt("orderId") ?: 0
+            val userId = backStackEntry.arguments?.getInt("userId") ?: 0
+
+            // Call the OrderListStatusScreen with the retrieved arguments
+            OrderListStatusScreen(
+                navController = navController,
+                currentDestination = navController.currentDestination,
+                sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
+                userId = 5,  // Pass userId to the screen
+                orderId = 3 // Pass orderId to the screen
+            )
+        }
+
+
+
     }
 }
