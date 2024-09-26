@@ -90,7 +90,6 @@ fun TableNoScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         UniCanteenTopBar()
-        Spacer(modifier = Modifier.height(55.dp))
         // Show a message on top for success or failure
         updateMessage?.let {
             Snackbar(
@@ -140,7 +139,7 @@ fun TableNoScreen(
             onClick = {
                 if (tableNoInput.isNotEmpty()) {
                     // Call ViewModel to update table number
-                    viewModel.updateTableNo(userId, orderId, tableNoInput.toInt())
+//                    viewModel.updateTableNo(userId, orderId, tableNoInput.toInt())
                         updateMessage = viewModel.updateStatusMessage
                         // Optionally navigate back if the update was successful
                         if (updateMessage == "Table number updated successfully") {
@@ -153,7 +152,7 @@ fun TableNoScreen(
             }
         )
 
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(70.dp))
 
         // Back Arrow Button
         IconButton(onClick = { navController.popBackStack() }) {
@@ -173,11 +172,20 @@ fun ConfirmButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Track the click state to update the color
+    var isClicked by remember { mutableStateOf(false) }
+
+    // Define button colors based on click state
+    val buttonColor = if (isClicked) Color(0xFF388E3C) else Color(0xFF4CAF50) // Change to a darker green when clicked
+
     Button(
-        onClick = onClick,
+        onClick = {
+            isClicked = true  // Change state when clicked
+            onClick()  // Execute the onClick action
+        },
         shape = RoundedCornerShape(8.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)), // Green color
-        modifier = modifier.fillMaxWidth(0.6f).shadow(elevation = 4.dp), // Width can be adjusted as needed
+        colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
+        modifier = modifier.fillMaxWidth(0.6f) // Adjust width as needed
     ) {
         Text("Confirm", color = Color.White, fontSize = 18.sp)
     }

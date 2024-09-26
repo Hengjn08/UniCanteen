@@ -68,16 +68,17 @@ class AdminViewModel(
     }
 
     // Function to update the table number in the database
-    fun updateTableNo(userId: Int, orderId: Int, tableNo: Int) {
+    fun updateTableNo(userId: Int, orderId: Int, tableNo: Int, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
                 // Call the repository method to update the table number
                 pierreAdminRepository.updateOrderTableNo(userId, orderId, tableNo)
-                updateStatusMessage = "Table number updated successfully" // Success logic
+                onComplete(true)
             } catch (e: Exception) {
                 updateStatusMessage = "Failed to update table number" // Handle the exception
                 // Optionally log the error here
                 e.printStackTrace()
+                onComplete(false)  // Notify failure
             }
         }
     }

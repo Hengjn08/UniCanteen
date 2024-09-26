@@ -82,7 +82,7 @@ fun PaymentSelectionScreen(
                 Snackbar(
                     modifier = Modifier.padding(8.dp),
                     content = {
-                        Text(text = it, color = if (it.startsWith("Updated")) Color.Green else Color.Red)
+                        Text(text = it, color = if (it.startsWith("Success")) Color.Green else Color.Red)
                     }
                 )
             }
@@ -104,7 +104,7 @@ fun PaymentSelectionScreen(
                     icon = R.drawable.touch_ngo_icon, // Replace with your actual icon resource
                     onClick = {
                         // Handle the payment via Touch Ngo
-                        updateMessage = "Selected payment method: Pay by Touch Ngo"
+                        updateMessage = "Success payment method: Pay by Touch Ngo"
                         navController.navigate("Order_List_Status/$userId/$orderId")
                     }
                 )
@@ -114,7 +114,7 @@ fun PaymentSelectionScreen(
                     icon = R.drawable.counter_icon, // Replace with your actual icon resource
                     onClick = {
                         // Handle the payment at counter
-                        updateMessage = "Selected payment method: Pay at Counter"
+                        updateMessage = "Success payment method: Pay at Counter"
                         navController.navigate("Order_List_Status/$userId/$orderId")
                     }
                 )
