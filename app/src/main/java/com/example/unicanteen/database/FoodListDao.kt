@@ -10,7 +10,7 @@ import androidx.room.Update
 interface FoodListDao {
     // Insert a new food item
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertFoodItem(foodItem: FoodList): Long
+    suspend fun insertFoodItem(foodItem: FoodList)
 
     // Update an existing food item
     @Update
@@ -22,7 +22,7 @@ interface FoodListDao {
 
     // Fetch a food item by foodId
     @Query("SELECT * FROM foodList WHERE foodId = :foodId")
-    fun getFoodItemById(foodId: Int): FoodList?
+    suspend fun getFoodItemById(foodId: Int): FoodList?
 
     // Fetch all food items for a specific seller by sellerId
     @Query("SELECT * FROM foodList WHERE sellerId = :sellerId")

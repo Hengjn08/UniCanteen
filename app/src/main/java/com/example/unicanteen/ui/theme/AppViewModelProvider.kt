@@ -4,7 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.unicanteen.ChiaLiHock.FoodDetailViewModel
 import com.example.unicanteen.ChiaLiHock.SelectFoodViewModel
+import com.example.unicanteen.HengJunEn.AddFoodViewModel
+import com.example.unicanteen.HengJunEn.SellerFoodDetailsViewModel
+import com.example.unicanteen.HengJunEn.SellerHomeViewModel
 import com.example.unicanteen.Pierre.AdminViewModel
 import com.example.unicanteen.SelectRestaurantViewModel
 import com.example.unicanteen.UniCanteenApp
@@ -31,8 +35,20 @@ object AppViewModelProvider {
                 return repository2?.let { SelectFoodViewModel(it) } as T
             } else if (modelClass.isAssignableFrom(AdminViewModel::class.java)) {
                 return repository3?.let {AdminViewModel(it)} as T // Add this line to handle AdminViewModel
+            }else if (modelClass.isAssignableFrom(SellerHomeViewModel::class.java)) {
+                return repository2?.let {SellerHomeViewModel(it)} as T // Add this line to handle AdminViewModel
+            }else if (modelClass.isAssignableFrom(FoodDetailViewModel::class.java)) {
+                return repository2?.let {FoodDetailViewModel(it)} as T // Add this line to handle AdminViewModel
+            }else if (modelClass.isAssignableFrom(SellerFoodDetailsViewModel::class.java)) {
+                return repository2?.let {SellerFoodDetailsViewModel(it)} as T // Add this line to handle AdminViewModel
+            }else if (modelClass.isAssignableFrom(AddFoodViewModel::class.java)) {
+                return repository2?.let {AddFoodViewModel(it)} as T // Add this line to handle AdminViewModel
             }
-            throw IllegalArgumentException("Unknown ViewModel class")
+            ;
+            //            }else if (modelClass.isAssignableFrom(SellerFoodDetailsViewModel::class.java)) {
+//                return repository2?.let {SellerFoodDetailsViewModel(it)} as T // Add this line to handle AdminViewModel
+//            };
+             throw IllegalArgumentException("Unknown ViewModel class")
         }
     }
     }

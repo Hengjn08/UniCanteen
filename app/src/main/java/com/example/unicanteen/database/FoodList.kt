@@ -28,7 +28,7 @@ data class FoodList(
 
     @ColumnInfo(name = "createDate") val createDate: String, // Store as ISO 8601 formatted string
     @ColumnInfo(name = "modifyDate") val modifyDate: String? = null, // Nullable field for the last modification date
-    @ColumnInfo(name = "status") val status: String = "Available", // Default status
+    @ColumnInfo(name = "status") var status: String = "Available", // Default status
 
     // Additional recommended fields
     @ColumnInfo(name = "description") val description: String? = null, // Description of the food item

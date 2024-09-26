@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -25,6 +26,8 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,22 +43,40 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
+import androidx.navigation.compose.rememberNavController
 import com.example.unicanteen.BottomNavigationBar
+import com.example.unicanteen.ChiaLiHock.SelectFoodViewModel
 import com.example.unicanteen.R
 import com.example.unicanteen.UniCanteenTopBar
 import com.example.unicanteen.data.Datasource
+import com.example.unicanteen.database.AppDatabase
 import com.example.unicanteen.database.FoodList
+import com.example.unicanteen.database.FoodListRepository
+import com.example.unicanteen.database.FoodListRepositoryImpl
+import com.example.unicanteen.database.Seller
 import com.example.unicanteen.model.Food
+import com.example.unicanteen.navigation.NavigationDestination
+import com.example.unicanteen.ui.theme.AppViewModelProvider
 import com.example.unicanteen.ui.theme.UniCanteenTheme
+
+object SellerHomeDestination : NavigationDestination {
+    override val route = "seller_home"
+    override val title = "Food List"
+    const val sellerIdArg = "sellerId" // This should refer to the seller's ID
+    val routeWithArgs = "$route/{$sellerIdArg}" // Full route with arguments
+}
 
 @Composable
 fun SellerHomeScreen(
     onFoodClick: (Int) -> Unit,
     navController: NavController,
     modifier: Modifier = Modifier,
-    currentDestination: NavDestination?
+    currentDestination: NavDestination?,
+    sellerId: Int?,
+    foodListRepository: FoodListRepository,
     //canNavigateBack: Boolean,
     //onEditClick: () -> Unit,
     //onRemoveClick: () -> Unit,
@@ -63,6 +84,20 @@ fun SellerHomeScreen(
     var available by remember { mutableStateOf(false)}
     var foodToRemove by remember { mutableStateOf<Food?>(null) }
     //var showDialog by remember { mutableStateOf(false) }
+
+    val viewModel: SellerHomeViewModel = viewModel(
+        factory = AppViewModelProvider.Factory(null,foodListRepository)
+    )
+
+    // Observe the food list from the ViewModel
+    val foods by viewModel.foods.collectAsState()
+
+    // Trigger the ViewModel to fetch food list by sellerId when screen is first launched
+    LaunchedEffect(sellerId) {
+        sellerId?.let {
+            viewModel.displayFoodsBySellerId(it)
+        }
+    }
 
     Scaffold (
         modifier = Modifier.fillMaxSize(),
@@ -90,186 +125,69 @@ fun SellerHomeScreen(
         }
     ){ innerPadding ->
         SellerHomeBody(
+            foods = foods,
             onFoodClick = onFoodClick,
+            onAvailableChanged = { food, newStatus ->
+                viewModel.updateFoodStatus(food, newStatus)
+            },
             modifier = modifier.padding(innerPadding)
         )
     }
 }
 
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun FoodListAppbar(
-//    currentRoute: String?,
-//    canNavigateBack: Boolean,
-//    navController: NavController,
-//    onEditClick: () -> Unit,
-//    onRemoveClick: () -> Unit,
-//    modifier: Modifier = Modifier
-//) {
-//    TopAppBar(
-//        title = {
-//            Text(
-//                text = getScreenTitle(currentRoute),
-//                fontWeight = FontWeight.Bold,
-//                fontSize = 32.sp,
-//            )
-//        },
-//        modifier = modifier,
-//        navigationIcon = {
-//            if(canNavigateBack && (currentRoute == "addFood" || currentRoute == "foodDetails/{foodId}" || currentRoute == "editFood/{foodId}")){
-//                IconButton(onClick = { navController.navigateUp() }) {
-//                    Icon(
-//                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-//                        contentDescription = "Back",
-//                        modifier = Modifier.size(48.dp)
-//                    )
-//                }
-//            }
-//        },
-//        actions = {
-//            //only show these actions on the homepage screen
-//            when (currentRoute){
-//                BottomBarScreen.Home.route -> {
-//                    IconButton(onClick = { navController.navigate("addFood") }) {
-//                        Icon(
-//                            painter = painterResource(R.drawable.baseline_add_24),
-//                            contentDescription = "Add Icon",
-//                            modifier = Modifier.size(48.dp)
-//                        )
-//                    }
-//                }
-//                "foodDetails/{foodId}" -> {
-//                    IconButton(onClick = onEditClick) {
-//                        Icon(
-//                            painter = painterResource(R.drawable.edit_24dp),
-//                            contentDescription = "Edit Icon",
-//                            modifier = Modifier.size(48.dp)
-//                        )
-//                    }
-//
-//                    IconButton(onClick = onRemoveClick) {
-//                        Icon(
-//                            painter = painterResource(R.drawable.delete_24dp),
-//                            contentDescription = "Delete Icon",
-//                            modifier = Modifier.size(48.dp)
-//                        )
-//                    }
-//                }
-//            }
-//        },
-//    )
-//}
-
-//@Composable
-//fun getScreenTitle(route: String?): String{
-//    return when(route){
-//        BottomBarScreen.Home.route -> "Food List"
-//        BottomBarScreen.OrderList.route -> "Order List"
-//        BottomBarScreen.Profile.route -> "Profile"
-//        "addFood" -> "Add Food"
-//        "foodDetails/{foodId}" -> "Food Details"
-//        "editFood/{foodId}" -> "Edit Food"
-//        else -> "Food List"
-//    }
-//}
-
-//@Composable
-//fun showDeleteConfirmationDialog(
-//    onConfirm: () -> Unit,
-//    onDismiss: () -> Unit
-//) {
-//    AlertDialog(
-//        onDismissRequest = onDismiss,
-//        title = { Text("Delete Confirmation") },
-//        text = { Text("Are you sure you want to delete this food item?") },
-//        confirmButton = {
-//            TextButton(
-//                onClick = onConfirm
-//            ) {
-//                Text("Confirm")
-//            }
-//        },
-//        dismissButton = {
-//            TextButton(
-//                onClick = onDismiss
-//            ) {
-//                Text("Cancel")
-//            }
-//        }
-//    )
-//}
-
 @Composable
 fun SellerHomeBody(
     //available: Boolean,
-    //onAvailableChanged: (Boolean) -> Unit,
+    onAvailableChanged: (FoodList,Boolean) -> Unit,
+    foods: List<FoodList>,
     onFoodClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ){
-    FoodList(
-        //available = available,
-        //onAvailableChanged = {onAvailableChanged},
-        onFoodClick = onFoodClick,
-        modifier = modifier,
-    )
-}
+    Column(
+        modifier = modifier
+            .padding(16.dp)
+            .fillMaxSize(),
+    ){
+        Text(
+            text = SellerHomeDestination.title,
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(start = 8.dp, bottom = 16.dp)
+        )
 
-//@Composable
-//fun Header(
-//    sellerName: String,
-//    modifier: Modifier = Modifier
-//){
-//    Box(
-//        contentAlignment = Alignment.Center,
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .statusBarsPadding()
-//            .background(
-//                color = colorResource(R.color.light_orange)
-//            )
-//    ){
-//        Column(
-//            horizontalAlignment = Alignment.CenterHorizontally,
-//            modifier = Modifier.padding(20.dp)
-//        ){
-//            Text(
-//                text = stringResource(R.string.appName),
-//                color = Color.White,
-//                fontWeight = FontWeight.Bold,
-//                style = MaterialTheme.typography.displayMedium,
-//                //modifier = Modifier.padding(top = 16.dp)
-//            )
-//            Text(
-//                text = sellerName,
-//                color = Color.White,
-//                fontWeight = FontWeight.Bold,
-//                style = MaterialTheme.typography.displaySmall,
-//                modifier = Modifier.padding(top = 8.dp)
-//            )
-//        }
-//    }
-//}
+        FoodList(
+            //available = available,
+            onAvailableChanged = onAvailableChanged,
+            foods = foods,
+            onFoodClick = onFoodClick,
+        )
+    }
+
+}
 
 //To display list of food cards
 @Composable
 fun FoodList(
     //available: Boolean,
-    //onAvailableChanged: (Boolean) -> Unit,
+    onAvailableChanged: (FoodList,Boolean) -> Unit,
     //onFoodClick: (FoodList) -> Unit,
+    foods: List<FoodList>,
     onFoodClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ){
-    val data = Datasource.foods
-    LazyColumn(modifier = modifier){
-        itemsIndexed(data) { index, food ->
+    //val data = Datasource.foods
+    LazyColumn(modifier = modifier.fillMaxSize()){
+        items(foods) { food ->
             FoodCard(
                 food = food,
-                modifier = Modifier.clickable{onFoodClick(food.id)}
+                modifier = Modifier.clickable{onFoodClick(food.foodId)},
                 //available = available,
-                //onAvailableChanged = onAvailableChanged,
+                onAvailableChanged = { isAvailable ->
+                    onAvailableChanged(food, isAvailable)
+                },
                 //onClick = { onFoodClick(food.id)}
             )
-            if (index < data.size - 1) {
+            if (foods.indexOf(food) < foods.size - 1) {
                 HorizontalDivider(
                     modifier = Modifier.padding(
                         vertical = 12.dp,
@@ -285,35 +203,32 @@ fun FoodList(
 
 @Composable
 fun FoodCard(
-    food: Food,
-    //available: Boolean,
-    //onAvailableChanged: (Boolean) -> Unit,
-    //onClick: () -> Unit,
+    food: FoodList,
+    onAvailableChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier
-){
+) {
     Card(
         modifier = modifier
-            //.fillMaxWidth()
             .padding(8.dp)
-    ){
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
-        ){
-            Image(
-                painter = painterResource(food.foodImage.toInt()),
-                contentDescription = null,
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier
-                    //.padding(8.dp)
-                    .size(80.dp)
-                    //.clickable(onClick = onClick)
-                    .clip(
-                        RoundedCornerShape(8.dp)
-                    )
-            )
+        ) {
+//            Image(
+//                painter = painterResource(food.foodImage.toInt()),
+//                contentDescription = null,
+//                contentScale = ContentScale.FillBounds,
+//                modifier = Modifier
+//                    //.padding(8.dp)
+//                    .size(80.dp)
+//                    //.clickable(onClick = onClick)
+//                    .clip(
+//                        RoundedCornerShape(8.dp)
+//                    )
+//            )
             Column {
                 Text(
                     text = food.foodName,
@@ -322,9 +237,6 @@ fun FoodCard(
                     color = Color.Black,
                     modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)
                 )
-//                Text(
-//                    text = stringResource(food.foodDesc)
-//                )
                 Text(
                     text = stringResource(R.string.rm, food.price),
                     fontSize = 20.sp,
@@ -332,15 +244,9 @@ fun FoodCard(
                 )
             }
             AvailableFood(
-                available = food.available,
-                onAvailableChanged = {newAvailable ->
-                    food.available = newAvailable},
+                available = food.status == "Available",
+                onAvailableChanged = onAvailableChanged,
             )
-//            if(food.available) {
-//                Text(
-//                    text = "Available"
-//                )
-//            }
         }
     }
 }
@@ -351,7 +257,7 @@ fun AvailableFood(
     available: Boolean,
     onAvailableChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier
-){
+) {
     Switch(
         checked = available,
         onCheckedChange = onAvailableChanged,
@@ -365,7 +271,7 @@ fun AvailableFood(
 @Composable
 fun UniCanteen() {
     UniCanteenTheme {
-        //SellerHomeScreen(onFoodClick = {}, navController = {}, currentDestination =  )
+        //SellerHomeScreen(onFoodClick = {}, navController = rememberNavController(), currentDestination = null, sellerId = 1, foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao())
         //BottomNavigationBar()
     }
 }
