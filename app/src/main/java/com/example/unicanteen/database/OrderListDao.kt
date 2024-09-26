@@ -258,7 +258,7 @@ interface OrderListDao {
 
     @Query("SELECT orderId FROM orderList WHERE userId = :userId AND status = :status LIMIT 1")
     suspend fun getExistingOrderIdForUser(userId: Int, status: String): Int?
-    @Query("SELECT totalPrice FROM orders WHERE orderId = :orderId LIMIT 1")
+    @Query("SELECT ROUND(totalPrice, 2) FROM orders WHERE orderId = :orderId LIMIT 1")
     suspend fun getOrderTotalAmount(orderId: Int): Double
 
     @Query("SELECT tableNo FROM orders WHERE userId = :userId AND orderId = :orderId")
