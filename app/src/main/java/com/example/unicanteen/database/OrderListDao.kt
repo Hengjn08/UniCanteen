@@ -1,13 +1,16 @@
 package com.example.unicanteen.database
 
+import android.icu.text.SimpleDateFormat
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import java.util.Date
+import java.util.Locale
 
 @Dao
 interface OrderListDao {
@@ -199,8 +202,85 @@ interface OrderListDao {
     @Query("UPDATE orders SET orderType = :orderType WHERE orderId = :orderId AND userId = :userId")
     suspend fun updateOrderType(orderId: Int, userId: Int, orderType: String)
 
+
+    @Query("SELECT tableNo FROM orders WHERE userId = :userId AND orderId = :orderId")
+    suspend fun getTableNoByUserAndOrder(userId: Int, orderId: Int): Int
+    @Query("SELECT totalPrice FROM orders WHERE orderId = :orderId LIMIT 1")
+    suspend fun getOrderTotalAmount(orderId: Int): Double
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPayment(payment: Payment)
+
+    @Transaction
+    suspend fun createPaymentRecord(orderId: Int, userId: Int, payType: String) {
+        // Step 1: Get the total price from the `orders` table
+        val totalAmt = getOrderTotalAmount(orderId)
+
+        // Step 2: Create the payment entity with required details
+        val newPayment = Payment(
+            orderId = orderId,
+            userId = userId,
+            totalAmt = totalAmt,
+            createDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date()), // Current date-time
+            status = "Completed", // Set status as Completed
+            payType = payType
+        )
+
+        // Step 3: Insert the new payment record
+        insertPayment(newPayment)
+    }
+
+    @Query("""
+        SELECT u.userName, p.orderId, p.totalAmt, p.createDate, p.payType, p.status
+        FROM payments p
+        JOIN user u ON p.userId = u.userId
+        WHERE p.userId = :userId AND p.orderId = :orderId
+        ORDER BY p.paymentId DESC
+        LIMIT 1
+    """)
+    fun getLatestPaymentDetails(userId: Int, orderId: Int): LiveData<List<PaymentDetails>>
+
+    data class PaymentDetails(
+        val userName: String,
+        val orderId: Int,
+        val totalAmt: Double,
+        val createDate: String,
+        val payType: String,
+        val status: String
+    )
+
+    @Query("""
+        SELECT 
+            s.shopName AS sellerName,
+            f.foodName,
+            f.price AS unitPrice,
+            ol.qty AS foodQty,
+            ol.totalPrice
+        FROM 
+            orderList ol
+        JOIN 
+            foodList f ON ol.foodId = f.foodId
+        JOIN 
+            sellers s ON ol.sellerId = s.sellerId
+        WHERE 
+            ol.userId = :userId AND ol.orderId = :orderId
+    """)
+   fun getPaymentOrderDetails(userId: Int, orderId: Int): LiveData<List<paymentOrderDetailsData>>
+
+    // Data class to represent the order details
+    data class paymentOrderDetailsData(
+        val sellerName: String,
+        val foodName: String,
+        val unitPrice: Double,
+        val foodQty: Int,
+        val totalPrice: Double
+    )
+
+
+
     @Query("SELECT orderId FROM orderList WHERE userId = :userId AND status = :status LIMIT 1")
     suspend fun getExistingOrderIdForUser(userId: Int, status: String): Int?
+
 
 
 }

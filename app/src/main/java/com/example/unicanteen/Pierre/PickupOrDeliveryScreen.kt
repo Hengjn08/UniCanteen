@@ -38,10 +38,11 @@ import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 
 object pickUpChoose : NavigationDestination {
-    override val route = "picKup"
-    override val title = "picKup"
-    const val deliverMethod = "pickUp"  // Change to sellerId to avoid confusion with foodId
-    val routeWithArgs = "$route/{$deliverMethod}"
+    override val route = "pickUp"
+    override val title = "pickUp"
+    fun routeWithArgs(userId: Int, orderId: Int): String {
+        return "pickUp/$userId/$orderId"
+    }
 }
 
 @Composable
