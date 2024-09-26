@@ -62,7 +62,7 @@ fun SelectRestaurantScreen(
             viewModel.searchSellersByName(query)
         },
             onCartClick = {
-
+                navController.navigate("${CartDestination.route}")
             }
         )
         Column(modifier = Modifier.weight(1f)) {
@@ -184,7 +184,7 @@ fun SearchAndCartBar(onSearch: (String) -> Unit, onCartClick: () -> Unit) {
             )
         )
         IconButton(onClick = {
-            //handle cart
+            onCartClick()
 
 
         }) {

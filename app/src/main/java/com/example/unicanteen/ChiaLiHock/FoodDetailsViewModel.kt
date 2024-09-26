@@ -23,8 +23,4 @@ class FoodDetailViewModel(
             _foodDetails.value = food
         }
     }
-    suspend fun getFoodDetails(foodId: Int): FoodList {
-        return foodListRepository.getFoodById(foodId)
-
-    }
 }

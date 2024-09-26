@@ -14,15 +14,21 @@ interface OrderListDao {
 
     // Insert a new order list item
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrderList(orderList: OrderList): Long
+    suspend fun insertOrderList(orderList: OrderList)
 
     // Update an existing order list item
     @Update
     suspend fun updateOrderList(orderList: OrderList)
 
+    @Query("UPDATE orderList SET qty = :newQuantity, totalPrice = :newTotalPrice WHERE orderListId = :orderListId")
+    suspend fun updateOrderListItem(orderListId: Int, newQuantity: Int, newTotalPrice: Double)
+
     // Delete an order list item
     @Delete
     suspend fun deleteOrderList(orderList: OrderList)
+
+    @Query("DELETE FROM orderList WHERE orderListId = :orderListId")
+    suspend fun deleteOrderListById(orderListId: Int)
 
     // Fetch an order list item by orderListId
     @Query("SELECT * FROM orderList WHERE orderListId = :orderListId")
@@ -42,6 +48,9 @@ interface OrderListDao {
     // Fetch all order list items
     @Query("SELECT * FROM orderList")
     fun getAllOrderListItems(): List<OrderList>
+
+    @Query("SELECT * FROM orderList WHERE orderId = :orderId AND sellerId = :sellerId AND foodId = :foodId")
+    suspend fun getOrderListItem(orderId: Int, sellerId: Int, foodId: Int): List<OrderList>
 
     // Fetch total sales for each seller grouped by month
     @Query("""
@@ -199,9 +208,8 @@ interface OrderListDao {
     @Query("UPDATE orders SET orderType = :orderType WHERE orderId = :orderId AND userId = :userId")
     suspend fun updateOrderType(orderId: Int, userId: Int, orderType: String)
 
-
-
-
+    @Query("SELECT orderId FROM orderList WHERE userId = :userId AND status = :status LIMIT 1")
+    suspend fun getExistingOrderIdForUser(userId: Int, status: String): Int?
 
 
 }

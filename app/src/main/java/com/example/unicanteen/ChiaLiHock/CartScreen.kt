@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,14 +24,46 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
+import com.example.unicanteen.ChiaLiHock.CartItem
+import com.example.unicanteen.ChiaLiHock.CartViewModel
+import com.example.unicanteen.database.FoodListRepository
+import com.example.unicanteen.database.OrderList
+import com.example.unicanteen.database.OrderListRepository
+import com.example.unicanteen.database.OrderRepository
+import com.example.unicanteen.navigation.NavigationDestination
 
 
 import com.example.unicanteen.ui.theme.AppShapes
+import com.example.unicanteen.ui.theme.AppViewModelProvider
 import com.example.unicanteen.ui.theme.UniCanteenTheme
 
+object CartDestination : NavigationDestination {
+    override val route = "Cart"
+    override val title = "Cart"
+    const val orderIdArg = "orderId"
+    val routeWithArgs = "$route/{$orderIdArg}"
+}
 @Composable
-fun CartScreen(cartItems: MutableList<CartItem>) {
+fun CartScreen(
+    userId: Int, // Pass orderId as a parameter
+    orderRepository: OrderRepository,
+    orderListRepository: OrderListRepository,
+    navController: NavController
+) {
+    val cartViewModel: CartViewModel = viewModel(
+        factory = AppViewModelProvider.Factory(orderRepository = orderRepository, orderListRepository = orderListRepository)
+    )
+
     var totalPrice by remember { mutableStateOf(0.0) }
+    val cartItems by cartViewModel.cartItems.observeAsState(emptyList<CartItem>())
+
+    // Fetch cart items based on orderId when the screen is launched
+    LaunchedEffect(userId) {
+        cartViewModel.getCartItems(userId)
+    }
 
     // Recalculate the total price whenever cartItems or quantity changes
     LaunchedEffect(cartItems) {
@@ -38,18 +71,15 @@ fun CartScreen(cartItems: MutableList<CartItem>) {
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize().navigationBarsPadding(),
         verticalArrangement = Arrangement.SpaceBetween // Ensures the checkout button stays at the bottom
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         ) {
-            UniCanteenTopBar(
-                title = "Cart"
-            )
+            UniCanteenTopBar(title = "Cart")
             Spacer(modifier = Modifier.height(16.dp))
+
             // Cart List
             if (cartItems.isEmpty()) {
                 Text(
@@ -59,46 +89,57 @@ fun CartScreen(cartItems: MutableList<CartItem>) {
                     color = Color.Gray
                 )
             } else {
-                CartList(cartItems = cartItems, onCartItemsChanged = { updatedItems ->
-                  //  cartItems.clear()
-                   // cartItems.addAll(updatedItems)
-                    // Recalculate the total price after items are changed
-                    totalPrice = cartItems.sumOf { it.price * it.quantity }
-                })
+                CartList(cartItems = cartItems.toMutableList(), onCartItemsChanged = { updatedItems ->
+                    totalPrice = updatedItems.sumOf { it.price * it.quantity }
+                }, cartViewModel,userId)
             }
         }
 
-        CheckOutButton(totalPrice = totalPrice)
+        CheckOutButton(totalPrice = totalPrice, orderId = cartItems.firstOrNull()?.orderId ?: 0,
+            cartViewModel=cartViewModel,navController = navController)
     }
 }
 
 @Composable
 fun CartList(
-    cartItems: MutableList<CartItem>,
-    onCartItemsChanged: (MutableList<CartItem>) -> Unit,
+    cartItems: List<CartItem>,
+    onCartItemsChanged: (List<CartItem>) -> Unit,
+    cartViewModel: CartViewModel,
+    userId: Int,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
-        modifier = Modifier.height(670.dp)
+        modifier = Modifier
     ) {
         items(cartItems.size) { index ->
+            var unitPrice = cartItems[index].price / cartItems[index].quantity
+
             CartCard(
                 item = cartItems[index],
                 onQuantityChange = { newQuantity ->
-                    // Update the quantity of the item and notify the change
-                    cartItems[index].quantity = newQuantity
-                    onCartItemsChanged(cartItems)
+                    val updatedItem = cartItems[index].copy(quantity = newQuantity, price = unitPrice * newQuantity)
+                    val updatedItems = cartItems.toMutableList().apply {
+                        this[index] = updatedItem
+                    }
+                    onCartItemsChanged(updatedItems)
+                    cartViewModel.updateOrderItem(updatedItem.orderListId, newQuantity, unitPrice)
                 },
                 onDelete = {
-                    // Remove the item from the list and notify the change
-                    cartItems.removeAt(index)
-                    onCartItemsChanged(cartItems)
+                    val updatedItems = cartItems.toMutableList().apply {
+                        removeAt(index)
+                    }
+                    onCartItemsChanged(updatedItems)
+                    cartViewModel.deleteOrderItem(cartItems[index].orderListId, userId = userId)
+                    if (updatedItems.isEmpty()) {
+                        cartViewModel.deleteOrderByUserId(userId)
+                    }
                 }
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
+
 
 
 
@@ -123,7 +164,7 @@ fun CartCard(
                 .fillMaxSize()
                 .padding(8.dp)
                 .align(alignment = Alignment.CenterHorizontally),
-          //  contentAlignment = Alignment.Center // Center the content within the Box
+            //  contentAlignment = Alignment.Center // Center the content within the Box
         ) {
             Row(
                 modifier = Modifier
@@ -153,7 +194,7 @@ fun CartCard(
 
                 // Image
                 Image(
-                    painter = painterResource(id = item.imageRes),
+                    painter = rememberAsyncImagePainter(item.imageRes),
                     contentDescription = item.name,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -257,16 +298,21 @@ fun EnhancedQuantityDropdown(
         }
     }
 }
-
+fun checkAbility(totalPrice: Double):Boolean{
+    return totalPrice > 0
+}
 @Composable
-fun CheckOutButton(totalPrice: Double) {
+fun CheckOutButton(totalPrice: Double,orderId:Int, cartViewModel: CartViewModel,navController: NavController) {
     Button(
-        onClick = { /* Handle add to cart */ },
+        onClick = {
+            cartViewModel.updateOrderPrice(orderId,totalPrice)
+        },
         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF6AD44)),
         modifier = Modifier
             .fillMaxWidth()
             .height(65.dp),
-        shape = AppShapes.large
+        enabled = checkAbility(totalPrice),
+        shape = RoundedCornerShape(24.dp)
     ) {
         Row(
             modifier = Modifier
@@ -290,27 +336,5 @@ fun CheckOutButton(totalPrice: Double) {
                 fontWeight = FontWeight.Bold,
             )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewCartScreen() {
-    val cartItems = listOf(
-        CartItem(name = "Smoked Duck Ramen", imageRes = R.drawable.pan_mee, price = 8.90, quantity = 1),
-        CartItem(name = "Mushroom and Meat Sauce Noodles", imageRes = R.drawable.pan_mee, price = 10.90, quantity = 1),
-        CartItem(name = "Minced Meat Lotus Noodles", imageRes = R.drawable.pan_mee, price = 10.90, quantity = 1),
-        CartItem(name = "Smoked Duck Ramen", imageRes = R.drawable.pan_mee, price = 8.90, quantity = 1),
-        CartItem(name = "Mushroom and Meat Sauce Noodles", imageRes = R.drawable.pan_mee, price = 10.90, quantity = 1),
-        CartItem(name = "Minced Meat Lotus Noodles", imageRes = R.drawable.pan_mee, price = 10.90, quantity = 1)
-    )
-
-    // Using spread operator to unpack the list into mutableStateListOf
-    val cartItem = remember { mutableStateListOf(*cartItems.toTypedArray()) }
-
-    UniCanteenTheme {
-        CartScreen(
-            cartItems = cartItem
-        )
     }
 }

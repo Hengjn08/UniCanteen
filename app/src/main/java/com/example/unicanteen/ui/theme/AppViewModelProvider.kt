@@ -2,10 +2,10 @@ package com.example.unicanteen.ui.theme
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.unicanteen.ChiaLiHock.AddOnViewModel
+import com.example.unicanteen.ChiaLiHock.CartViewModel
 import com.example.unicanteen.ChiaLiHock.FoodDetailViewModel
+import com.example.unicanteen.ChiaLiHock.OrderListViewModel
 import com.example.unicanteen.ChiaLiHock.SelectFoodViewModel
 import com.example.unicanteen.HengJunEn.AddFoodViewModel
 import com.example.unicanteen.HengJunEn.SellerFoodDetailsViewModel
@@ -13,9 +13,10 @@ import com.example.unicanteen.HengJunEn.SellerHomeViewModel
 import com.example.unicanteen.LimSiangShin.UserViewModel
 import com.example.unicanteen.Pierre.AdminViewModel
 import com.example.unicanteen.SelectRestaurantViewModel
-import com.example.unicanteen.UniCanteenApp
 import com.example.unicanteen.database.AddOnRepository
 import com.example.unicanteen.database.FoodListRepository
+import com.example.unicanteen.database.OrderListRepository
+import com.example.unicanteen.database.OrderRepository
 import com.example.unicanteen.database.PierreAdminRepository
 import com.example.unicanteen.database.SellerRepository
 import com.example.unicanteen.database.UserRepository
@@ -31,7 +32,9 @@ object AppViewModelProvider {
         private val foodListRepository: FoodListRepository? = null,
         private val pierreAdminRepository: PierreAdminRepository? = null,
         private val addOnRepository: AddOnRepository? = null,
-        private val userRepository: UserRepository? = null
+        private val userRepository: UserRepository? = null,
+        private val orderListRepository: OrderListRepository? = null,
+        private val orderRepository: OrderRepository? = null
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(SelectRestaurantViewModel::class.java)) {
@@ -54,6 +57,13 @@ object AppViewModelProvider {
             }else if (modelClass.isAssignableFrom(AddFoodViewModel::class.java)) {
                 return foodListRepository?.let { AddFoodViewModel(it) } as T
             }
+            else if (modelClass.isAssignableFrom(OrderListViewModel::class.java)) {
+                return orderListRepository?.let { OrderListViewModel(it, orderRepository!!) } as T
+            }
+            else if (modelClass.isAssignableFrom(CartViewModel::class.java)) {
+                return orderRepository?.let { CartViewModel( it, orderListRepository!!) } as T
+            }
+            else
                 throw IllegalArgumentException("Unknown ViewModel class")
         }
     }
