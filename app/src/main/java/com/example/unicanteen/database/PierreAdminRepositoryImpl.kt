@@ -20,4 +20,8 @@ class PierreAdminRepositoryImpl(private val orderListDao: OrderListDao) : Pierre
         orderListDao.updateOrderType(orderId, userId, orderType)
     }
 
+    override suspend fun getTableNoByUserAndOrder(userId: Int, orderId: Int): Int {
+        return orderListDao.getTableNoByUserAndOrder(userId, orderId)
+    }
+
 }

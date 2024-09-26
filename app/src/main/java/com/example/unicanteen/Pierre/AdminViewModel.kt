@@ -29,6 +29,8 @@ class AdminViewModel(
     private val _orderDetailsData = MutableStateFlow<List<OrderListDao.OrderDetailsData>>(emptyList())
     val orderDetailsData: StateFlow<List<OrderListDao.OrderDetailsData>> = _orderDetailsData  // Expose order details data
 
+    private val _tableNo = MutableStateFlow<Int>(0)  // State flow for table number
+    val tableNo: StateFlow<Int> = _tableNo
     private var sellerId: Int? = null  // Store sellerId when restaurant is selected
     var updateStatusMessage by mutableStateOf<String?>(null)
         private set
@@ -65,18 +67,6 @@ class AdminViewModel(
         }
     }
 
-    // Modify the updateTableNo function to take a callback
-//    fun updateTableNo(userId: Int, orderId: Int, tableNo: Int, onResult: (Boolean) -> Unit) {
-//        viewModelScope.launch {
-//            try {
-//                // Call the repository method to update table number
-//                pierreAdminRepository.updateOrderTableNo(1, 1, 3)
-//                // Success logic
-//            } catch (e: Exception) {
-//                // Handle the exception, possibly logging it
-//            }
-//        }
-//    }
     // Function to update the table number in the database
     fun updateTableNo(userId: Int, orderId: Int, tableNo: Int) {
         viewModelScope.launch {
@@ -100,6 +90,19 @@ class AdminViewModel(
             } catch (e: Exception) {
                 e.printStackTrace()
                 onComplete(false)  // Notify failure
+            }
+        }
+    }
+
+    // New function to get the table number based on userId and orderId
+    fun getTableNo(userId: Int, orderId: Int) {
+        viewModelScope.launch {
+            try {
+                val tableNumber = pierreAdminRepository.getTableNoByUserAndOrder(userId, orderId)
+                _tableNo.value = tableNumber  // Update the state with the fetched table number
+            } catch (e: Exception) {
+                _tableNo.value = 0  // Reset table number on error
+                e.printStackTrace()
             }
         }
     }

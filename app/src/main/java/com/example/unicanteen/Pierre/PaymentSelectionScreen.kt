@@ -105,6 +105,7 @@ fun PaymentSelectionScreen(
                     onClick = {
                         // Handle the payment via Touch Ngo
                         updateMessage = "Selected payment method: Pay by Touch Ngo"
+                        navController.navigate("Order_List_Status/$userId/$orderId")
                     }
                 )
 
@@ -114,6 +115,7 @@ fun PaymentSelectionScreen(
                     onClick = {
                         // Handle the payment at counter
                         updateMessage = "Selected payment method: Pay at Counter"
+                        navController.navigate("Order_List_Status/$userId/$orderId")
                     }
                 )
 

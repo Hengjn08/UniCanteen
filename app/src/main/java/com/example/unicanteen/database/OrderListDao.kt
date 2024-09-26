@@ -196,9 +196,8 @@ interface OrderListDao {
     @Query("UPDATE orders SET orderType = :orderType WHERE orderId = :orderId AND userId = :userId")
     suspend fun updateOrderType(orderId: Int, userId: Int, orderType: String)
 
-
-
-
+    @Query("SELECT tableNo FROM orders WHERE userId = :userId AND orderId = :orderId")
+    suspend fun getTableNoByUserAndOrder(userId: Int, orderId: Int): Int
 
 
 }

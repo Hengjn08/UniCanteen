@@ -65,7 +65,7 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = pickUpChoose.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = SelectRestaurantDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
 //        val sampleSellers = listOf(
@@ -232,8 +232,8 @@ fun UniCanteenNavHost(
                 navController = navController,
                 currentDestination = currentDestination,
                 sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
-                userId = 1,
-                orderId = 1
+                userId = 2,
+                orderId = 2
             )
         }
 
@@ -253,8 +253,8 @@ fun UniCanteenNavHost(
                 navController = navController,
                 currentDestination = navController.currentDestination,
                 sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
-                userId = 1,  // Pass the retrieved userId to the screen
-                orderId = 1  // Pass the retrieved orderId to the screen
+                userId = userId,  // Pass the retrieved userId to the screen
+                orderId = orderId  // Pass the retrieved orderId to the screen
             )
         }
         composable(
@@ -273,8 +273,8 @@ fun UniCanteenNavHost(
                 navController = navController,
                 currentDestination = navController.currentDestination,
                 sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
-                userId = 1,  // Pass the retrieved userId to the screen
-                orderId = 1  // Pass the retrieved orderId to the screen
+                userId = userId,  // Pass the retrieved userId to the screen
+                orderId = orderId  // Pass the retrieved orderId to the screen
             )
         }
 
@@ -331,8 +331,8 @@ fun UniCanteenNavHost(
                 navController = navController,
                 currentDestination = navController.currentDestination,
                 sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
-                userId = 5,  // Pass userId to the screen
-                orderId = 3 // Pass orderId to the screen
+                userId = userId,  // Pass userId to the screen
+                orderId = orderId // Pass orderId to the screen
             )
         }
 
