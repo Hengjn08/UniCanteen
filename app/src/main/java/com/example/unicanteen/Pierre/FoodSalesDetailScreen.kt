@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -61,7 +62,7 @@ fun FoodSalesDetailScreen(
 ) {
     // Initialize the ViewModel
     val viewModel: AdminViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(repository3 = sellerAdminRepository)
+        factory = AppViewModelProvider.Factory(pierreAdminRepository = sellerAdminRepository)
     )
 
     // Set the initial month to "2024-09" if no month is provided
@@ -97,7 +98,7 @@ fun FoodSalesDetailScreen(
             // Title: Sales Report for <FoodType>
             Text(
                 text = "Sales for $foodType in $selectedMonth", // Display dynamic month in title
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier
                     .padding(12.dp)
                     .align(Alignment.CenterHorizontally)

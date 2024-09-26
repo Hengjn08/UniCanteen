@@ -33,5 +33,6 @@ data class OrderList(
     @ColumnInfo(name = "totalPrice") val totalPrice: Double, // Total price for this order item
 
     @ColumnInfo(name = "status") val status: String, // E.g., "Waiting", "Preparing", "Complete"
-    @ColumnInfo(name = "createDate") val createDate: String // Date the order was created (as a string)
+    @ColumnInfo(name = "createDate") val createDate: String, // Date the order was created (as a string)
+    @ColumnInfo(name = "remark") val remark: String? = null // Optional remarks for the order") val status: String,
 )

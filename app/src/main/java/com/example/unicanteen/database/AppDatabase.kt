@@ -16,7 +16,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         Order::class,
         OrderList::class,
         Payment::class,
-        PaymentDetails::class
+        PaymentDetails::class,
+        AddOn::class
     ],
     version = 1 // Incremented version number
 )
@@ -25,13 +26,13 @@ abstract class AppDatabase : RoomDatabase() {
 
     // Abstract methods to access DAOs
     abstract fun userDao(): UserDao
-
     abstract fun orderListDao(): OrderListDao
     abstract fun sellerDao(): SellerDao
     abstract fun foodListDao(): FoodListDao
     abstract fun orderDao(): OrderDao
     abstract fun paymentDao(): PaymentDao
     abstract fun paymentDetailsDao(): PaymentDetailsDao
+    abstract fun addOnDao(): AddOnDao
 
 //    abstract fun foodListDao(): FoodListDao
 //    abstract fun orderDao(): OrderDao

@@ -38,6 +38,7 @@ import com.github.tehras.charts.piechart.animation.simpleChartAnimation
 import com.github.tehras.charts.piechart.renderer.SimpleSliceDrawer
 import kotlin.random.Random
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.unicanteen.database.PierreAdminRepository
 import com.example.unicanteen.ui.theme.AppViewModelProvider
@@ -59,7 +60,7 @@ fun SaleMonthlyScreen(
     modifier: Modifier = Modifier,
 ) {
     val viewModel: AdminViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(repository3 = sellerAdminRepository)
+        factory = AppViewModelProvider.Factory(pierreAdminRepository = sellerAdminRepository)
     )
     val month = "2024-09"  // Set your initial month here or make it dynamic
 
@@ -98,7 +99,7 @@ fun SaleMonthlyScreen(
             // Title: Sales Report <<Month>>
             Text(
                 text = "Sales $selectedMonth",  // Display dynamic month in title
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier
                     .padding(12.dp)
                     .align(Alignment.CenterHorizontally)

@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,22 +42,21 @@ object SelectRestaurantDestination : NavigationDestination {
     const val restaurantNameArg = "restaurantName" // Name of the restaurant
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun SelectRestaurantScreen(
     navController: NavController,
     currentDestination: NavDestination?,
-    onRestaurantClick: (Seller) -> Unit,
     sellerRepository: SellerRepository, // Pass repository here
 
 ) {
     val viewModel: SelectRestaurantViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(sellerRepository)
+        factory = AppViewModelProvider.Factory(sellerRepository = sellerRepository)
     )
     val sellers by viewModel.sellers.collectAsState()
 
 
-    Column {
+    Column() {
         UniCanteenTopBar()
         SearchAndCartBar(onSearch = { query ->
             viewModel.searchSellersByName(query)
