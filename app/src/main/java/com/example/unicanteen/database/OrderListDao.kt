@@ -14,7 +14,7 @@ interface OrderListDao {
 
     // Insert a new order list item
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrderList(orderList: OrderList): Long
+    suspend fun insertOrderList(orderList: OrderList)
 
     // Update an existing order list item
     @Update
@@ -199,9 +199,8 @@ interface OrderListDao {
     @Query("UPDATE orders SET orderType = :orderType WHERE orderId = :orderId AND userId = :userId")
     suspend fun updateOrderType(orderId: Int, userId: Int, orderType: String)
 
-
-
-
+    @Query("SELECT orderId FROM orderList WHERE userId = :userId AND status = :status LIMIT 1")
+    suspend fun getExistingOrderIdForUser(userId: Int, status: String): Int?
 
 
 }

@@ -25,6 +25,6 @@ data class Order(
     @ColumnInfo(name = "tableNo") val tableNo: Int? = null, // Nullable field for table number if dining in
 
     @ColumnInfo(name = "totalPrice") val totalPrice: Double, // Total price for the entire order
-    @ColumnInfo(name = "status") val status: String, // E.g., "Pending", "Completed"
+    @ColumnInfo(name = "status") val status: String, // E.g., "inCart""Pending", "Completed"
     @ColumnInfo(name = "createDate") val createDate: String // Date the order was created (as a string)
 )
