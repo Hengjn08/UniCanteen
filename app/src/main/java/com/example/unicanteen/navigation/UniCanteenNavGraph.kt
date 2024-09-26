@@ -66,22 +66,9 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = pickUpChoose.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = SelectRestaurantDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
-//        val sampleSellers = listOf(
-//            Seller(
-//                name = "Malaysian Traditional Food",
-//                description = "Authentic Malaysian cuisine.",
-//                imageUrl = ""
-//            ),
-//            Seller(
-//                name = "Vegetarian Friendly",
-//                description = "Delicious vegetarian dishes.",
-//                imageUrl = ""
-//            )
-//        )
-
         composable(
             route = BottomBarScreen.SellerHome.route,
             arguments = listOf(navArgument(sellerIdArg) { type = NavType.IntType })
@@ -164,7 +151,8 @@ fun UniCanteenNavHost(
 
         composable(
             route = SelectFoodDestination.routeWithArgs,
-            arguments = listOf(navArgument(SelectFoodDestination.sellerIdArg) { type = NavType.IntType }) // Ensure argument type matches
+            arguments = listOf(navArgument(SelectFoodDestination.sellerIdArg) { type = NavType.IntType },
+                ) // Ensure argument type matches
         ) { backStackEntry ->
             val sellerId = backStackEntry.arguments?.getInt(SelectFoodDestination.sellerIdArg)
 
@@ -178,15 +166,19 @@ fun UniCanteenNavHost(
         }
         composable(
             route = FoodDetailCustomerDestination.routeWithArgs,
-            arguments = listOf(navArgument(FoodDetailCustomerDestination.foodIdArg) { type = NavType.IntType })
+            arguments = listOf(navArgument(FoodDetailCustomerDestination.foodIdArg) { type = NavType.IntType },
+                navArgument(LoginDestination.userIdArg){
+                    type= NavType.IntType
+                })
         ) { backStackEntry ->
             val foodId = backStackEntry.arguments?.getInt(FoodDetailCustomerDestination.foodIdArg)
+            val userId = backStackEntry.arguments?.getInt(LoginDestination.userIdArg)
             FoodDetailsScreenCustomer(
                 foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
                 addOnRepository = AddOnRepositoryImpl(AppDatabase.getDatabase(navController.context).addOnDao()),
                 foodId = foodId ?: return@composable,
-                navController = navController,
-                currentDestination = navController.currentDestination
+                userId = userId ?: return@composable,
+
             )
 
         }
@@ -209,11 +201,15 @@ fun UniCanteenNavHost(
         //food details screen
         composable(
             route = FoodDetailsDestination.routeWithArgs,
-            arguments = listOf(navArgument(FoodDetailsDestination.foodIdArg) {
-                type = NavType.IntType
-            })
+            arguments = listOf(
+                navArgument(FoodDetailsDestination.foodIdArg) {
+                type = NavType.IntType },
+                navArgument(LoginDestination.userIdArg){
+                    type= NavType.IntType
+                })
         ) { backStackEntry ->
             val foodId = backStackEntry.arguments?.getInt(FoodDetailsDestination.foodIdArg)
+            val userId = backStackEntry.arguments?.getInt(LoginDestination.userIdArg)
             //val food = Datasource.foods.find { it.id == foodId }
             FoodDetailsScreen(
                 foodId = foodId ?: return@composable,

@@ -42,8 +42,7 @@ fun FoodDetailsScreenCustomer(
     foodListRepository: FoodListRepository,
     addOnRepository: AddOnRepository,
     foodId: Int,
-    navController: NavHostController,
-    currentDestination: NavDestination?
+    userId: Int
 ) {
     val foodDetailViewModel: FoodDetailViewModel = viewModel(
         factory = AppViewModelProvider.Factory(foodListRepository = foodListRepository)
@@ -63,21 +62,25 @@ fun FoodDetailsScreenCustomer(
 
     foodDetails?.let { food ->
         var totalAddOnPrice by remember { mutableStateOf(0.0) }
+        Scaffold{innerPadding ->
+            Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+                FoodDetailsCard(food = food)
+                Spacer(modifier = Modifier.height(20.dp))
 
-        Column(modifier = Modifier.fillMaxSize()) {
-            FoodDetailsCard(food = food)
-            Spacer(modifier = Modifier.height(20.dp))
+                // Pass the fetched add-ons to AddOnSection
+                totalAddOnPrice = AddOnSection(addOns = addOns, onPriceChange = { price ->
+                    totalAddOnPrice = price // Update the total add-on price
+                })
 
-            // Pass the fetched add-ons to AddOnSection
-            totalAddOnPrice = AddOnSection(addOns = addOns, onPriceChange = { price ->
-                totalAddOnPrice = price // Update the total add-on price
-            })
+                Spacer(modifier = Modifier.height(20.dp))
+                RemarksSection()
+                Spacer(modifier = Modifier.weight(1f))
+                AddToCartButton(totalPrice = food.price + totalAddOnPrice)
+            }
 
-            Spacer(modifier = Modifier.height(20.dp))
-            RemarksSection()
-            Spacer(modifier = Modifier.weight(1f))
-            AddToCartButton(totalPrice = food.price + totalAddOnPrice)
         }
+
+
     } ?: run {
         // Show loading or error state
         CircularProgressIndicator()
@@ -246,13 +249,16 @@ fun RemarksSection() {
 
 @Composable
 fun AddToCartButton(totalPrice: Double) {
+
     Button(
-        onClick = { /* Handle add to cart */ },
+        onClick = {
+
+        },
         colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.orange_500)),
         modifier = Modifier
             .fillMaxWidth()
             .height(65.dp),
-        shape = AppShapes.large
+        shape = RoundedCornerShape(24.dp)
     ) {
         Row(
             modifier = Modifier
