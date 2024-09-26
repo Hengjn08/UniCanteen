@@ -250,13 +250,21 @@ fun UniCanteenNavHost(
 
         composable(
             route = pickUpChoose.route,
+            arguments = listOf(
+                navArgument("orderId") { type = NavType.IntType },   // Add orderId as an Int argument
+                navArgument("userId") { type = NavType.IntType }     // Add userId as an Int argument
+            )
         ){
+                backStackEntry ->
+            // Retrieve the orderId and userId from the backStackEntry arguments
+            val orderId = backStackEntry.arguments?.getInt("orderId") ?: 0
+            val userId = backStackEntry.arguments?.getInt("userId") ?: 0
             PickupOrDeliveryScreen(
                 navController = navController,
                 currentDestination = currentDestination,
                 sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
-                userId = 3,
-                orderId = 3
+                userId = userId,  // Pass the retrieved userId to the screen
+                orderId = orderId  // Pass the retrieved orderId to the screen
             )
         }
 
