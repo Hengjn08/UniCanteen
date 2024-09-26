@@ -108,9 +108,6 @@ fun AddFoodScreen(
             )
         }
     ){ innerPadding ->
-//        testing(
-//            modifier.padding(innerPadding)
-//        )
         AddFoodBody(
             modifier = modifier.padding(innerPadding),
             foodName = foodName,

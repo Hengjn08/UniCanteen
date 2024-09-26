@@ -23,5 +23,6 @@ data class Payment(
 
     @ColumnInfo(name = "totalAmt") val totalAmt: Double, // Total amount for the payment
     @ColumnInfo(name = "createDate") val createDate: String, // Date the payment was created (as a string)
-    @ColumnInfo(name = "status") val status: String // E.g., "Pending", "Completed"
+    @ColumnInfo(name = "status") val status: String, // E.g., "Pending", "Completed"
+    @ColumnInfo(name = "payType") val payType: String?= null, // E.g., "Cash", "Credit Card")
 )

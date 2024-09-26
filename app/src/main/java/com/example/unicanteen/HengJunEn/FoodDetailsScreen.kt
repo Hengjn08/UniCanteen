@@ -26,6 +26,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,15 +42,21 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.unicanteen.ChiaLiHock.FoodDetailViewModel
 import com.example.unicanteen.R
 import com.example.unicanteen.UniCanteenTopBar
 import com.example.unicanteen.data.Datasource
+import com.example.unicanteen.database.FoodList
+import com.example.unicanteen.database.FoodListRepository
 import com.example.unicanteen.model.Food
 import com.example.unicanteen.navigation.NavigationDestination
+import com.example.unicanteen.ui.theme.AppViewModelProvider
 import com.example.unicanteen.ui.theme.UniCanteenTheme
 import kotlinx.coroutines.coroutineScope
 
@@ -62,58 +70,44 @@ object FoodDetailsDestination : NavigationDestination {
 
 @Composable
 fun FoodDetailsScreen(
-    food: Food?,
+    foodId: Int,
+    foodListRepository: FoodListRepository,
     navigateBack: () -> Unit,
-    //showDialog: Boolean,
-    //navController: NavController,
     onEditClick: () -> Unit,
-    //onRemoveClick: () -> Unit,
-    //onBackClick: () -> Unit
 ) {
-    //val coroutineScope = rememberCoroutineScope()
+    val sellerFoodDetailsViewModel: SellerFoodDetailsViewModel = viewModel(
+        factory = AppViewModelProvider.Factory(null, foodListRepository)
+    )
+
+    val food by sellerFoodDetailsViewModel.foodDetails.collectAsState()
+
+    LaunchedEffect(foodId) {
+        sellerFoodDetailsViewModel.loadFoodDetails(foodId)
+    }
 
     Scaffold(
         topBar = {
             UniCanteenTopBar(
                 title = "UniCanteen\nNoodles"
-                //canNavigateBack = true,
-                //navigateUp = navigateBack
             )
         }
     ) {innerpadding ->
         foodDetailsBody(
             food = food,
             onDelete = {
-//                coroutineScope.laucnh {
-//                    viewModel.deleteItem()
-//                    navigateBack
-//                }
+                sellerFoodDetailsViewModel.deleteFood()
+                navigateBack()
             },
             onEditClick = onEditClick,
             navigateBack = navigateBack,
             modifier = Modifier.padding(innerpadding)
         )
     }
-
-//        if (showDialog) {
-//            showDeleteConfirmationDialog(
-//                onConfirm = {
-//                    foodToRemove?.let { food ->
-//                        Datasource.foods.remove(food)
-//                        navController.navigateUp()
-//                    }
-//                    showDialog = false // Dismiss dialog
-//                },
-//                onDismiss = {
-//                    showDialog = false // Dismiss dialog
-//                }
-//            )
-//        }
 }
 
 @Composable
 fun foodDetailsBody(
-    food: Food?,
+    food: FoodList?,
     onEditClick: () -> Unit,
     onDelete: () -> Unit,
     navigateBack: () -> Unit,
@@ -160,10 +154,6 @@ fun foodDetailsBody(
             DeleteConfirmationDialog(
                 onConfirm = {
                     onDelete()
-//                        foodToRemove?.let { food ->
-//                            Datasource.foods.remove(food)
-//                            navController.navigateUp()
-//                        }
                     showDialog = false // Dismiss dialog
                 },
                 onCancel = {
@@ -202,7 +192,7 @@ fun NavigateBackIconWithTitle(
 
 @Composable
 fun FoodDetails(
-    food: Food?,
+    food: FoodList?,
     modifier: Modifier = Modifier
 ){
     Card(
@@ -213,56 +203,38 @@ fun FoodDetails(
     ) {
         Column(
             modifier = Modifier
-                //.fillMaxSize()
                 .padding(16.dp)
         ) {
             if (food != null) {
-                Image(
-                    painter = painterResource(food.foodImage.toInt()),
-                    contentDescription = null,
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                )
+//                Image(
+//                    painter = painterResource(food.foodImage.toInt()),
+//                    contentDescription = null,
+//                    contentScale = ContentScale.Fit,
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(200.dp)
+//                        .clip(RoundedCornerShape(8.dp))
+//                )
 
-                FoodDetailsRow(
+                FoodDetailsBody(
                     label = "Name",
                     foodDetails = food.foodName,
                     modifier = Modifier.padding(16.dp)
                 )
 
-                FoodDetailsRow(
+                FoodDetailsBody(
                     label = "Description",
-                    foodDetails = food.foodDesc,
+                    foodDetails = food.description,
                     modifier = Modifier
                         .padding(16.dp)
                 )
 
-                FoodDetailsRow(
+                FoodDetailsBody(
                     label = "Price",
                     foodDetails = stringResource(R.string.rm, food.price),
                     modifier = Modifier
                         .padding(16.dp)
                 )
-//            Text(
-//                text = food.foodName,
-//                style = MaterialTheme.typography.headlineMedium,
-//                modifier = Modifier.padding(vertical = 16.dp)
-//            )
-//
-//            Text(
-//                text = food.foodDesc,
-//                style = MaterialTheme.typography.bodyLarge,
-//                modifier = Modifier.padding(bottom = 16.dp)
-//            )
-//
-//            Text(
-//                text = stringResource(R.string.rm, food.price),
-//                style = MaterialTheme.typography.headlineSmall,
-//                modifier = Modifier.padding(bottom = 16.dp)
-//            )
             }
         }
     }
@@ -270,25 +242,25 @@ fun FoodDetails(
 }
 
 @Composable
-fun FoodDetailsRow(
+fun FoodDetailsBody(
     label: String,          //ltr maybe need to change to Int for stringRes
-    foodDetails: String,
+    foodDetails: String?,
     modifier: Modifier = Modifier
 ){
-    Row(
+    Column(
         modifier = modifier
     ){
         Text(
             text = label,
-            fontSize = 20.sp
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
         )
-        Spacer(modifier = Modifier.weight(1f))
-        Text(
-            text = foodDetails,
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp
-            //style = MaterialTheme.typography.headlineMedium,
-        )
+        if (foodDetails != null) {
+            Text(
+                text = foodDetails,
+                fontSize = 20.sp
+            )
+        }
     }
 }
 
@@ -325,10 +297,11 @@ fun DeleteConfirmationDialog(
 fun FoodDetailsScreenPreview(){
     UniCanteenTheme{
         val food = Datasource.foods.get(0)
-        FoodDetailsScreen(
-            food = food,
-            navigateBack = { /*TODO*/ }) {
-
-        }
+//        FoodDetailsScreen(
+//            //food = food,
+//            //navigateBack = { /*TODO*/ }) {
+//
+//        }
+//        )
     }
 }

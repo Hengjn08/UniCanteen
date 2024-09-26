@@ -1,5 +1,6 @@
 package com.example.unicanteen.database
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -13,15 +14,21 @@ interface OrderListDao {
 
     // Insert a new order list item
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrderList(orderList: OrderList): Long
+    suspend fun insertOrderList(orderList: OrderList)
 
     // Update an existing order list item
     @Update
     suspend fun updateOrderList(orderList: OrderList)
 
+    @Query("UPDATE orderList SET qty = :newQuantity, totalPrice = :newTotalPrice WHERE orderListId = :orderListId")
+    suspend fun updateOrderListItem(orderListId: Int, newQuantity: Int, newTotalPrice: Double)
+
     // Delete an order list item
     @Delete
     suspend fun deleteOrderList(orderList: OrderList)
+
+    @Query("DELETE FROM orderList WHERE orderListId = :orderListId")
+    suspend fun deleteOrderListById(orderListId: Int)
 
     // Fetch an order list item by orderListId
     @Query("SELECT * FROM orderList WHERE orderListId = :orderListId")
@@ -35,9 +42,15 @@ interface OrderListDao {
     @Query("SELECT * FROM orderList WHERE userId = :userId")
     fun getOrderListByUserId(userId: Int): List<OrderList> // Use Long if it matches your schema
 
+    @Query("SELECT * FROM orderList WHERE sellerId = :sellerId")
+    fun getOrderListBySellerId(sellerId: Int): List<OrderList>
+
     // Fetch all order list items
     @Query("SELECT * FROM orderList")
     fun getAllOrderListItems(): List<OrderList>
+
+    @Query("SELECT * FROM orderList WHERE orderId = :orderId AND sellerId = :sellerId AND foodId = :foodId")
+    suspend fun getOrderListItem(orderId: Int, sellerId: Int, foodId: Int): List<OrderList>
 
     // Fetch total sales for each seller grouped by month
     @Query("""
@@ -104,4 +117,144 @@ interface OrderListDao {
         val month: String,
         val totalSales: Double
     )
+
+    @Query("""
+    WITH TotalSales AS (
+        SELECT SUM(o.totalPrice) AS totalSales
+        FROM orderList o
+        WHERE strftime('%Y-%m', o.createDate) = :month
+        AND o.sellerId = :sellerId
+    )
+    SELECT f.type AS foodType, 
+           strftime('%Y-%m', o.createDate) AS month, 
+           SUM(o.totalPrice) AS totalQuantity,
+           (SUM(o.totalPrice) * 100.0 / (SELECT totalSales FROM TotalSales)) AS percentage
+    FROM orderList o
+    JOIN foodList f ON o.foodId = f.foodId
+    WHERE strftime('%Y-%m', o.createDate) = :month
+    AND o.sellerId = :sellerId  -- Filter by seller ID
+    GROUP BY f.type, month
+    ORDER BY month
+""")
+    fun getMonthlySalesByFoodType(month: String, sellerId: Int): LiveData<List<FoodTypeSalesData>>
+
+    data class FoodTypeSalesData(
+        val foodType: String,
+        val month: String,
+        val totalQuantity: Double,
+        val percentage: Double  // New field for percentage
+    )
+
+    @Query("""
+    WITH TotalSales AS (
+        SELECT SUM(o.totalPrice) AS totalSales
+        FROM orderList o
+        JOIN foodList f ON o.foodId = f.foodId
+        WHERE f.type = :foodType
+        AND o.sellerId = :sellerId
+        AND strftime('%Y-%m', o.createDate) = :month  -- Filter by month
+    )
+    SELECT f.foodName AS foodType,
+           strftime('%Y-%m', o.createDate) AS month, 
+           SUM(o.totalPrice) AS totalQuantity,
+           (SUM(o.totalPrice) * 100.0 / (SELECT totalSales FROM TotalSales)) AS percentage
+    FROM orderList o
+    JOIN foodList f ON o.foodId = f.foodId
+    WHERE f.type = :foodType
+    AND o.sellerId = :sellerId  -- Filter by seller ID
+    AND strftime('%Y-%m', o.createDate) = :month  -- Filter by month
+    GROUP BY f.foodName, month
+    ORDER BY month
+""")
+    fun getSalesByFoodType(foodType: String, sellerId: Int, month: String): LiveData<List<FoodSalesData>>
+
+    data class FoodSalesData(
+        val foodType: String,
+        val month: String,
+        val totalQuantity: Double,
+        val percentage: Double  // New field for percentage
+    )
+
+    @Query("""
+    SELECT fl.foodName AS foodName,
+           fl.imageUrl AS foodImage,
+           s.shopName AS sellerShopName,
+           ol.status AS orderStatus,
+           o.orderType AS orderType,
+           ol.orderListId AS orderListId
+           
+    FROM orderList ol
+    JOIN foodList fl ON ol.foodId = fl.foodId
+    JOIN sellers s ON ol.sellerId = s.sellerId
+    JOIN orders o ON ol.orderId = o.orderId
+    WHERE ol.orderId = :orderId
+    AND ol.userId = :userId
+    AND ol.status != 'Cancelled'
+""")
+    fun getOrderDetailsByOrderIdAndUserId(orderId: Int, userId: Int): LiveData<List<OrderDetailsData>>
+
+    data class OrderDetailsData(
+        val foodName: String,
+        val foodImage: String,
+        val sellerShopName: String,
+        val orderStatus: String,
+        val orderType: String,
+        val orderListId: Int
+    )
+    @Query("""
+        SELECT u.userName, p.orderId, p.totalAmt, p.createDate, p.payType, p.status
+        FROM payments p
+        JOIN user u ON p.userId = u.userId
+        WHERE p.userId = :userId AND p.orderId = :orderId
+        ORDER BY p.paymentId DESC
+        LIMIT 1
+    """)
+    fun getLatestPaymentDetails(userId: Int, orderId: Int): LiveData<List<PaymentDetails>>
+
+    data class PaymentDetails(
+        val userName: String,
+        val orderId: Int,
+        val totalAmt: Double,
+        val createDate: String,
+        val payType: String,
+        val status: String
+    )
+
+    @Query("""
+        SELECT 
+            s.shopName AS sellerName,
+            f.foodName,
+            f.price AS unitPrice,
+            ol.qty AS foodQty,
+            ol.totalPrice
+        FROM 
+            orderList ol
+        JOIN 
+            foodList f ON ol.foodId = f.foodId
+        JOIN 
+            sellers s ON ol.sellerId = s.sellerId
+        WHERE 
+            ol.userId = :userId AND ol.orderId = :orderId
+    """)
+    fun getPaymentOrderDetails(userId: Int, orderId: Int): LiveData<List<paymentOrderDetailsData>>
+
+    // Data class to represent the order details
+    data class paymentOrderDetailsData(
+        val sellerName: String,
+        val foodName: String,
+        val unitPrice: Double,
+        val foodQty: Int,
+        val totalPrice: Double
+    )
+
+    @Query("UPDATE orders SET tableNo = :tableNo WHERE userId = :userId AND orderId = :orderId")
+    suspend fun updateOrderTableNo(userId: Int, orderId: Int, tableNo: Int)
+
+    @Query("UPDATE orders SET orderType = :orderType WHERE orderId = :orderId AND userId = :userId")
+    suspend fun updateOrderType(orderId: Int, userId: Int, orderType: String)
+
+    @Query("SELECT orderId FROM orderList WHERE userId = :userId AND status = :status LIMIT 1")
+    suspend fun getExistingOrderIdForUser(userId: Int, status: String): Int?
+
+
 }
