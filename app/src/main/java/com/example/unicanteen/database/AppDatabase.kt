@@ -46,24 +46,24 @@ abstract class AppDatabase : RoomDatabase() {
         private var INSTANCE: AppDatabase? = null
 
 //        // Migration strategy from version 1 to 2
-//        val MIGRATION_1_2 = object : Migration(1, 2) {
-//            override fun migrate(database: SupportSQLiteDatabase) {
-//                // Perform necessary changes in the database schema.
-//                // For example, if you're adding a new column, you can run SQL here.
-//                // Example: database.execSQL("ALTER TABLE User ADD COLUMN age INTEGER DEFAULT 0")
-//                // Modify it as needed based on the actual schema changes.
-//            }
-//        }
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // Perform necessary changes in the database schema.
+                // For example, if you're adding a new column, you can run SQL here.
+                // Example: database.execSQL("ALTER TABLE User ADD COLUMN age INTEGER DEFAULT 0")
+                // Modify it as needed based on the actual schema changes.
+            }
+        }
 
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context,
                     AppDatabase::class.java,
-                    "test1_database"
+                    "testP1_database"
                 )
                     .createFromAsset("Database/uniDatabase.db") // Load from assets
-//                    .addMigrations(MIGRATION_1_2) // Add migration to handle schema changes
+                    .addMigrations(MIGRATION_1_2) // Add migration to handle schema changes
 //                    .fallbackToDestructiveMigration() // Use destructive migration during development
                     .build()
 

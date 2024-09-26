@@ -68,17 +68,16 @@ class AdminViewModel(
     }
 
     // Function to update the table number in the database
-    fun updateTableNo(userId: Int, orderId: Int, tableNo: Int, onComplete: (Boolean) -> Unit) {
+    fun updateTableNo(userId: Int, orderId: Int, tableNo: Int) {
         viewModelScope.launch {
             try {
+                updateStatusMessage = "Table number updated successfully" // Success logic
                 // Call the repository method to update the table number
                 pierreAdminRepository.updateOrderTableNo(userId, orderId, tableNo)
-                onComplete(true)
             } catch (e: Exception) {
                 updateStatusMessage = "Failed to update table number" // Handle the exception
                 // Optionally log the error here
                 e.printStackTrace()
-                onComplete(false)  // Notify failure
             }
         }
     }
@@ -104,6 +103,19 @@ class AdminViewModel(
             } catch (e: Exception) {
                 _tableNo.value = 0  // Reset table number on error
                 e.printStackTrace()
+            }
+        }
+    }
+    // New function to create a payment record
+    fun createPayment(orderId: Int, userId: Int, payType: String) {
+        viewModelScope.launch {
+            try {
+                updateStatusMessage = "Success Payment" // Success message
+                // Call the repository method to create a payment
+                pierreAdminRepository.createPayment(orderId, userId, payType)
+            } catch (e: Exception) {
+                updateStatusMessage = "Failed to create payment" // Error message
+                e.printStackTrace() // Log the exception
             }
         }
     }

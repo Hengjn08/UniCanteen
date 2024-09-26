@@ -59,15 +59,12 @@ fun PaymentSelectionScreen(
 ){
     // State for showing messages after payment selection
     var updateMessage by remember { mutableStateOf<String?>(null) }
-
+// Initialize the ViewModel
+    val viewModel: AdminViewModel = viewModel(
+        factory = AppViewModelProvider.Factory(pierreAdminRepository = sellerAdminRepository)
+    )
     Scaffold(
-        bottomBar = {
-            BottomNavigationBar(
-                navController = navController,
-                currentDestination = currentDestination,  // Handle destination as needed
-                isSeller = true
-            )
-        }
+
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -105,6 +102,7 @@ fun PaymentSelectionScreen(
                     onClick = {
                         // Handle the payment via Touch Ngo
                         updateMessage = "Success payment method: Pay by Touch Ngo"
+                        viewModel.createPayment(orderId = orderId, userId = userId, payType = "TnGo")
                         navController.navigate("Order_List_Status/$userId/$orderId")
                     }
                 )
@@ -115,6 +113,7 @@ fun PaymentSelectionScreen(
                     onClick = {
                         // Handle the payment at counter
                         updateMessage = "Success payment method: Pay at Counter"
+                        viewModel.createPayment(orderId = orderId, userId = userId, payType = "Pay at Counter")
                         navController.navigate("Order_List_Status/$userId/$orderId")
                     }
                 )

@@ -85,7 +85,7 @@ fun OrderListStatusScreen(
             BottomNavigationBar(
                 navController = navController,
                 currentDestination = currentDestination,
-                isSeller = true
+                isSeller = false
             )
         },
         content = { paddingValues ->

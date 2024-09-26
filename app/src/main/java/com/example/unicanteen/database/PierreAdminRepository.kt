@@ -9,4 +9,5 @@ interface PierreAdminRepository {
     suspend fun updateOrderTableNo(userId: Int, orderId: Int, tableNo: Int)  // New method
     suspend fun updateOrderType(orderId: Int, userId: Int, orderType: String)
     suspend fun getTableNoByUserAndOrder(userId: Int, orderId: Int): Int
+    suspend fun createPayment(orderId: Int, userId: Int, payType: String)
 }

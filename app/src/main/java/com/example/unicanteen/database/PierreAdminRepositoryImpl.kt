@@ -23,5 +23,9 @@ class PierreAdminRepositoryImpl(private val orderListDao: OrderListDao) : Pierre
     override suspend fun getTableNoByUserAndOrder(userId: Int, orderId: Int): Int {
         return orderListDao.getTableNoByUserAndOrder(userId, orderId)
     }
+    // Implement the new method
+    override suspend fun createPayment(orderId: Int, userId: Int, payType: String) {
+        orderListDao.createPaymentRecord(orderId, userId, payType)
+    }
 
 }

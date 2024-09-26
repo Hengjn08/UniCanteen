@@ -90,6 +90,7 @@ fun TableNoScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         UniCanteenTopBar()
+
         // Show a message on top for success or failure
         updateMessage?.let {
             Snackbar(
@@ -99,7 +100,7 @@ fun TableNoScreen(
                 }
             )
         }
-
+        Spacer(modifier = Modifier.height(60.dp))
         // Rectangle Box with "Table No" text inside
         Box(
             modifier = Modifier
@@ -134,23 +135,31 @@ fun TableNoScreen(
 
         Spacer(modifier = Modifier.height(60.dp))
 
-        // Confirm Button (Green Color)
         ConfirmButton(
             onClick = {
+                // Validate the table number input
                 if (tableNoInput.isNotEmpty()) {
-                    // Call ViewModel to update table number
-//                    viewModel.updateTableNo(userId, orderId, tableNoInput.toInt())
+                    val tableNo = tableNoInput.toIntOrNull() // Safely parse the input
+
+                    // Check if the table number is valid
+                    if (tableNo != null && tableNo > 0 && tableNo <= 30) {
+                        // Call ViewModel to update table number
+                        viewModel.updateTableNo(userId, orderId, tableNo)
                         updateMessage = viewModel.updateStatusMessage
+
                         // Optionally navigate back if the update was successful
                         if (updateMessage == "Table number updated successfully") {
                             navController.navigate("choosePayment/$userId/$orderId")
                         }
-
+                    } else {
+                        updateMessage = "Please enter a valid table number (1-30)"
+                    }
                 } else {
                     updateMessage = "Please enter a valid table number"
                 }
             }
         )
+
 
         Spacer(modifier = Modifier.height(70.dp))
 
