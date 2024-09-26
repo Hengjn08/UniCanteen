@@ -67,7 +67,7 @@ object AppViewModelProvider {
                 throw IllegalArgumentException("Unknown ViewModel class")
         }
     }
-    }
+}
 //    val Factory = viewModelFactory {
 //        initializer {
 //            SelectRestaurantViewModel(
