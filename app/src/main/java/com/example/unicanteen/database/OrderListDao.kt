@@ -201,6 +201,51 @@ interface OrderListDao {
         val orderType: String,
         val orderListId: Int
     )
+    @Query("""
+        SELECT u.userName, p.orderId, p.totalAmt, p.createDate, p.payType, p.status
+        FROM payments p
+        JOIN user u ON p.userId = u.userId
+        WHERE p.userId = :userId AND p.orderId = :orderId
+        ORDER BY p.paymentId DESC
+        LIMIT 1
+    """)
+    fun getLatestPaymentDetails(userId: Int, orderId: Int): LiveData<List<PaymentDetails>>
+
+    data class PaymentDetails(
+        val userName: String,
+        val orderId: Int,
+        val totalAmt: Double,
+        val createDate: String,
+        val payType: String,
+        val status: String
+    )
+
+    @Query("""
+        SELECT 
+            s.shopName AS sellerName,
+            f.foodName,
+            f.price AS unitPrice,
+            ol.qty AS foodQty,
+            ol.totalPrice
+        FROM 
+            orderList ol
+        JOIN 
+            foodList f ON ol.foodId = f.foodId
+        JOIN 
+            sellers s ON ol.sellerId = s.sellerId
+        WHERE 
+            ol.userId = :userId AND ol.orderId = :orderId
+    """)
+    fun getPaymentOrderDetails(userId: Int, orderId: Int): LiveData<List<paymentOrderDetailsData>>
+
+    // Data class to represent the order details
+    data class paymentOrderDetailsData(
+        val sellerName: String,
+        val foodName: String,
+        val unitPrice: Double,
+        val foodQty: Int,
+        val totalPrice: Double
+    )
 
     @Query("UPDATE orders SET tableNo = :tableNo WHERE userId = :userId AND orderId = :orderId")
     suspend fun updateOrderTableNo(userId: Int, orderId: Int, tableNo: Int)
