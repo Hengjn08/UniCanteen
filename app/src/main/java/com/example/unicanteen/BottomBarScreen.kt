@@ -22,16 +22,17 @@ sealed class BottomBarScreen(
         title = "Order List",
         icon = Icons.AutoMirrored.Filled.List
     )
-    object SellerProfile: BottomBarScreen(
-        route = "Profile",
-        title = "Profile",
-        icon = Icons.Filled.Person
-    )
     object SellerReport: BottomBarScreen(
         route = "Report",
         title = "Report",
         icon = Icons.Filled.MailOutline
     )
+    object SellerProfile: BottomBarScreen(
+        route = "Profile",
+        title = "Profile",
+        icon = Icons.Filled.Person
+    )
+
         object CustomerHome : BottomBarScreen(
         route = "Customer Home",
         title = "Home",

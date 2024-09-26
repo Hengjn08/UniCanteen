@@ -17,7 +17,7 @@ interface OrderListDao {
 
     // Insert a new order list item
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrderList(orderList: OrderList): Long
+    suspend fun insertOrderList(orderList: OrderList)
 
     // Update an existing order list item
     @Update
@@ -38,6 +38,9 @@ interface OrderListDao {
     // Fetch all order list items for a specific user by userId
     @Query("SELECT * FROM orderList WHERE userId = :userId")
     fun getOrderListByUserId(userId: Int): List<OrderList> // Use Long if it matches your schema
+
+    @Query("SELECT * FROM orderList WHERE sellerId = :sellerId")
+    fun getOrderListBySellerId(sellerId: Int): List<OrderList>
 
     // Fetch all order list items
     @Query("SELECT * FROM orderList")
@@ -199,6 +202,7 @@ interface OrderListDao {
     @Query("UPDATE orders SET orderType = :orderType WHERE orderId = :orderId AND userId = :userId")
     suspend fun updateOrderType(orderId: Int, userId: Int, orderType: String)
 
+
     @Query("SELECT tableNo FROM orders WHERE userId = :userId AND orderId = :orderId")
     suspend fun getTableNoByUserAndOrder(userId: Int, orderId: Int): Int
     @Query("SELECT totalPrice FROM orders WHERE orderId = :orderId LIMIT 1")
@@ -272,6 +276,10 @@ interface OrderListDao {
         val totalPrice: Double
     )
 
+
+
+    @Query("SELECT orderId FROM orderList WHERE userId = :userId AND status = :status LIMIT 1")
+    suspend fun getExistingOrderIdForUser(userId: Int, status: String): Int?
 
 
 
