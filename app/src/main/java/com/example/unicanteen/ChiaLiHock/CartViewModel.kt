@@ -1,5 +1,6 @@
 package com.example.unicanteen.ChiaLiHock
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -53,8 +54,14 @@ class CartViewModel(
     }
     fun fetchCartItemsCount(userId: Int) {
         viewModelScope.launch {
-            val count = orderRepository.getCartItemsCount(userId)
-            _cartItemCount.postValue(count)
+            try {
+                val count = orderRepository.getCartItemsCount(userId)
+                Log.d("CartViewModel", "Cart items count for userId $userId: $count")
+                _cartItemCount.postValue(count)
+            } catch (e: Exception) {
+                Log.e("CartViewModel", "Error fetching cart items count: ${e.message}")
+                _cartItemCount.postValue(0) // Default value on error
+            }
         }
     }
 }
