@@ -1,12 +1,12 @@
 package com.example.unicanteen.LimSiangShin
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
@@ -35,11 +36,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.unicanteen.R
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.QuestionMark
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Scaffold
@@ -47,58 +54,61 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.unicanteen.BottomBarScreen
-import com.example.unicanteen.SelectFoodDestination
 import com.example.unicanteen.SelectRestaurantDestination
-import com.example.unicanteen.database.SellerRepository
 import com.example.unicanteen.database.UserRepository
 import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 import com.example.unicanteen.ui.theme.UniCanteenTheme
 
 object LoginDestination : NavigationDestination {
-    override val route = "Login"
-    override val title = ""
+    override val route = "Login?userId={userId}"
+    override val title = "Login"
     const val userIdArg = "userId"
-    val routeWithArgs = "$route/{$userIdArg}"
+    fun routeWithArgs(userId: Int): String{
+        return "${route}/$userId"
+    }
 }
+
 
 @Composable
 fun LoginScreen(
     onSignUpTextClicked:()->Unit = {},
+    onHelpClicked: () -> Unit,
+    onForgotPasswordClicked: () -> Unit,
     navController: NavController,
     userRepository: UserRepository,
-//    sellerRepository: SellerRepository,
     modifier: Modifier = Modifier
 ){
     val userViewModel: UserViewModel = viewModel(
         factory = AppViewModelProvider.Factory(userRepository = userRepository)
     )
 
-//    val sellerViewModel: SellerRepository = viewModel(
-//        factory = AppViewModelProvider.Factory(sellerRepository = sellerRepository)
-//    )
     val  loginResult by userViewModel.loginResult.collectAsState()
     val  currentUserId by userViewModel.currentUserId.collectAsState()
+    val  sellerId by userViewModel.isSellerId.collectAsState()
     val  isSeller by userViewModel.isSeller.collectAsState()
 
     // Track each login attempt to handle error message properly
-    var loginAttempt by remember { mutableStateOf(0) }
+    var loginAttempt by remember { mutableStateOf(true) }
 
     // Variable to track whether we should show the error message
     var showLoginFailed by remember { mutableStateOf(false) }
 
     var userName by remember { mutableStateOf("")}
     var pw by remember { mutableStateOf("") }
-    var userId by remember { mutableStateOf(Int)}
+    var userId by remember { mutableStateOf(currentUserId ?:1)}
 
     val context = LocalContext.current
 
@@ -107,6 +117,7 @@ fun LoginScreen(
         topBar = {}
     ){ innerPadding ->
         LoginBody(
+            userId = userId,
             navController = navController,
             modifier = modifier.padding(innerPadding),
             userName = userName,
@@ -114,40 +125,42 @@ fun LoginScreen(
             onUserNameChange = { userName = it },
             onPwChange = { pw = it },
             onSignUpTextClicked = {onSignUpTextClicked() },
+            onHelpClicked = {
+                onHelpClicked()
+            },
+            onForgotPasswordClicked = {onForgotPasswordClicked()},
             onSignInClicked = {
                 userViewModel.login(userName,pw)
-                loginAttempt++
+                currentUserId?.let { userViewModel.updateCurrentUserDetail(it) }
+                loginAttempt = !loginAttempt
             }
         )
 
         // LaunchedEffect to handle login result and display the right message after each attempt
-        LaunchedEffect(loginResult, loginAttempt) {
+        LaunchedEffect(loginAttempt) {
             if (loginResult) {
                 // If login is successful, show welcome message and navigate to the next screen
                 Toast.makeText(context, "Welcome Back, $userName!", Toast.LENGTH_SHORT).show()
                 if (isSeller) {
                     navController.navigate(BottomBarScreen.SellerHome.route)
                 } else {
-                    navController.navigate(SelectRestaurantDestination.route)
+                    navController.navigate(CustomerProfileDestination.routeWithArgs(userId))
                 }
-            } else if (loginAttempt > 0) {
-                // Only show error message if login attempt has been made
+            }else{
                 showLoginFailed = true
-                Toast.makeText(context, "Login failed. Please try again.", Toast.LENGTH_SHORT).show()
                 // Clear the username and password for another try
                 userName = ""
                 pw = ""
             }
-        }
-
-        // Optionally, reset showLoginFailed after some delay to allow multiple error messages
-        if (showLoginFailed) {
-            LaunchedEffect(Unit) {
-                kotlinx.coroutines.delay(2000) // Example delay before hiding the error message
-                showLoginFailed = false
+            // Optionally, reset showLoginFailed after some delay to allow multiple error messages
+            if (showLoginFailed) {
+                    // Only show error message if login failed
+                    Toast.makeText(context, "Login failed. Please try again.", Toast.LENGTH_SHORT).show()
+                    kotlinx.coroutines.delay(2000) // Example delay before hiding the error message
+                    showLoginFailed = false
             }
-        }
 
+        }
     }
 
 
@@ -156,25 +169,28 @@ fun LoginScreen(
 
 @Composable
 fun LoginBody(
+    userId: Int,
     navController: NavController,
     modifier: Modifier = Modifier,
     userName: String,
     pw: String,
     onUserNameChange: (String) -> Unit,
     onPwChange: (String) -> Unit,
+    onHelpClicked:() -> Unit,
     onSignUpTextClicked: () -> Unit,
+    onForgotPasswordClicked:()->Unit,
     onSignInClicked: () -> Unit
 ) {
     Column (
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center){
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally){
 
-        Box(
+        Column(
             modifier = modifier
-                .background(colorResource(R.color.orange_500), RoundedCornerShape(100.dp))
-                .height(550.dp)
-                .padding(start = 20.dp, end = 20.dp, bottom = 10.dp),
-            contentAlignment = Alignment.Center
+                .background(colorResource(R.color.orange_500), RoundedCornerShape(50.dp))
+                .padding(vertical =  20.dp, horizontal = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Column(
                 modifier = modifier.verticalScroll(rememberScrollState()),
@@ -188,21 +204,27 @@ fun LoginBody(
                         fontSize = 36.sp,
                         fontWeight = FontWeight.Bold,
                         color = colorResource(R.color.white))
-                    IconButton(onClick = { /*TODO*/ },
-                        colors = IconButtonDefaults
-                            .iconButtonColors(colorResource(R.color.white)),
-                        modifier = Modifier
-                            .size(width = 50.dp, height = 40.dp)
-                            .padding(start = 10.dp)
-                    ) {
-
+                    Column (){
+                        Icon(imageVector = Icons.Default.QuestionMark,
+                            contentDescription ="Help",
+                            modifier = Modifier
+                                .size(width = 50.dp, height = 40.dp)
+                                .padding(start = 10.dp)
+                                .background(colorResource(R.color.orange_500), CircleShape)
+                                .border(2.dp, Color.White, CircleShape)
+                                .clickable {
+                                    onHelpClicked()
+                                },
+                            tint = Color.White
+                        )
                     }
                 }
+
                 Row (modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 20.dp),
+                    .padding(vertical = 10.dp),
                     horizontalArrangement = Arrangement.Center){
-                    Text(text = "Sign Up",
+                    Text(text = "Sign In",
                         color = colorResource(R.color.white))
                 }
 
@@ -229,11 +251,11 @@ fun LoginBody(
                     onValueChange = onPwChange,
                     label = "Password",
                     placeholder = "",
-                    visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Done
                     ),
+                    isPassword = true,
                     color = colorResource(R.color.white),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
@@ -254,17 +276,20 @@ fun LoginBody(
                 )
 
                 Row (modifier = Modifier) {
-                    TextButton(onClick = {onSignUpTextClicked()}) {
-                        Text(text = "Sign Up",
-                            fontStyle = FontStyle.Italic,
-                            textDecoration = TextDecoration.Underline)
-                    }
 
-                    TextButton(onClick = { /*TODO*/ },modifier = Modifier.padding(start = 145.dp)) {
-                        Text(text = "Forgot Password?",
-                            fontStyle = FontStyle.Italic,
-                            textDecoration = TextDecoration.Underline)
-                    }
+                        TextButton(onClick = {onSignUpTextClicked()}) {
+                            Text(text = "Sign Up",
+                                fontStyle = FontStyle.Italic,
+                                textDecoration = TextDecoration.Underline)
+                        }
+
+                        TextButton(onClick = { onForgotPasswordClicked() },modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.End)) {
+                            Text(text = "Forgot Password?",
+                                fontStyle = FontStyle.Italic,
+                                textDecoration = TextDecoration.Underline)
+                        }
+
+
                 }
 
                 HorizontalDivider(modifier = Modifier.padding(top = 20.dp),thickness = 2.dp, color = Color.White)
@@ -274,42 +299,61 @@ fun LoginBody(
                         color = Color.White,
                         fontSize = 24.sp)
                 }
-                HorizontalDivider(modifier = Modifier.padding(start = 50.dp, end = 50.dp),thickness = 2.dp, color = Color.White)
+                HorizontalDivider(modifier = Modifier.padding(start = 20.dp, end = 20.dp),thickness = 2.dp, color = Color.White)
+
+
+                Button(
+                    onClick = { /*TODO*/ },
+                    modifier = Modifier
+                        .padding(vertical = 20.dp)
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(Color.LightGray),
+                    border = BorderStroke(1.dp,Color.Black)
+                ){
+                    Row(modifier = Modifier,
+                        verticalAlignment = Alignment.CenterVertically){
+                        Image(painter = painterResource(R.drawable.google_logo),
+                            contentDescription = "Google",
+                            )
+                        Column (modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ){
+                            Text(text="Sign In With Google",
+                                fontSize = 24.sp,
+                                color = Color.Black,
+                            )
+                        }
+                    }
+                }
+
+                Button(
+                    onClick = { /*TODO*/ },
+                    modifier = Modifier
+                        .padding(vertical = 20.dp)
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(Color.Blue),
+                    border = BorderStroke(1.dp,Color.Blue)
+                ){
+                    Row(modifier = Modifier,
+                        verticalAlignment = Alignment.CenterVertically){
+                        Image(painter = painterResource(R.drawable.facebook_logo),
+                            contentDescription = "Facebook",
+                        )
+                        Column (modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ){
+                            Text(text="Sign In With Facebook",
+                                fontSize = 24.sp,
+                                color = Color.White,
+                            )
+                        }
+                    }
+                }
             }
-        }
-
-        Button(
-            onClick = { /*TODO*/ },
-            modifier = Modifier
-                .padding(20.dp)
-                .fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(Color.LightGray),
-            border = BorderStroke(1.dp,Color.Black)
-        ){
-            Image(painter = painterResource(R.drawable.baseline_upload_24),
-                contentDescription = "Google"
-            )
-            Text(text="Sign In With Google",
-                fontSize = 24.sp,
-                color = Color.Black
-            )
-        }
-
-        Button(
-            onClick = { /*TODO*/ },
-            modifier = Modifier
-                .padding(20.dp)
-                .fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(Color.Blue),
-            border = BorderStroke(1.dp,Color.Blue)
-        ){
-            Image(painter = painterResource(R.drawable.baseline_upload_24),
-                contentDescription = "FaceBook" )
-            Text(text="Sign In With Google", fontSize = 24.sp, color = Color.White)
         }
     }
 }
@@ -372,20 +416,38 @@ fun PasswordField(
     keyboardOptions: KeyboardOptions,
     color: Color,
     shape: RoundedCornerShape,
-    visualTransformation: PasswordVisualTransformation,
+    isPassword: Boolean = false,
     modifier: Modifier = Modifier
 ){
+    var showPassword by rememberSaveable { mutableStateOf(false) }
+
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         label = {Text(label)},
         singleLine = true,
         placeholder = {Text(placeholder)},
-        visualTransformation = visualTransformation,
         keyboardOptions = keyboardOptions,
         colors = TextFieldDefaults.colors(unfocusedContainerColor = color,
             focusedContainerColor = color,
             focusedLabelColor = color),
+        trailingIcon = {
+            if (isPassword){
+                Icon(
+                    if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                    contentDescription = if (showPassword) "Show Password" else "Hide Password",
+                    tint = Color.Gray,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable { showPassword = !showPassword }
+                )
+            }else {
+                null
+            }
+        },
+        visualTransformation = if (isPassword){
+            if (showPassword) VisualTransformation.None else PasswordVisualTransformation()
+        } else { VisualTransformation.None },
         shape = shape,
         modifier = modifier
     )
@@ -393,8 +455,9 @@ fun PasswordField(
 @Preview(showBackground = true)
 @Composable
 fun LoginPreview() {
+
     UniCanteenTheme {
         //val food = Datasource.foods.get(0)
-//        LoginScreen(navController = )
+//        LoginScreen(onHelpClicked = {})
     }
 }
