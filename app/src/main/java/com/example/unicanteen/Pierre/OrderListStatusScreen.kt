@@ -44,11 +44,11 @@ import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 
 object OrderListStatusDestination : NavigationDestination {
-    override val route = "Order_List_Status/{userId}/{orderId}"
+    override val route = "Order_List_Status"
     override val title = "Order_List_Status"
     // Create a function to generate the route with arguments
-    fun routeWithArgs(userId: Int, orderId: Int): String {
-        return "food_sales_detail/$userId/$orderId"
+    fun routeWithArgs(userId: Int): String {
+        return "food_sales_detail/$userId"
     }
 }
 
@@ -58,13 +58,16 @@ fun OrderListStatusScreen(
     currentDestination: NavDestination?,
     sellerAdminRepository: PierreAdminRepository,
     userId: Int,  // Accept sellerId as a parameter
-    orderId: Int,
     modifier: Modifier = Modifier,
 ) {
     val viewModel: AdminViewModel = viewModel(
         factory = AppViewModelProvider.Factory(pierreAdminRepository = sellerAdminRepository)
     )
+    LaunchedEffect(userId) {
+        viewModel.getOrderId(userId)
 
+    }
+    val orderId by viewModel.OrderId.collectAsState()
     // Load the order details using the orderId and userId
     LaunchedEffect(orderId, userId) {
         viewModel.loadOrderDetails(orderId, userId)

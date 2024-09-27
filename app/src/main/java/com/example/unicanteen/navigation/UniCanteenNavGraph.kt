@@ -361,12 +361,12 @@ fun UniCanteenNavHost(
         composable(
             route = OrderListStatusDestination.route, // Define the route with placeholders for orderId and userId
             arguments = listOf(
-                navArgument("orderId") { type = NavType.IntType },   // Add orderId as an Int argument
-                navArgument("userId") { type = NavType.IntType }     // Add userId as an Int argument
+                // Add orderId as an Int argument
+                navArgument("userId") { type = NavType.IntType
+                defaultValue = 1
+                }     // Add userId as an Int argument
             )
         ) { backStackEntry ->
-            // Get the orderId and userId from the backStackEntry arguments
-            val orderId = backStackEntry.arguments?.getInt("orderId") ?: 0
             val userId = backStackEntry.arguments?.getInt("userId") ?: 0
 
             // Call the OrderListStatusScreen with the retrieved arguments
@@ -375,7 +375,6 @@ fun UniCanteenNavHost(
                 currentDestination = navController.currentDestination,
                 sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
                 userId = userId,  // Pass userId to the screen
-                orderId = orderId // Pass orderId to the screen
             )
         }
 
