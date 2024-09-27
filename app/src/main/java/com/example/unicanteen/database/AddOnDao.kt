@@ -5,11 +5,12 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Delete
+import androidx.room.OnConflictStrategy
 
 
 @Dao
 interface AddOnDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAddOn(addOn: AddOn)
 
     @Query("SELECT * FROM addOn WHERE foodId = :foodId")

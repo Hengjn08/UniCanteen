@@ -10,6 +10,7 @@ import com.example.unicanteen.ChiaLiHock.SelectFoodViewModel
 import com.example.unicanteen.HengJunEn.AddFoodViewModel
 import com.example.unicanteen.HengJunEn.SellerFoodDetailsViewModel
 import com.example.unicanteen.HengJunEn.SellerHomeViewModel
+import com.example.unicanteen.HengJunEn.SellerOrderListViewModel
 import com.example.unicanteen.LimSiangShin.UserViewModel
 import com.example.unicanteen.Pierre.AdminViewModel
 import com.example.unicanteen.SelectRestaurantViewModel
@@ -56,6 +57,8 @@ object AppViewModelProvider {
                 return foodListRepository?.let {SellerFoodDetailsViewModel(it)} as T
             }else if (modelClass.isAssignableFrom(AddFoodViewModel::class.java)) {
                 return foodListRepository?.let { AddFoodViewModel(it) } as T
+            }else if (modelClass.isAssignableFrom(SellerOrderListViewModel::class.java)) {
+                return orderListRepository?.let { SellerOrderListViewModel(it) } as T
             }
             else if (modelClass.isAssignableFrom(OrderListViewModel::class.java)) {
                 return orderListRepository?.let { OrderListViewModel(it, orderRepository!!) } as T

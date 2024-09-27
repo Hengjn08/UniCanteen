@@ -1,7 +1,7 @@
 package com.example.unicanteen.database
 
 class FoodListRepositoryImpl( private val foodListDao: FoodListDao): FoodListRepository{
-    override suspend fun insertFood(foodList: FoodList){
+    override suspend fun insertFood(foodList: FoodList): Long{
         return foodListDao.insertFoodItem(foodList)
     }
     override suspend fun updateFood(foodList: FoodList) {

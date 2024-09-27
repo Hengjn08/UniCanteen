@@ -1,26 +1,37 @@
 package com.example.unicanteen.database
 
-class OrderListRepositoryImpl( private val OrderListDao: OrderListDao): OrderListRepository {
+import com.example.unicanteen.database.OrderListDao.OrderListItemDetails
+
+class OrderListRepositoryImpl( private val orderListDao: OrderListDao): OrderListRepository {
     override suspend fun getOrderListBySellerId(sellerId: Int): List<OrderList>{
-        return OrderListDao.getOrderListBySellerId(sellerId)
+        return orderListDao.getOrderListBySellerId(sellerId)
+    }
+    override suspend fun updateOrderList(orderList: OrderList){
+        orderListDao.updateOrderList(orderList)
+    }
+    override suspend fun getOrderListDetailsBySellerId(sellerId: Int): List<OrderListItemDetails>{
+        return orderListDao.getOrderListDetailsBySellerId(sellerId)
+    }
+    override suspend fun updateOrderStatus(orderListId: Int, newStatus: String){
+        orderListDao.updateOrderStatus(orderListId, newStatus)
     }
     override suspend fun insertOrder(orderList: OrderList){
-        return OrderListDao.insertOrderList(orderList)
+        return orderListDao.insertOrderList(orderList)
     }
     override suspend fun getExistingOrderIdForUser(userId: Int, status: String): Int? {
-        return OrderListDao.getExistingOrderIdForUser(userId, status)
+        return orderListDao.getExistingOrderIdForUser(userId, status)
     }
     override suspend fun getOrderListItem(orderId: Int, sellerId: Int, foodId: Int): List<OrderList> {
-        return OrderListDao.getOrderListItem(orderId, sellerId, foodId)
+        return orderListDao.getOrderListItem(orderId, sellerId, foodId)
     }
     override suspend fun updateOrder(orderList: OrderList) {
-        OrderListDao.updateOrderList(orderList)
+        orderListDao.updateOrderList(orderList)
     }
     override suspend fun updateOrderListItem(orderListId: Int, newQuantity: Int, newTotalPrice: Double) {
-        return OrderListDao.updateOrderListItem(orderListId, newQuantity, newTotalPrice)
+        return orderListDao.updateOrderListItem(orderListId, newQuantity, newTotalPrice)
     }
     override suspend fun deleteOrderListById(orderListId: Int) {
-        return OrderListDao.deleteOrderListById(orderListId)
+        return orderListDao.deleteOrderListById(orderListId)
     }
 
 }

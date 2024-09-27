@@ -47,6 +47,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.unicanteen.BottomNavigationBar
 import com.example.unicanteen.ChiaLiHock.SelectFoodViewModel
 import com.example.unicanteen.R
@@ -167,7 +168,7 @@ fun SellerHomeBody(
 
 //To display list of food cards
 @Composable
-fun FoodList(
+private fun FoodList(
     //available: Boolean,
     onAvailableChanged: (FoodList,Boolean) -> Unit,
     //onFoodClick: (FoodList) -> Unit,
@@ -217,6 +218,16 @@ fun FoodCard(
                 .fillMaxWidth()
                 .padding(8.dp)
         ) {
+            // Displaying image from URL using Coil's AsyncImage
+            AsyncImage(
+                model = food.imageUrl,  // Image URL from FoodList entity
+                contentDescription = "Food Image",
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop
+            )
+
 //            Image(
 //                painter = painterResource(food.foodImage.toInt()),
 //                contentDescription = null,
