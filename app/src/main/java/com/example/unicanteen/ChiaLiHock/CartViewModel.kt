@@ -16,7 +16,8 @@ class CartViewModel(
 
     private val _cartItems = MutableLiveData<List<CartItem>>()
     val cartItems: LiveData<List<CartItem>> get() = _cartItems
-
+    private val _cartItemCount = MutableLiveData<Int>()
+    val cartItemCount: LiveData<Int> get() = _cartItemCount
     fun getCartItems(userId: Int) {
         viewModelScope.launch {
             val items = orderRepository.getPendingOrderItems(userId)
@@ -48,6 +49,12 @@ class CartViewModel(
     fun deleteOrderByUserId(userId: Int) {
         viewModelScope.launch {
             orderRepository.deleteOrderByUserId(userId)
+        }
+    }
+    fun fetchCartItemsCount(userId: Int) {
+        viewModelScope.launch {
+            val count = orderRepository.getCartItemsCount(userId)
+            _cartItemCount.postValue(count)
         }
     }
 }

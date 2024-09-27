@@ -148,10 +148,14 @@ fun UniCanteenNavHost(
 
         //select restaurant screen
         composable(route = SelectRestaurantDestination.route) {
+            val userId=1
             SelectRestaurantScreen(
+                userId = userId,
                 navController = navController,
                 currentDestination = navController.currentDestination,
-                sellerRepository = SellerRepositoryImpl(AppDatabase.getDatabase(navController.context).sellerDao())
+                sellerRepository = SellerRepositoryImpl(AppDatabase.getDatabase(navController.context).sellerDao()),
+                orderRepository = OrderRepositoryImpl(AppDatabase.getDatabase(navController.context).orderDao()),
+                orderListRepository = OrderListRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao())
             )
         }
 
@@ -161,9 +165,12 @@ fun UniCanteenNavHost(
                 ) // Ensure argument type matches
         ) { backStackEntry ->
             val sellerId = backStackEntry.arguments?.getInt(SelectFoodDestination.sellerIdArg)
-
+            val userId=1
             // Set up the SelectFoodScreen here, using the sellerId to fetch the relevant foods
             SelectFoodScreen(
+                userId = userId,
+                orderRepository = OrderRepositoryImpl(AppDatabase.getDatabase(navController.context).orderDao()),
+                orderListRepository = OrderListRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
                 foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
                 sellerId = sellerId ?: return@composable, // Ensure sellerId is not null
                 navController = navController,

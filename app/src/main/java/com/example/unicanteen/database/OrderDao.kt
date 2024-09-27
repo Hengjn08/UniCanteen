@@ -1,5 +1,6 @@
 package com.example.unicanteen.database
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -69,5 +70,9 @@ interface OrderDao {
             o.userId = :userId AND o.status = 'Pending'
     """)
         suspend fun getPendingOrderItems(userId: Int): List<CartItem>
+
+    @Query("SELECT SUM(orderList.qty) FROM orders JOIN orderList ON orders.orderId = orderList.orderId WHERE orders.userId = :userId AND orders.status = 'Pending'")
+    suspend fun getCartItemsCount(userId: Int): Int
+
 
 }
