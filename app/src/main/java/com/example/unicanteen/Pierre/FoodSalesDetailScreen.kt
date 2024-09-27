@@ -215,6 +215,7 @@ fun MonthlySalesPieChart(salesData: List<OrderListDao.FoodSalesData>) {
         Text(
             text = "Total: RM ${String.format("%.2f", totalSales.toDouble())}",
             style = MaterialTheme.typography.labelLarge.copy(color = Color.DarkGray), // Make it more visible
+            color = MaterialTheme.colorScheme.onSecondary,
             modifier = Modifier
                 .align(Alignment.Center) // Center the text
                 .padding(8.dp) // Padding for better spacing
