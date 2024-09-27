@@ -13,6 +13,9 @@ class SelectRestaurantViewModel(private val repository: SellerRepository) : View
     private val _sellers = MutableStateFlow<List<Seller>>(emptyList())
     val sellers: StateFlow<List<Seller>> = _sellers.asStateFlow()
 
+    private  val _singleSeller = MutableStateFlow<Seller?>(null)
+    val singleSeller: StateFlow<Seller?> = _singleSeller.asStateFlow()
+
     init {
         loadSellers() // Call the method to load sellers
     }
@@ -41,6 +44,23 @@ class SelectRestaurantViewModel(private val repository: SellerRepository) : View
     fun filterSellersByRating(rating: Double) {
         viewModelScope.launch {
             _sellers.value = repository.getSellersWithHighRating(rating)
+        }
+    }
+    fun submitRating(sellerId: Int, rating: Double) {
+        viewModelScope.launch {
+            val seller = repository.getSellerById(sellerId)
+            if (seller != null) {
+                seller.shopRating = (seller.shopRating*seller.ratingNumber + rating)/(seller.ratingNumber+1)
+                seller.ratingNumber = seller.ratingNumber + 1
+                repository.updateSeller(seller)
+                // Optionally: Update _singleSeller so that the UI reflects the updated rating immediately
+                _singleSeller.value = seller
+            }
+        }
+    }
+    fun getSellerById(sellerId: Int) {
+        viewModelScope.launch {
+            _singleSeller.value = repository.getSellerById(sellerId)
         }
     }
 }

@@ -27,6 +27,7 @@ import androidx.wear.compose.material.ChipDefaults
 import coil.compose.rememberAsyncImagePainter
 import com.example.unicanteen.ChiaLiHock.CartViewModel
 import com.example.unicanteen.ChiaLiHock.SelectFoodViewModel
+import com.example.unicanteen.ChiaLiHock.SellerDetailsDestination
 import com.example.unicanteen.database.FoodList
 import com.example.unicanteen.database.FoodListRepository
 import com.example.unicanteen.database.OrderListRepository
@@ -90,7 +91,11 @@ fun SelectFoodScreen(
 
     Column {
         // Top Bar with title
-        UniCanteenTopBar(title = shopName)
+        UniCanteenTopBar(title = shopName, onTitleClick = {
+            navController.navigate(
+                "${SellerDetailsDestination.route}/${sellerId}"
+            )
+        })
 
         // Search and Cart bar with search function and cart action
         SearchAndCartBar(

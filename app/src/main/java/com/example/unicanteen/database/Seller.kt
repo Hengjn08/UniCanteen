@@ -24,9 +24,10 @@ data class Seller(
     @ColumnInfo(name = "shopName") val shopName: String,
     @ColumnInfo(name = "createdDate") val createdDate: String? = null, // Changed to String for TEXT type
     @ColumnInfo(name = "shopStatus") val shopStatus: String, // E.g., "Open", "Closed", "Suspended"
-    @ColumnInfo(name = "shopRating") val shopRating: Double = 0.0, // Default rating is 0
+    @ColumnInfo(name = "shopRating") var shopRating: Double = 0.0, // Default rating is 0
     @ColumnInfo(name = "totalOrders") val totalOrders: Int = 0, // Total number of orders
     @ColumnInfo(name = "updatedDate") val updatedDate: String? = null, // Changed to String for TEXT type
     @ColumnInfo(name = "descr") val description: String? = null, // Description of the seller
-    @ColumnInfo(name = "shopImage") val shopImage: String? = null // URL for the seller's image
+    @ColumnInfo(name = "shopImage") val shopImage: String? = null, // URL for the seller's image
+    @ColumnInfo(name = "ratingNumber") var ratingNumber: Int = 0 // Number of ratings
 )
