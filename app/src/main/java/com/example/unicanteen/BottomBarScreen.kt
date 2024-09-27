@@ -7,6 +7,10 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.unicanteen.HengJunEn.SellerHomeDestination
+import com.example.unicanteen.HengJunEn.SellerOrderListDestination
+import com.example.unicanteen.LimSiangShin.CustomerProfileDestination
+import com.example.unicanteen.LimSiangShin.SellerProdileDestination
 import com.example.unicanteen.Pierre.OrderListStatusDestination
 import com.example.unicanteen.Pierre.reportSaleCheck
 
@@ -16,12 +20,12 @@ sealed class BottomBarScreen(
      val icon: ImageVector,
 ){
     object SellerHome: BottomBarScreen(
-        route = "Home",
+        route = SellerHomeDestination.route,
         title = "Home",
         icon = Icons.Filled.Home
     )
     object SellerOrderList: BottomBarScreen(
-        route = "Order List",
+        route = SellerOrderListDestination.route,
         title = "Order List",
         icon = Icons.AutoMirrored.Filled.List
     )
@@ -31,7 +35,7 @@ sealed class BottomBarScreen(
         icon = Icons.Filled.Info
     )
     object SellerProfile: BottomBarScreen(
-        route = "Profile",
+        route = SellerProdileDestination.route,
         title = "Profile",
         icon = Icons.Filled.Person
     )
@@ -47,7 +51,7 @@ sealed class BottomBarScreen(
         icon = Icons.AutoMirrored.Filled.List
     )
     object CustomerProfile : BottomBarScreen(
-        route = "Customer Profile",
+        route = CustomerProfileDestination.route,
         title = "Profile",
         icon = Icons.Filled.Person
     )

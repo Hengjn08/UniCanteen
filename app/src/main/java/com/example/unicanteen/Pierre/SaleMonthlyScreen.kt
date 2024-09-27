@@ -44,15 +44,6 @@ import com.example.unicanteen.database.PierreAdminRepository
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 
 
-//object reportSaleCheck : NavigationDestination {
-//    override val route = "report_sale?sellerId={sellerId}"
-//    override val title = "Report Sale"
-//    const val chart = "chartId"
-//    // Create a function to generate the route with arguments
-//    fun routeWithArgs(sellerId: Int): String {
-//        return "report_sale?sellerId=$sellerId"
-//    }
-//}
 object reportSaleCheck : NavigationDestination {
     override val route = "report_sale"
     override val title = "Report Sale"
