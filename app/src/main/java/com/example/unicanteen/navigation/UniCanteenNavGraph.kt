@@ -91,7 +91,12 @@ fun UniCanteenNavHost(
         }
 
         composable(route = BottomBarScreen.SellerOrderList.route) {
-            OrderListScreen(navController = navController, currentDestination = currentDestination)
+            OrderListScreen(
+                navController = navController,
+                currentDestination = currentDestination,
+                sellerId = 1,
+                orderListRepository = OrderListRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao())
+            )
         }
         composable(route = BottomBarScreen.SellerOrderList.route) {
             SellerProfileScreen()
@@ -231,9 +236,9 @@ fun UniCanteenNavHost(
             route = AddFoodDestination.route
         ){
             AddFoodScreen(
-                onSaveButtonClicked = {navController.navigate(BottomBarScreen.SellerHome.route)},
-                onCancelButtonClicked = {navController.navigate(BottomBarScreen.SellerHome.route)},
-                //foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
+                sellerId = 1,   //temporary
+                foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
+                addOnRepository = AddOnRepositoryImpl(AppDatabase.getDatabase(navController.context).addOnDao()),
                 navigateBack = {navController.navigateUp()},
             )
         }

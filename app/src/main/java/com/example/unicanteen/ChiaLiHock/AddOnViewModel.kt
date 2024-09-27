@@ -23,4 +23,10 @@ class AddOnViewModel(private val repository: AddOnRepository) : ViewModel() {
         }
     }
 
+    fun insertAddOns(addOn: AddOn){
+        viewModelScope.launch {
+            repository.insert(addOn)
+        }
+    }
+
 }

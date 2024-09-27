@@ -265,7 +265,7 @@ fun FoodDetailsBody(
 }
 
 @Composable
-fun DeleteConfirmationDialog(
+private fun DeleteConfirmationDialog(
     onConfirm: () -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier

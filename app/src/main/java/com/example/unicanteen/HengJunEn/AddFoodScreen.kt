@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -52,13 +53,38 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.font.FontWeight
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.unicanteen.ChiaLiHock.AddOnViewModel
 import com.example.unicanteen.UniCanteenTopBar
+import com.example.unicanteen.database.AddOn
+import com.example.unicanteen.database.AddOnRepository
+import com.example.unicanteen.database.FoodList
+import com.example.unicanteen.database.FoodListRepository
 import com.example.unicanteen.navigation.NavigationDestination
+import com.example.unicanteen.ui.theme.AppViewModelProvider
 import com.example.unicanteen.ui.theme.UniCanteenTheme
+import kotlinx.coroutines.launch
+import java.lang.Error
+import java.text.SimpleDateFormat
 
 object AddFoodDestination : NavigationDestination {
     override val route = "add_food"
@@ -69,18 +95,25 @@ object AddFoodDestination : NavigationDestination {
 
 @Composable
 fun AddFoodScreen(
-    food: Food? = null,
-    onCancelButtonClicked: () -> Unit = {},
-    onSaveButtonClicked: () -> Unit = {},
-    //navController: NavController,
+    sellerId: Int,
     navigateBack: () -> Unit,
+    foodListRepository: FoodListRepository,
+    addOnRepository: AddOnRepository,
     modifier: Modifier = Modifier
 ){
-    var foodName by remember { mutableStateOf(food?.foodName?:"")}
-    var foodDes by remember { mutableStateOf(food?.foodDesc?:"") }
-    var foodPrice by remember { mutableStateOf(food?.price?.toString()?:"") }
-    var selectedType by remember { mutableStateOf(food?.type?:"") }
+    val addFoodViewModel: AddFoodViewModel = viewModel(
+        factory = AppViewModelProvider.Factory(foodListRepository = foodListRepository)
+    )
+    val addOnViewModel: AddOnViewModel = viewModel(
+        factory = AppViewModelProvider.Factory(addOnRepository = addOnRepository)
+    )
+    var foodName by remember { mutableStateOf("")}
+    var foodDes by remember { mutableStateOf("") }
+    var selectedType by remember { mutableStateOf ("")}
+    var foodPrice by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null)}
+    var wordCount by remember { mutableStateOf(0) }
+    var isDescriptionValid by remember { mutableStateOf(true) }
 
     val context = LocalContext.current
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -99,13 +132,16 @@ fun AddFoodScreen(
         }
     }
 
+    // Snackbar Host State
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    val descriptionWordLimit = 10  // Word limit for the description
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            UniCanteenTopBar(
-                //canNavigateBack = true,
-                //navigateUp = navigateBack,
-            )
+            UniCanteenTopBar()
         }
     ){ innerPadding ->
         AddFoodBody(
@@ -116,9 +152,22 @@ fun AddFoodScreen(
             selectedType = selectedType,
             imageUri = imageUri,
             onFoodNameChange = { foodName = it },
-            onFoodDescChange = { foodDes = it },
+            onFoodDescChange = {
+                foodDes = it
+
+                // Calculate the word count and update the state
+                wordCount = getWordCount(it)
+                isDescriptionValid = isValidDescription(it, descriptionWordLimit)
+
+                // Show a snackbar if the word limit is exceeded
+                if (!isDescriptionValid) {
+                    scope.launch {
+                        snackbarHostState.showSnackbar("You have reached the $descriptionWordLimit limit!")
+                    }
+                }
+           },
             onFoodPriceChange = { foodPrice = it },
-            onTypeSelected = { selectedType = it },
+            onTypeSelected = { type -> selectedType = type  },
             onImageClick = {
                 when (PackageManager.PERMISSION_GRANTED) {
                     ContextCompat.checkSelfPermission(
@@ -132,34 +181,20 @@ fun AddFoodScreen(
                     }
                 }
             },
-            onCancelButtonClicked = onCancelButtonClicked,
+            onCancelButtonClicked = { navigateBack() },
             onSaveButtonClicked = {
-                val updatedFood = food?.copy(
-                    foodName = foodName,
-                    foodDesc = foodDes,
-                    price = foodPrice.toDouble(),
-                    foodImage = imageUri?.toString() ?: food.foodImage,
-                    type = selectedType
-                ) ?: Food(
-                    id = Datasource.foods.size + 1,
-                    foodName = foodName,
-                    foodDesc = foodDes,
-                    price = foodPrice.toDouble(),
-                    foodImage = imageUri?.toString() ?: "",
-                    type = selectedType
-                )
-                if (food == null) {
-                    Datasource.foods.add(updatedFood)
-                }
-                onSaveButtonClicked()
                 Toast.makeText(context, "Food item saved successfully!", Toast.LENGTH_SHORT).show()
+                navigateBack()
             },
-            navigateBack = navigateBack
+            navigateBack = navigateBack,
+            sellerId = sellerId,
+            isDescriptionValid = isDescriptionValid,
+            wordCount = wordCount,
+            descriptionWordLimit = descriptionWordLimit,
+            addFoodViewModel = addFoodViewModel,
+            addOnViewModel = addOnViewModel
         )
     }
-
-
-
 }
 
 @Composable
@@ -177,8 +212,20 @@ fun AddFoodBody(
     onImageClick: () -> Unit,
     onCancelButtonClicked: () -> Unit,
     onSaveButtonClicked: () -> Unit,
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
+    sellerId: Int,
+    isDescriptionValid: Boolean,
+    wordCount: Int,
+    descriptionWordLimit: Int,
+    addFoodViewModel: AddFoodViewModel,
+    addOnViewModel: AddOnViewModel
 ){
+    val formatter = SimpleDateFormat("yyyy-MM-dd")
+    val date = formatter.format(java.util.Date())
+
+    val addOnOptions = getAddOnOptions()
+    val selectedAddOns = remember { mutableStateListOf<AddOnOption>() }
+
     Column (
         modifier = modifier.verticalScroll(rememberScrollState()),
     ){
@@ -195,20 +242,6 @@ fun AddFoodBody(
             ImageUploadBox(
                 imageUri = imageUri,
                 onImageClick = onImageClick,
-//                {
-//                    when (PackageManager.PERMISSION_GRANTED) {
-//                        ContextCompat.checkSelfPermission(
-//                            context,
-//                            Manifest.permission.READ_EXTERNAL_STORAGE
-//                        ) -> {
-//                            launchImagePicker(imagePickerLauncher)
-//                        }
-//
-//                        else -> {
-//                            permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
-//                        }
-//                    }
-//                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -221,6 +254,8 @@ fun AddFoodBody(
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Next
                 ),
+                singleLine = true,
+                isError = false,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
@@ -234,9 +269,15 @@ fun AddFoodBody(
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Next
                 ),
+                singleLine = false,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
+                    .fillMaxWidth(),
+                isError = !isDescriptionValid
+            )
+            Text(
+                text = "Words: $wordCount/$descriptionWordLimit",
+                color = if (isDescriptionValid) Color.Gray else Color.Red,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
             EditTextField(
                 value = foodPrice,
@@ -247,103 +288,171 @@ fun AddFoodBody(
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Done
                 ),
+                singleLine = true,
+                isError = false,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
             )
-            //FoodTypeRadioButton()
-            val options = listOf(
-                "Rice",
-                "Mee"
+            FoodTypeDropdown(
+                selectedType = selectedType,
+                onTypeSelected = onTypeSelected
             )
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "Type:"
-                )
-                options.forEach { item ->
-                    Row(
-                        modifier = Modifier
-                            .weight(1f)
-                            .selectable(
-                                selected = selectedType == item,
-                                onClick = { onTypeSelected(item) }
-                            ),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        RadioButton(
-                            selected = selectedType == item,
-                            onClick = { onTypeSelected(item) },
-                        )
-                        Text(item)
-                    }
+            Spacer(modifier = Modifier.height(8.dp))
+            // Add-On Options with Checkboxes
+            Text(text = "Add-Ons:")
+
+            addOnOptions.forEach { addOnOption ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                ) {
+                    Checkbox(
+                        checked = selectedAddOns.contains(addOnOption),
+                        onCheckedChange = { isChecked ->
+                            if (isChecked) {
+                                selectedAddOns.add(addOnOption)
+                            } else {
+                                selectedAddOns.remove(addOnOption)
+                            }
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("${addOnOption.option} (RM ${addOnOption.price})")
                 }
             }
+
         }
-//        Row(
-//            horizontalArrangement = Arrangement.spacedBy(16.dp),
-//            verticalAlignment = Alignment.Bottom,
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(16.dp)
-//        ) {
-//
-//            OutlinedButton(
-//                onClick = onCancelButtonClicked,
-//                modifier = Modifier.weight(1f)
-//            ) {
-//                Text(text = "Cancel")
-//            }
-//            Button(
-//                onClick = {
-//                    //Log.d("AddFoodScreen","imageUri: $imageUri")
-//                    //if(imageUri != null) {
-//                    //                    val newFood = Food(
-//                    //                        foodName = foodName,
-//                    //                        foodDesc = foodDes,
-//                    //                        price = foodPrice.toDouble(),
-//                    //                        available = false,
-//                    //                        foodImage = R.drawable.curry_mee.toString(),//imageUri?.toString() ?: ""       //<-- got problem
-//                    //                        type = selectedType
-//                    //                    )
-//                    val updatedFood = food?.copy(
-//                        foodName = foodName,
-//                        foodDesc = foodDes,
-//                        price = foodPrice.toDouble(),
-//                        foodImage = imageUri?.toString() ?: food.foodImage,
-//                        type = selectedType
-//                    ) ?: Food(
-//                        id = Datasource.foods.size + 1,
-//                        foodName = foodName,
-//                        foodDesc = foodDes,
-//                        price = foodPrice.toDouble(),
-//                        foodImage = imageUri?.toString() ?: "",
-//                        type = selectedType
-//                    )
-//                    if (food == null) {
-//                        Datasource.foods.add(updatedFood)
-//                    }
-//                    //Datasource.foods.add(newFood)
-//                    onSaveButtonClicked()
-//                    Toast.makeText(context, "Food item saved successfully!", Toast.LENGTH_SHORT)
-//                        .show()
-//                    //}else {
-//                    //Toast.makeText(context, "Please select an image.", Toast.LENGTH_SHORT).show()
-//                    //}
-//                },
-//                enabled = selectedType.isNotEmpty() && foodName.isNotEmpty() && foodDes.isNotEmpty() && foodPrice.isNotEmpty(),
-//                modifier = Modifier.weight(1f)
-//            ) {
-//                Text(text = if (food == null) "Save" else "Update")
-//            }
-//        }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.Bottom,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+
+            OutlinedButton(
+                onClick = onCancelButtonClicked,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(text = "Cancel")
+            }
+            Button(
+                onClick = {
+                    val newFood = FoodList(
+                        sellerId = sellerId,
+                        foodName = foodName,
+                        description = foodDes,
+                        price = foodPrice.toDouble(),
+                        imageUrl = imageUri?.toString() ?: "",
+                        type = selectedType,
+                        createDate = date,
+                    )
+                    // Use a coroutine to handle the asynchronous call and get the foodId after saving the new item
+                    addFoodViewModel.viewModelScope.launch {
+                        // Insert the new food item and get the generated foodId
+                        val foodId = addFoodViewModel.addFoodItem(newFood)
+
+                        // Now, save each selected add-on for this food item
+                        selectedAddOns.forEach { addOn ->
+                            val addOnRecord = AddOn(
+                                foodId = foodId.toInt(),
+                                description = addOn.option,
+                                price = addOn.price
+                            )
+                            addOnViewModel.insertAddOns(addOnRecord)  // Insert add-on record
+                        }
+                        onSaveButtonClicked()
+                    }
+                },
+                enabled = selectedType.isNotEmpty() && foodName.isNotEmpty() && foodDes.isNotEmpty() && foodPrice.isNotEmpty() && isDescriptionValid,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(text = "Save")
+            }
+        }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FoodTypeDropdown(
+    selectedType: String,
+    onTypeSelected: (String) -> Unit,
+) {
+    val foodTypes = listOf("Rice", "Mee")  // Define your food types here
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = {expanded = it},
+    ){
+        OutlinedTextField(
+            value = selectedType,
+            onValueChange = {},
+            readOnly = true,  // Make the field read-only
+            label = { Text("Select Food Type") },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            },
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth()
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            foodTypes.forEach { type ->
+                DropdownMenuItem(
+                    text = { Text(type) },
+                    onClick = {
+                        onTypeSelected(type)  // Update the selected type
+                        expanded = false  // Close the dropdown after selection
+                    },
+                )
+            }
+        }
+    }
+}
+
+
+data class AddOnOption(val option: String, val price: Double)
+
+fun getAddOnOptions(): List<AddOnOption> {
+    return listOf(
+        AddOnOption("Big portion", 1.00),
+        AddOnOption("Egg", 1.00),
+        AddOnOption("Meat", 2.00)
+    )
+}
+
+@Composable
+fun EditTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    placeholder: String,
+    keyboardOptions: KeyboardOptions,
+    singleLine: Boolean,
+    isError: Boolean,
+    modifier: Modifier = Modifier
+){
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = {Text(label)},
+        singleLine = singleLine,
+        placeholder = {Text(placeholder)},
+        keyboardOptions = keyboardOptions,
+        isError = isError,
+        modifier = modifier
+    )
+}
 
 fun launchImagePicker(launcher: ActivityResultLauncher<String>) {
     launcher.launch("image/*")
@@ -392,73 +501,22 @@ fun ImageUploadBox(
     }
 }
 
-@Composable
-fun EditTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    placeholder: String,
-    keyboardOptions: KeyboardOptions,
-    modifier: Modifier = Modifier
-){
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = {Text(label)},
-        singleLine = true,
-        placeholder = {Text(placeholder)},
-        keyboardOptions = keyboardOptions,
-        //isError = value.isNullOrEmpty(),                          <--- need to do back
-        modifier = modifier
-    )
+// Validation function to check the word count of the description
+fun isValidDescription(description: String, wordLimit: Int): Boolean {
+    val wordCount = description.trim().split("\\s+".toRegex()).size
+    return wordCount <= wordLimit
 }
 
-//@Composable
-//fun FoodTypeRadioButton(
-//    modifier: Modifier = Modifier
-//){
-//    val options = listOf(
-//        "Rice",
-//        "Mee"
-//    )
-//
-//    var selected by remember { mutableStateOf("") }
-//
-//    Row(
-//        verticalAlignment = Alignment.CenterVertically,
-//        modifier = Modifier.fillMaxWidth()
-//    ){
-//        Text(
-//            text = "Type:"
-//        )
-//        options.forEach {item ->
-//            Row(
-//                modifier = Modifier
-//                    .weight(1f)
-//                    .selectable(
-//                        selected = selected == item,
-//                        onClick = {
-//                            selected = item
-//                        }
-//                    ),
-//                verticalAlignment = Alignment.CenterVertically,
-//                horizontalArrangement = Arrangement.Center
-//            ){
-//                RadioButton(
-//                    selected = selected == item,
-//                    onClick = { selected = item },
-//                )
-//                Text(item)
-//            }
-//        }
-//    }
-//}
+// Function to count words in the description
+fun getWordCount(description: String): Int {
+    return description.trim().split("\\s+".toRegex()).size
+}
 
 @Preview(showBackground = true)
 @Composable
 fun AddFoodPreview() {
-    UniCanteenTheme {
-        //val food = Datasource.foods.get(0)
-        AddFoodScreen(navigateBack = {})
-    }
+//    UniCanteenTheme {
+//        //val food = Datasource.foods.get(0)
+//        AddFoodScreen(navigateBack = {})
+//    }
 }
