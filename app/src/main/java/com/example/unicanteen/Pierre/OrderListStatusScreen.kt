@@ -44,11 +44,11 @@ import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 
 object OrderListStatusDestination : NavigationDestination {
-    override val route = "Order_List_Status"
+    override val route = "Order_List_Status?userId={userId}"
     override val title = "Order_List_Status"
     // Create a function to generate the route with arguments
-    fun routeWithArgs(foodType: String, month: String): String {
-        return "food_sales_detail/$foodType/$month"
+    fun routeWithArgs(userId: Int): String {
+        return "Order_List_Status?userId=$userId"
     }
 }
 
@@ -58,18 +58,24 @@ fun OrderListStatusScreen(
     currentDestination: NavDestination?,
     sellerAdminRepository: PierreAdminRepository,
     userId: Int,  // Accept sellerId as a parameter
-    orderId: Int,
     modifier: Modifier = Modifier,
 ) {
     val viewModel: AdminViewModel = viewModel(
         factory = AppViewModelProvider.Factory(pierreAdminRepository = sellerAdminRepository)
     )
+    LaunchedEffect(userId) {
+        viewModel.getOrderId(userId)
 
+    }
+    val orderId by viewModel.OrderId.collectAsState()
     // Load the order details using the orderId and userId
     LaunchedEffect(orderId, userId) {
         viewModel.loadOrderDetails(orderId, userId)
+        viewModel.getTableNo(userId, orderId)
     }
 
+// Collect the table number state from the ViewModel
+    val tableNo by viewModel.tableNo.collectAsState()
     // Collect StateFlow for monthly sales data
     val orderListData by viewModel.orderDetailsData.collectAsState()
 
@@ -82,7 +88,7 @@ fun OrderListStatusScreen(
             BottomNavigationBar(
                 navController = navController,
                 currentDestination = currentDestination,
-                isSeller = true
+                isSeller = false
             )
         },
         content = { paddingValues ->
@@ -117,7 +123,10 @@ fun OrderListStatusScreen(
                             .align(Alignment.CenterHorizontally)
                     ) {
                         Text(
-                            text = "Order Type: $orderType",
+                            text = if(orderType == "Delivery"){"Order Type: $orderType, Table No: $tableNo "}
+                            else {
+                                "Order Type: $orderType"
+                            },
                             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
                             color = Color.Black  // Set text color
                         )

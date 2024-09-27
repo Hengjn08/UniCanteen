@@ -83,112 +83,97 @@ fun TableNoScreen(
     var updateMessage by remember { mutableStateOf<String?>(null) }  // State for showing success/fail message
     val context = LocalContext.current
 
-    Scaffold(
-        topBar = { UniCanteenTopBar() },  // Using your UniCanteenTopBar
-        bottomBar = {
-            BottomNavigationBar(
-                navController = navController,
-                currentDestination = currentDestination,  // Handle destination as needed
-                isSeller = true
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),  // You can adjust the padding as needed
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        UniCanteenTopBar()
+
+        // Show a message on top for success or failure
+        updateMessage?.let {
+            Snackbar(
+                modifier = Modifier.padding(8.dp),
+                content = {
+                    Text(text = it, color = if (it == "Table number updated successfully") Color.Green else Color.Red)
+                }
             )
-        },
-        content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                // Show a message on top for success or failure
-                updateMessage?.let {
-                    Snackbar(
-                        modifier = Modifier.padding(8.dp),
-                        content = {
-                            Text(text = it, color = if (it == "Table number updated successfully") Color.Green else Color.Red)
-                        }
-                    )
-                }
-                // Rectangle Box with "Table No" text inside
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(0.6f)
-                        .height(100.dp)
-                        .border(2.dp, Color.Gray, RoundedCornerShape(8.dp))  // Border around the box
-                        .background(Color.White),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Table No.",  // Title inside the box
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Input Text Field
-                OutlinedTextField(
-                    value = tableNoInput,
-                    onValueChange = { newValue ->
-                        // Update input field state only if it's a valid number
-                        if (newValue.all { it.isDigit() }) {
-                            tableNoInput = newValue
-                        }
-                    },
-                    label = { Text("Enter Table Number") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth(0.6f)
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Confirm Button (Green Color)
-                // Confirm Button
-                ConfirmButton(
-                    onClick = {
-                        if (tableNoInput.isNotEmpty()) {
-                            // Trigger vibration
-//                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-////                                val vibrator = LocalContext.current.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-//                                vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
-//                            }
-
-                            // Call ViewModel to update table number
-                            viewModel.updateTableNo(userId, orderId, tableNoInput.toInt())
-
-                            // Check the status message after the update
-                            if (viewModel.updateStatusMessage != null) {
-                                updateMessage = viewModel.updateStatusMessage
-
-                                // Optionally navigate back if the update was successful
-                                if (updateMessage == "Table number updated successfully") {
-                                    navController.navigate("choosePayment/$userId/$orderId")
-                                }
-                            }
-                        } else {
-                            updateMessage = "Please enter a valid table number"
-                        }
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Back Arrow Button
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
-                        modifier = Modifier.size(40.dp),
-                        tint = Color.Black
-                    )
-                }
-            }
+        }
+        Spacer(modifier = Modifier.height(60.dp))
+        // Rectangle Box with "Table No" text inside
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.6f)
+                .height(180.dp)
+                .border(2.dp, Color.Gray, RoundedCornerShape(8.dp))  // Border around the box
+                .background(Color.White),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Table No.",  // Title inside the box
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp
+            )
         }
 
+        Spacer(modifier = Modifier.height(20.dp))
 
-    )
+        // Input Text Field
+        OutlinedTextField(
+            value = tableNoInput,
+            onValueChange = { newValue ->
+                // Update input field state only if it's a valid number
+                if (newValue.all { it.isDigit() }) {
+                    tableNoInput = newValue
+                }
+            },
+            label = { Text("Enter Table Number") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth(0.6f)
+        )
+
+        Spacer(modifier = Modifier.height(60.dp))
+
+        ConfirmButton(
+            onClick = {
+                // Validate the table number input
+                if (tableNoInput.isNotEmpty()) {
+                    val tableNo = tableNoInput.toIntOrNull() // Safely parse the input
+
+                    // Check if the table number is valid
+                    if (tableNo != null && tableNo > 0 && tableNo <= 30) {
+                        // Call ViewModel to update table number
+                        viewModel.updateTableNo(userId, orderId, tableNo)
+                        updateMessage = viewModel.updateStatusMessage
+
+                        // Optionally navigate back if the update was successful
+                        if (updateMessage == "Table number updated successfully") {
+                            navController.navigate("choosePayment/$userId/$orderId")
+                        }
+                    } else {
+                        updateMessage = "Please enter a valid table number (1-30)"
+                    }
+                } else {
+                    updateMessage = "Please enter a valid table number"
+                }
+            }
+        )
+
+
+        Spacer(modifier = Modifier.height(70.dp))
+
+        // Back Arrow Button
+        IconButton(onClick = { navController.popBackStack() }) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                modifier = Modifier.size(40.dp),
+                tint = Color.Black
+            )
+        }
+    }
+
 }
 
 @Composable
@@ -196,10 +181,20 @@ fun ConfirmButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Track the click state to update the color
+    var isClicked by remember { mutableStateOf(false) }
+
+    // Define button colors based on click state
+    val buttonColor = if (isClicked) Color(0xFF388E3C) else Color(0xFF4CAF50) // Change to a darker green when clicked
+
     Button(
-        onClick = onClick,
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)), // Green color
-        modifier = modifier.fillMaxWidth(0.6f).shadow(elevation = 4.dp), // Width can be adjusted as needed
+        onClick = {
+            isClicked = true  // Change state when clicked
+            onClick()  // Execute the onClick action
+        },
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
+        modifier = modifier.fillMaxWidth(0.6f) // Adjust width as needed
     ) {
         Text("Confirm", color = Color.White, fontSize = 18.sp)
     }

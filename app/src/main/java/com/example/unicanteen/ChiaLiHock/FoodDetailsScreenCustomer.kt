@@ -17,18 +17,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavDestination
-import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.example.unicanteen.ChiaLiHock.AddOnViewModel
 import com.example.unicanteen.ChiaLiHock.FoodDetailViewModel
+import com.example.unicanteen.ChiaLiHock.OrderListViewModel
 import com.example.unicanteen.database.AddOn
 import com.example.unicanteen.database.AddOnRepository
 import com.example.unicanteen.database.FoodList
 import com.example.unicanteen.database.FoodListRepository
+import com.example.unicanteen.database.OrderListRepository
+import com.example.unicanteen.database.OrderRepository
 import com.example.unicanteen.navigation.NavigationDestination
-import com.example.unicanteen.ui.theme.AppShapes
 import com.example.unicanteen.ui.theme.AppViewModelProvider
+import java.text.SimpleDateFormat
 
 object FoodDetailCustomerDestination : NavigationDestination {
     override val route = "foodDetailCustomer"
@@ -41,15 +44,23 @@ object FoodDetailCustomerDestination : NavigationDestination {
 fun FoodDetailsScreenCustomer(
     foodListRepository: FoodListRepository,
     addOnRepository: AddOnRepository,
+    orderListRepository: OrderListRepository,
+    orderRepository: OrderRepository,
     foodId: Int,
-    navController: NavHostController,
-    currentDestination: NavDestination?
+    userId: Int,
+    navController: NavController
 ) {
     val foodDetailViewModel: FoodDetailViewModel = viewModel(
         factory = AppViewModelProvider.Factory(foodListRepository = foodListRepository)
     )
     val addOnViewModel: AddOnViewModel = viewModel(
         factory = AppViewModelProvider.Factory(addOnRepository = addOnRepository)
+    )
+    val orderListViewModel: OrderListViewModel = viewModel(
+        factory = AppViewModelProvider.Factory(
+            orderListRepository = orderListRepository,
+            orderRepository = orderRepository
+        )
     )
 
     val foodDetails by foodDetailViewModel.foodDetails.collectAsState()
@@ -63,21 +74,28 @@ fun FoodDetailsScreenCustomer(
 
     foodDetails?.let { food ->
         var totalAddOnPrice by remember { mutableStateOf(0.0) }
+        var remarks = ""
+        Scaffold{innerPadding ->
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)) {
+                FoodDetailsCard(food = food)
+                Spacer(modifier = Modifier.height(20.dp))
 
-        Column(modifier = Modifier.fillMaxSize()) {
-            FoodDetailsCard(food = food)
-            Spacer(modifier = Modifier.height(20.dp))
+                // Pass the fetched add-ons to AddOnSection
+                totalAddOnPrice = AddOnSection(addOns = addOns, onPriceChange = { price ->
+                    totalAddOnPrice = price // Update the total add-on price
+                })
 
-            // Pass the fetched add-ons to AddOnSection
-            totalAddOnPrice = AddOnSection(addOns = addOns, onPriceChange = { price ->
-                totalAddOnPrice = price // Update the total add-on price
-            })
+                Spacer(modifier = Modifier.height(20.dp))
+                remarks=RemarksSection()
+                Spacer(modifier = Modifier.weight(1f))
+                AddToCartButton(totalPrice = food.price + totalAddOnPrice,remarks = remarks,
+                    food = food, orderListViewModel = orderListViewModel, userId, navController)
+            }
 
-            Spacer(modifier = Modifier.height(20.dp))
-            RemarksSection()
-            Spacer(modifier = Modifier.weight(1f))
-            AddToCartButton(totalPrice = food.price + totalAddOnPrice)
         }
+
     } ?: run {
         // Show loading or error state
         CircularProgressIndicator()
@@ -100,7 +118,9 @@ fun FoodDetailsCard(food: FoodList) {
                     .fillMaxWidth()
                     .height(180.dp)
             )
-            Column(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
+            Column(modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()) {
                 Text(
                     text = food.foodName,
                     color = Color.White,
@@ -192,7 +212,7 @@ fun AddOnSection(addOns: List<AddOn>, onPriceChange: (Double) -> Unit): Double {
 }
 
 @Composable
-fun RemarksSection() {
+fun RemarksSection() :String{
     var remarks by remember { mutableStateOf("") }
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -242,17 +262,44 @@ fun RemarksSection() {
             )
         }
     }
+    return remarks
 }
 
 @Composable
-fun AddToCartButton(totalPrice: Double) {
+fun AddToCartButton(
+    totalPrice: Double,
+    remarks: String,
+    food: FoodList,
+    orderListViewModel: OrderListViewModel,
+    userId: Int,
+    navController: NavController
+) {
+    // State to manage whether the dialog is visible
+    var showDialog by remember { mutableStateOf(false) }
+
+    // Button to add the item to the cart
     Button(
-        onClick = { /* Handle add to cart */ },
+        onClick = {
+            val formatter = SimpleDateFormat("yyyy-MM-dd")
+            val date = formatter.format(java.util.Date())
+            orderListViewModel.addOrderListItem(
+                sellerId = food.sellerId,
+                foodId = food.foodId,
+                userId = userId,
+                qty = 1,
+                totalPrice = totalPrice,
+                remark = remarks,
+                createDate = date,
+                price = totalPrice
+            )
+            // Show the confirmation dialog after adding to cart
+            showDialog = true
+        },
         colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.orange_500)),
         modifier = Modifier
             .fillMaxWidth()
             .height(65.dp),
-        shape = AppShapes.large
+        shape = RoundedCornerShape(24.dp)
     ) {
         Row(
             modifier = Modifier
@@ -277,6 +324,49 @@ fun AddToCartButton(totalPrice: Double) {
             )
         }
     }
-}
 
+    // Show confirmation dialog if the item is added to the cart
+    if (showDialog) {
+        ConfirmationDialog(
+            onDismiss = { showDialog = false },
+            onVisitCart = {
+                // Navigate to the cart screen here
+                showDialog = false
+                navController.navigate("${CartDestination.route}")
+                // Add navigation logic to the cart screen if necessary
+            },
+            onContinueShopping = {
+                showDialog = false
+                navController.navigate("${SelectRestaurantDestination.route}")
+                // Close the dialog and let the user continue shopping
+            }
+        )
+    }
+}
+@Composable
+fun ConfirmationDialog(onDismiss: () -> Unit, onVisitCart: () -> Unit, onContinueShopping: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        title = {
+            Text(text = "Item Added to Cart")
+        },
+        text = {
+            Text("Would you like to visit your cart or continue shopping?")
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onVisitCart() }
+            ) {
+                Text("Visit Cart")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = { onContinueShopping() }
+            ) {
+                Text("Continue Shopping")
+            }
+        }
+    )
+}
 

@@ -10,10 +10,6 @@ import androidx.room.Update
 @Dao
 interface PaymentDao {
 
-    // Insert a new payment
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPayment(payment: Payment): Long
-
     // Update an existing payment
     @Update
     suspend fun updatePayment(payment: Payment)

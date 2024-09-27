@@ -20,4 +20,24 @@ class PierreAdminRepositoryImpl(private val orderListDao: OrderListDao) : Pierre
         orderListDao.updateOrderType(orderId, userId, orderType)
     }
 
+    override suspend fun getTableNoByUserAndOrder(userId: Int, orderId: Int): Int {
+        return orderListDao.getTableNoByUserAndOrder(userId, orderId)
+    }
+    // Implement the new method
+    override suspend fun createPayment(orderId: Int, userId: Int, payType: String) {
+        orderListDao.createPaymentRecord(orderId, userId, payType)
+    }
+    // Implement the new method for getting the latest payment details
+    override suspend fun getLatestPaymentDetails(userId: Int, orderId: Int): LiveData<List<OrderListDao.PaymentDetails>> {
+        return orderListDao.getLatestPaymentDetails(userId, orderId)
+    }
+    // Implement the new method for getting the latest payment details
+    override suspend fun getPaymentOrderDetails(userId: Int, orderId: Int): LiveData<List<OrderListDao.paymentOrderDetailsData>> {
+        return orderListDao.getPaymentOrderDetails(userId, orderId)
+    }
+
+    override suspend fun getLatestOrderId(userId: Int): Int {
+        return orderListDao.getLatestOrderId(userId)
+    }
+
 }

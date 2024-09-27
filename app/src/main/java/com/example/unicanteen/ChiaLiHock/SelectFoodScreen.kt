@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -19,9 +20,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import coil.compose.rememberAsyncImagePainter
+import com.example.unicanteen.ChiaLiHock.CartViewModel
 import com.example.unicanteen.ChiaLiHock.SelectFoodViewModel
 import com.example.unicanteen.database.FoodList
 import com.example.unicanteen.database.FoodListRepository
+import com.example.unicanteen.database.OrderListRepository
+import com.example.unicanteen.database.OrderRepository
 import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 
@@ -35,6 +39,9 @@ object SelectFoodDestination : NavigationDestination {
 
 @Composable
 fun SelectFoodScreen(
+    userId: Int,
+    orderRepository: OrderRepository,
+    orderListRepository: OrderListRepository,
     foodListRepository: FoodListRepository,
     sellerId: Int?, // Seller ID to filter food by the selected restaurant
     navController: NavController,
@@ -44,17 +51,22 @@ fun SelectFoodScreen(
     val viewModel: SelectFoodViewModel = viewModel(
         factory = AppViewModelProvider.Factory(foodListRepository=foodListRepository)
     )
+    val cartViewModel: CartViewModel = viewModel(
+        factory = AppViewModelProvider.Factory(orderRepository = orderRepository, orderListRepository = orderListRepository)
+    )
 
     // Observe the food list from the ViewModel
     val foods by viewModel.foods.collectAsState()
-
+    val cartItemCount by cartViewModel.cartItemCount.observeAsState(0)
     // Trigger the ViewModel to fetch food list by sellerId when screen is first launched
     LaunchedEffect(sellerId) {
         sellerId?.let {
             viewModel.loadFoodsBySellerId(it)
         }
     }
-
+    LaunchedEffect(userId) {
+        cartViewModel.fetchCartItemsCount(userId)
+    }
     Column() {
         // Top Bar with title
         UniCanteenTopBar(title = "Food Menu")
@@ -66,8 +78,9 @@ fun SelectFoodScreen(
                 viewModel.searchFoodsByName(query)
             },
             onCartClick = {
-                // Handle cart click logic here (e.g., navigate to the cart screen)
-            }
+                navController.navigate("${CartDestination.route}")
+            },
+            cartItemCount
         )
 
         // Food List Column, using LazyColumn for food items
