@@ -66,8 +66,9 @@ interface OrderDao {
             orderList AS ol ON f.foodId = ol.foodId
         JOIN 
             orders AS o ON ol.orderId = o.orderId
+     
         WHERE 
-            o.userId = :userId AND o.status = 'Pending'
+            o.userId = :userId AND o.status = 'Pending' 
     """)
         suspend fun getPendingOrderItems(userId: Int): List<CartItem>
 
