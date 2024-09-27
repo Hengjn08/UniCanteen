@@ -20,7 +20,6 @@ import java.util.Date
 data class Seller(
     @PrimaryKey(autoGenerate = true) val sellerId: Int = 0,
     @ColumnInfo(name = "userId") val userId: Int, // Foreign key to User entity
-
     @ColumnInfo(name = "shopType") val shopType: String,
     @ColumnInfo(name = "shopName") val shopName: String,
     @ColumnInfo(name = "createdDate") val createdDate: String? = null, // Changed to String for TEXT type

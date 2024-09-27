@@ -107,7 +107,7 @@ fun FoodDetailsCard(food: FoodList) {
     Card(
         shape = RoundedCornerShape(0.dp),
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.orange_500))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary)
     ) {
         Column {
             Image(
@@ -295,7 +295,7 @@ fun AddToCartButton(
             // Show the confirmation dialog after adding to cart
             showDialog = true
         },
-        colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.orange_500)),
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
         modifier = Modifier
             .fillMaxWidth()
             .height(65.dp),
