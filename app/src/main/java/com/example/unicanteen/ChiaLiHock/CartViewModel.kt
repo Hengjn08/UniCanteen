@@ -29,8 +29,9 @@ class CartViewModel(
 
         viewModelScope.launch {
             orderListRepository.updateOrderListItem(orderListId, newQuantity, newTotalPrice)
+            getCartItems(userId)
         }
-        getCartItems(userId)
+
     }
     fun updateOrderPrice(orderId: Int, Price: Double) {
         viewModelScope.launch {
@@ -40,8 +41,9 @@ class CartViewModel(
     fun deleteOrderItem(orderListId: Int,userId: Int) {
         viewModelScope.launch {
             orderListRepository.deleteOrderListById(orderListId)
+            getCartItems(userId)
         }
-        getCartItems(userId)
+
     }
     fun deleteOrderByUserId(userId: Int) {
         viewModelScope.launch {

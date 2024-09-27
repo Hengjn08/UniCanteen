@@ -128,11 +128,12 @@ fun CartList(
                     val updatedItems = cartItems.toMutableList().apply {
                         removeAt(index)
                     }
-                    onCartItemsChanged(updatedItems)
                     cartViewModel.deleteOrderItem(cartItems[index].orderListId, userId = userId)
+                    onCartItemsChanged(updatedItems)
                     if (updatedItems.isEmpty()) {
                         cartViewModel.deleteOrderByUserId(userId)
                     }
+
                 }
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -149,6 +150,8 @@ fun CartCard(
     onQuantityChange: (Int) -> Unit,
     onDelete: () -> Unit
 ) {
+    // Remove the local state for quantity
+    val selectedQuantity = item.quantity
 
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -164,21 +167,19 @@ fun CartCard(
                 .fillMaxSize()
                 .padding(8.dp)
                 .align(alignment = Alignment.CenterHorizontally),
-            //  contentAlignment = Alignment.Center // Center the content within the Box
         ) {
             Row(
                 modifier = Modifier
                     .padding(4.dp)
                     .fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-                //horizontalArrangement = Arrangement.SpaceBetween // Space items evenly
+                horizontalArrangement = Arrangement.Center
             ) {
                 // Item Info
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(end = 8.dp) // Add padding to separate from quantity selector
+                        .padding(end = 8.dp)
                 ) {
                     Text(
                         text = item.name,
@@ -204,10 +205,12 @@ fun CartCard(
                         .clip(RoundedCornerShape(8.dp))
                 )
 
-                // Quantity Dropdown
+                // Quantity Dropdown (use selectedQuantity from item.quantity)
                 EnhancedQuantityDropdown(
-                    quantity = item.quantity,
-                    onQuantityChange = onQuantityChange,
+                    quantity = selectedQuantity, // Use item.quantity directly
+                    onQuantityChange = { newQuantity ->
+                        onQuantityChange(newQuantity) // Trigger parent callback
+                    },
                     modifier = Modifier.align(Alignment.CenterVertically)
                 )
 
@@ -246,6 +249,8 @@ fun CartCard(
     }
 }
 
+
+
 @Composable
 fun EnhancedQuantityDropdown(
     quantity: Int,
@@ -253,8 +258,15 @@ fun EnhancedQuantityDropdown(
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val quantities = (1..10).toList()
     var selectedQuantity by remember { mutableStateOf(quantity) }
+
+    // This ensures the UI updates if the quantity changes from outside (e.g., when an item is deleted).
+    LaunchedEffect(quantity) {
+        selectedQuantity = quantity
+    }
+
+    val quantities = (1..10).toList()
+
     Box(
         modifier = modifier
             .wrapContentSize()
