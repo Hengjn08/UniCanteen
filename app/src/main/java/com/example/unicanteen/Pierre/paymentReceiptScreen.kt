@@ -220,8 +220,8 @@ fun paymentReceiptScreen(
                     Button(
                         onClick = {
                             // Handle button click (e.g., navigate to another screen)
-//                            navController.navigate("Order_List_Status/$userId")
-                            navController.navigate(OrderListStatusDestination.routeWithArgs(userId))
+                           navController.navigate("Order_List_Status/$userId")
+                           // navController.navigate(OrderListStatusDestination.routeWithArgs(userId))
 
                         },
                         colors = ButtonDefaults.buttonColors().copy(

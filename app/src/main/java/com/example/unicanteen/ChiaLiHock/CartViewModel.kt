@@ -24,12 +24,13 @@ class CartViewModel(
         }
     }
 
-    fun updateOrderItem(orderListId: Int, newQuantity: Int, unitPrice: Double) {
+    fun updateOrderItem(orderListId: Int, newQuantity: Int, unitPrice: Double,userId: Int) {
         val newTotalPrice = newQuantity * unitPrice  // Calculate new total price
 
         viewModelScope.launch {
             orderListRepository.updateOrderListItem(orderListId, newQuantity, newTotalPrice)
         }
+        getCartItems(userId)
     }
     fun updateOrderPrice(orderId: Int, Price: Double) {
         viewModelScope.launch {

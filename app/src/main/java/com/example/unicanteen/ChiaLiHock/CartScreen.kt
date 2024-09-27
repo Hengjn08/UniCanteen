@@ -67,7 +67,7 @@ fun CartScreen(
 
     // Recalculate the total price whenever cartItems or quantity changes
     LaunchedEffect(cartItems) {
-        totalPrice = cartItems.sumOf { it.price * it.quantity }
+        totalPrice = cartItems.sumOf { it.price}
     }
 
     Column(
@@ -90,7 +90,7 @@ fun CartScreen(
                 )
             } else {
                 CartList(cartItems = cartItems.toMutableList(), onCartItemsChanged = { updatedItems ->
-                    totalPrice = updatedItems.sumOf { it.price * it.quantity }
+                    totalPrice = updatedItems.sumOf { it.price }
                 }, cartViewModel,userId)
             }
         }
@@ -122,7 +122,7 @@ fun CartList(
                         this[index] = updatedItem
                     }
                     onCartItemsChanged(updatedItems)
-                    cartViewModel.updateOrderItem(updatedItem.orderListId, newQuantity, unitPrice)
+                    cartViewModel.updateOrderItem(updatedItem.orderListId, newQuantity, unitPrice,userId)
                 },
                 onDelete = {
                     val updatedItems = cartItems.toMutableList().apply {
