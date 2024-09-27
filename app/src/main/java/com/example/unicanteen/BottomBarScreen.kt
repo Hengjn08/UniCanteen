@@ -3,15 +3,17 @@ package com.example.unicanteen
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.unicanteen.Pierre.OrderListStatusDestination
+import com.example.unicanteen.Pierre.reportSaleCheck
 
 sealed class BottomBarScreen(
     val route: String,
      val title: String,
-     val icon: ImageVector
+     val icon: ImageVector,
 ){
     object SellerHome: BottomBarScreen(
         route = "Home",
@@ -24,9 +26,9 @@ sealed class BottomBarScreen(
         icon = Icons.AutoMirrored.Filled.List
     )
     object SellerReport: BottomBarScreen(
-        route = "Report",
+        route = reportSaleCheck.route,
         title = "Report",
-        icon = Icons.Filled.MailOutline
+        icon = Icons.Filled.Info
     )
     object SellerProfile: BottomBarScreen(
         route = "Profile",

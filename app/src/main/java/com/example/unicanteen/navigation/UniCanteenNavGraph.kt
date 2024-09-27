@@ -72,7 +72,7 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = SelectRestaurantDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = reportSaleCheck.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
         composable(
@@ -157,12 +157,12 @@ fun UniCanteenNavHost(
             ) { backStackEntry ->
             val userId = backStackEntry.arguments?.getInt("userId") ?: 0
             SelectRestaurantScreen(
-                userId = userId,
                 navController = navController,
                 currentDestination = navController.currentDestination,
                 sellerRepository = SellerRepositoryImpl(AppDatabase.getDatabase(navController.context).sellerDao()),
                 orderRepository = OrderRepositoryImpl(AppDatabase.getDatabase(navController.context).orderDao()),
-                orderListRepository = OrderListRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao())
+                orderListRepository = OrderListRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
+                userId = userId,
             )
         }
 
@@ -345,14 +345,15 @@ fun UniCanteenNavHost(
 
         composable(
             route = reportSaleCheck.route,
-            arguments = listOf(navArgument(reportSaleCheck.chart) { type = NavType.StringType })
         ) { backStackEntry ->
-            val chartId = backStackEntry.arguments?.getString(reportSaleCheck.chart)
+            val sellerId = 1 // Use a constant or retrieve from ViewModel as needed
+
+            // Call your SaleMonthlyScreen composable
             SaleMonthlyScreen(
                 navController = navController,
                 currentDestination = navController.currentDestination,
                 sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
-                sellerId = 1
+                sellerId = sellerId,
             )
         }
 

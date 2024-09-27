@@ -42,11 +42,11 @@ import com.github.tehras.charts.piechart.animation.simpleChartAnimation
 import com.github.tehras.charts.piechart.renderer.SimpleSliceDrawer
 
 object FoodSalesDetailDestination : NavigationDestination {
-    override val route = "food_sales_detail/{foodType}/{month}"
+    override val route = "food_sales_detail?foodType={foodType}&month={month}"
     override val title = "Food Sales Detail"
     // Create a function to generate the route with arguments
     fun routeWithArgs(foodType: String, month: String): String {
-        return "food_sales_detail/$foodType/$month"
+        return "food_sales_detail?foodType=$foodType&month=$month"
     }
 }
 
