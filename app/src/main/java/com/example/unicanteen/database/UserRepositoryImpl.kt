@@ -1,6 +1,7 @@
 package com.example.unicanteen.database
 
 import androidx.lifecycle.LiveData
+import androidx.room.Query
 
 class UserRepositoryImpl(private val userDao: UserDao): UserRepository {
 
@@ -20,7 +21,7 @@ class UserRepositoryImpl(private val userDao: UserDao): UserRepository {
         return userDao.deleteUser(user)
     }
 
-    override fun getUserById(userId: Int): User? {
+    override suspend fun getUserById(userId: Int): User? {
         return userDao.getUserById(userId)
     }
 
@@ -46,5 +47,28 @@ class UserRepositoryImpl(private val userDao: UserDao): UserRepository {
 
     override suspend fun checkUserIsSeller(userId: Int): Int? {
         return userDao.checkUserIsSeller(userId)
+    }
+
+    override suspend fun updateUserDetail(
+        userName: String,
+        email: String,
+        phoneNumber: String,
+        password: String,
+        userId: Int
+    ) {
+        return  userDao.updateUserDetail(userName,email, phoneNumber, password, userId)
+    }
+
+
+    override suspend fun updateUserEmail(email: String, userId: Int) {
+        return userDao.updateUserEmail(email,userId)
+    }
+
+    override suspend fun updateUserPhoneNumber(phoneNumber: String, userId: Int) {
+        return userDao.updateUserPhoneNumber(phoneNumber,userId)
+    }
+
+    override suspend fun updateUserPassword(password: String, userId: Int) {
+        return userDao.updateUserPassword(password,userId)
     }
 }

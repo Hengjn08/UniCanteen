@@ -27,6 +27,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import coil.compose.rememberAsyncImagePainter
@@ -41,7 +42,7 @@ import com.example.unicanteen.ui.theme.AppViewModelProvider
 
 object SelectRestaurantDestination : NavigationDestination {
     override val route = "restaurant_select?userId={userId}"
-    override val title = ""
+    override val title = "restaurant_select"
     fun routeWithArgs(userId: Int): String {
         return "restaurant_select?userId=$userId"
     }
@@ -72,6 +73,7 @@ fun SelectRestaurantScreen(
         cartViewModel.fetchCartItemsCount(userId)
     }
 
+
     Column {
         UniCanteenTopBar()
         SearchAndCartBar(
@@ -101,6 +103,7 @@ fun SelectRestaurantScreen(
 
 @Composable
 fun RestaurantCard(seller: Seller, onClick: () -> Unit) {
+
     Card(
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier

@@ -47,8 +47,12 @@ import com.example.unicanteen.ui.theme.AppViewModelProvider
 object reportSaleCheck : NavigationDestination {
     override val route = "report_sale"
     override val title = "Report Sale"
-    const val chart = "chartId"
-    val routeWithArgs = "$route/{$chart}"
+    const val sellerIdArg = "sellerId"
+
+    // Create a function to generate the route with arguments
+    fun routeWithArgs(sellerId: Int): String {
+        return "report_sale?sellerId=$sellerId"
+    }
 }
 
 @Composable
@@ -214,7 +218,8 @@ fun MonthlySalesList(salesData: List<OrderListDao.FoodTypeSalesData>, navControl
                 color = getColorForItem(data.foodType), // Get color for each item
                 onClick = {
                     // Navigate to the food type sales chart screen, including the month
-                    navController.navigate("food_sales_detail/${data.foodType}/$selectedMonth")
+//                    navController.navigate("food_sales_detail/${data.foodType}/$selectedMonth")
+                    navController.navigate(FoodSalesDetailDestination.routeWithArgs(data.foodType, selectedMonth))
                 }
             )
         }
