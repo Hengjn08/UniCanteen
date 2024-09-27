@@ -185,7 +185,8 @@ fun CartCard(
                     Text(
                         text = item.name,
                         fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
                     )
                     Text(
                         text = "RM ${"%.2f".format(item.price)}",
@@ -296,7 +297,7 @@ fun EnhancedQuantityDropdown(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+            modifier = Modifier.background(Color.White)
         ) {
             quantities.forEach { qty ->
                 DropdownMenuItem(
