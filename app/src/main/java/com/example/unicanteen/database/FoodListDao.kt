@@ -10,7 +10,7 @@ import androidx.room.Update
 interface FoodListDao {
     // Insert a new food item
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertFoodItem(foodItem: FoodList)
+    suspend fun insertFoodItem(foodItem: FoodList): Long
 
     // Update an existing food item
     @Update

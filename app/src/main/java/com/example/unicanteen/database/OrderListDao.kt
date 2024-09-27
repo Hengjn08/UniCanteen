@@ -39,9 +39,51 @@ interface OrderListDao {
     @Query("SELECT * FROM orderList WHERE sellerId = :sellerId")
     fun getOrderListBySellerId(sellerId: Int): List<OrderList>
 
+    data class OrderListItemDetails(
+        val qty: Int,
+        val totalPrice: Double,
+        val status: String,
+        val remark: String?,
+        val foodName: String,
+        val addOns: String,
+        val sellerId: Int,
+        val orderListId: Int,
+        val orderType: String,
+        val tableNo: Int?
+    )
+
     // Fetch all order list items
-    @Query("SELECT * FROM orderList")
-    fun getAllOrderListItems(): List<OrderList>
+    @Query("""
+    SELECT 
+        o.qty, 
+        o.totalPrice, 
+        o.remark, 
+        o.status,
+        o.orderListId,
+        o.sellerId,
+        f.foodName, 
+        COALESCE(GROUP_CONCAT(a.description, ','), '') AS addOns,
+        ordr.orderType,           
+        ordr.tableNo              
+    FROM 
+        orderList o
+    INNER JOIN 
+        foodList f ON o.foodId = f.foodId
+    LEFT JOIN 
+        addOn a ON f.foodId = a.foodId
+    INNER JOIN 
+        orders ordr ON o.orderId = ordr.orderId  -- Join with orders table
+    WHERE 
+        o.sellerId = :sellerId AND o.status = 'Preparing' 
+    GROUP BY 
+        o.orderListId, o.sellerId, o.qty, o.totalPrice, o.remark, o.status, f.foodName, ordr.orderType, ordr.tableNo
+""")
+    suspend fun getOrderListDetailsBySellerId(sellerId: Int): List<OrderListItemDetails>
+
+
+
+    @Query("UPDATE orderList SET status = :newStatus WHERE orderListId = :orderListId")
+    suspend fun updateOrderStatus(orderListId: Int, newStatus: String)
 
     // Fetch total sales for each seller grouped by month
     @Query("""

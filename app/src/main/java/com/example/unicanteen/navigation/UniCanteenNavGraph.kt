@@ -49,6 +49,7 @@ import com.example.unicanteen.data.Datasource
 import com.example.unicanteen.database.AddOnRepositoryImpl
 import com.example.unicanteen.database.AppDatabase
 import com.example.unicanteen.database.FoodListRepositoryImpl
+import com.example.unicanteen.database.OrderListRepositoryImpl
 import com.example.unicanteen.database.PierreAdminRepositoryImpl
 import com.example.unicanteen.database.SellerRepository
 import com.example.unicanteen.database.SellerRepositoryImpl
@@ -66,7 +67,7 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = BottomBarScreen.SellerOrderList.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = BottomBarScreen.SellerHome.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
 //        val sampleSellers = listOf(
@@ -96,7 +97,12 @@ fun UniCanteenNavHost(
         }
 
         composable(route = BottomBarScreen.SellerOrderList.route) {
-            OrderListScreen(navController = navController, currentDestination = currentDestination)
+            OrderListScreen(
+                navController = navController,
+                currentDestination = currentDestination,
+                sellerId = 1,
+                orderListRepository = OrderListRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao())
+            )
         }
         composable(route = BottomBarScreen.SellerProfile.route) {
             SellerProfileScreen()
@@ -199,9 +205,9 @@ fun UniCanteenNavHost(
             route = AddFoodDestination.route
         ){
             AddFoodScreen(
-                onSaveButtonClicked = {navController.navigate(BottomBarScreen.SellerHome.route)},
-                onCancelButtonClicked = {navController.navigate(BottomBarScreen.SellerHome.route)},
-                //foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
+                sellerId = 1,   //temporary
+                foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
+                addOnRepository = AddOnRepositoryImpl(AppDatabase.getDatabase(navController.context).addOnDao()),
                 navigateBack = {navController.navigateUp()},
             )
         }

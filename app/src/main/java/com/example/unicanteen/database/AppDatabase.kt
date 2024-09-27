@@ -64,7 +64,7 @@ abstract class AppDatabase : RoomDatabase() {
                 )
                     .createFromAsset("Database/uniDatabase.db") // Load from assets
                     .addMigrations(MIGRATION_1_2) // Add migration to handle schema changes
-                    .fallbackToDestructiveMigration() // Use destructive migration during development
+                    //.fallbackToDestructiveMigration() // Use destructive migration during development
                     .build()
 
                 INSTANCE = instance
