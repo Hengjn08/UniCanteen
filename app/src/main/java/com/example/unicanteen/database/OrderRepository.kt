@@ -1,5 +1,6 @@
 package com.example.unicanteen.database
 
+import androidx.lifecycle.LiveData
 import com.example.unicanteen.ChiaLiHock.CartItem
 import com.example.unicanteen.ChiaLiHock.CartViewModel
 
@@ -15,5 +16,7 @@ interface OrderRepository {
     suspend fun updateOrderPrice(orderId: Int, Price: Double)
     suspend fun deleteOrderById(orderId: Int)
     suspend fun deleteOrderByUserId(userId: Int)
+    suspend fun getCartItemsCount(userId: Int): Int
+
 
 }

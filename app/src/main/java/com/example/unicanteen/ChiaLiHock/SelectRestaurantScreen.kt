@@ -12,8 +12,10 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -21,7 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -32,6 +33,9 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.unicanteen.database.Seller
 import com.example.unicanteen.navigation.NavigationDestination
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.unicanteen.ChiaLiHock.CartViewModel
+import com.example.unicanteen.database.OrderListRepository
+import com.example.unicanteen.database.OrderRepository
 import com.example.unicanteen.database.SellerRepository
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 
@@ -42,28 +46,41 @@ object SelectRestaurantDestination : NavigationDestination {
     const val restaurantNameArg = "restaurantName" // Name of the restaurant
 }
 
-
 @Composable
 fun SelectRestaurantScreen(
+    userId: Int,
     navController: NavController,
     currentDestination: NavDestination?,
-    sellerRepository: SellerRepository, // Pass repository here
-
+    sellerRepository: SellerRepository,
+    orderRepository: OrderRepository,
+    orderListRepository: OrderListRepository
 ) {
     val viewModel: SelectRestaurantViewModel = viewModel(
         factory = AppViewModelProvider.Factory(sellerRepository = sellerRepository)
     )
+    val cartViewModel: CartViewModel = viewModel(
+        factory = AppViewModelProvider.Factory(orderRepository = orderRepository, orderListRepository = orderListRepository)
+    )
     val sellers by viewModel.sellers.collectAsState()
 
+    // Observe cart item count
+    val cartItemCount by cartViewModel.cartItemCount.observeAsState(0)
 
-    Column() {
+    // Fetch cart item count when userId changes
+    LaunchedEffect(userId) {
+        cartViewModel.fetchCartItemsCount(userId)
+    }
+
+    Column {
         UniCanteenTopBar()
-        SearchAndCartBar(onSearch = { query ->
-            viewModel.searchSellersByName(query)
-        },
+        SearchAndCartBar(
+            onSearch = { query ->
+                viewModel.searchSellersByName(query)
+            },
             onCartClick = {
                 navController.navigate("${CartDestination.route}")
-            }
+            },
+            cartItemCount // Pass the cart item count
         )
         Column(modifier = Modifier.weight(1f)) {
             RestaurantList(
@@ -78,6 +95,8 @@ fun SelectRestaurantScreen(
         )
     }
 }
+
+
 
 @Composable
 fun RestaurantCard(seller: Seller, onClick: () -> Unit) {
@@ -142,7 +161,7 @@ fun RestaurantList(
     }
 }
 @Composable
-fun SearchAndCartBar(onSearch: (String) -> Unit, onCartClick: () -> Unit) {
+fun SearchAndCartBar(onSearch: (String) -> Unit, onCartClick: () -> Unit, cartItemCount: Int) {
     var query by remember { mutableStateOf("") }
 
     Row(
@@ -157,7 +176,6 @@ fun SearchAndCartBar(onSearch: (String) -> Unit, onCartClick: () -> Unit) {
                 query = it
                 onSearch(query)  // Ensure the search function is called with updated query
             },
-            //   label = { Text("Search by name", style = MaterialTheme.typography.bodyMedium,color = Color.Black)},
             placeholder = { Text("Search by name", style = MaterialTheme.typography.bodyMedium, color = Color.Gray) },
             modifier = Modifier
                 .weight(1f)
@@ -183,15 +201,35 @@ fun SearchAndCartBar(onSearch: (String) -> Unit, onCartClick: () -> Unit) {
                 focusedLabelColor = Color.LightGray,
             )
         )
-        IconButton(onClick = {
-            onCartClick()
-
-
-        }) {
-            Icon(Icons.Default.ShoppingCart, contentDescription = "Bag", modifier = Modifier.size(36.dp)) // Larger bag icon
+        Box(modifier = Modifier) {
+            IconButton(onClick = {
+                onCartClick()
+            }) {
+                Icon(
+                    imageVector = Icons.Default.ShoppingCart,
+                    contentDescription = "Cart",
+                    modifier = Modifier.size(36.dp)
+                )
+            }
+            if (cartItemCount > 0) {
+                Badge(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .offset(x = (-12).dp, y = (4).dp),
+                    content = {
+                        Text(
+                            text = cartItemCount.toString(),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White
+                        )
+                    },
+                    containerColor = Color.Red
+                )
+            }
         }
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewRestaurantList() {

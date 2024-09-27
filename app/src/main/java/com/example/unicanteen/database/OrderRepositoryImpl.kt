@@ -1,5 +1,6 @@
 package com.example.unicanteen.database
 
+import androidx.lifecycle.LiveData
 import com.example.unicanteen.ChiaLiHock.CartItem
 import com.example.unicanteen.ChiaLiHock.CartViewModel
 
@@ -37,6 +38,10 @@ class OrderRepositoryImpl(private val orderDao: OrderDao): OrderRepository {
     override suspend fun deleteOrderByUserId(userId: Int) {
         return orderDao.deleteOrderByUserId(userId)
     }
+    override suspend fun getCartItemsCount(userId: Int): Int{
+        return orderDao.getCartItemsCount(userId)
+    }
+
 
 
 

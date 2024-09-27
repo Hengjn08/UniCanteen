@@ -46,6 +46,7 @@ object CartDestination : NavigationDestination {
     const val orderIdArg = "orderId"
     val routeWithArgs = "$route/{$orderIdArg}"
 }
+
 @Composable
 fun CartScreen(
     userId: Int, // Pass orderId as a parameter
