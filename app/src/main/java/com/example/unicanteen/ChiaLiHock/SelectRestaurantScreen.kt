@@ -40,10 +40,11 @@ import com.example.unicanteen.database.SellerRepository
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 
 object SelectRestaurantDestination : NavigationDestination {
-    override val route = "restaurant_select"
+    override val route = "restaurant_select?userId={userId}"
     override val title = ""
-    const val sellerIdArg = "sellerId"  // This should refer to the seller's ID
-    const val restaurantNameArg = "restaurantName" // Name of the restaurant
+    fun routeWithArgs(userId: Int): String {
+        return "restaurant_select?userId=$userId"
+    }
 }
 
 @Composable

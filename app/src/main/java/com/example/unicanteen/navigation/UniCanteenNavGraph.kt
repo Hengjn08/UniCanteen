@@ -147,8 +147,15 @@ fun UniCanteenNavHost(
 //        }
 
         //select restaurant screen
-        composable(route = SelectRestaurantDestination.route) {
-            val userId=1
+        composable(route = SelectRestaurantDestination.route,
+            arguments = listOf(
+                // Add orderId as an Int argument
+                navArgument("userId") { type = NavType.IntType
+                    defaultValue = 1
+                }
+                )
+            ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getInt("userId") ?: 0
             SelectRestaurantScreen(
                 userId = userId,
                 navController = navController,
