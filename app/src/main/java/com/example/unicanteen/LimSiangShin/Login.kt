@@ -76,16 +76,12 @@ fun LoginScreen(
     onSignUpTextClicked:()->Unit = {},
     navController: NavController,
     userRepository: UserRepository,
-//    sellerRepository: SellerRepository,
     modifier: Modifier = Modifier
 ){
     val userViewModel: UserViewModel = viewModel(
         factory = AppViewModelProvider.Factory(userRepository = userRepository)
     )
 
-//    val sellerViewModel: SellerRepository = viewModel(
-//        factory = AppViewModelProvider.Factory(sellerRepository = sellerRepository)
-//    )
     val  loginResult by userViewModel.loginResult.collectAsState()
     val  currentUserId by userViewModel.currentUserId.collectAsState()
     val  isSeller by userViewModel.isSeller.collectAsState()
@@ -116,6 +112,7 @@ fun LoginScreen(
             onSignUpTextClicked = {onSignUpTextClicked() },
             onSignInClicked = {
                 userViewModel.login(userName,pw)
+                currentUserId?.let { userViewModel.getCurrentUserDetail(it) }
                 loginAttempt++
             }
         )

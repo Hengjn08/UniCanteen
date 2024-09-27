@@ -41,7 +41,7 @@ import com.example.unicanteen.ui.theme.AppViewModelProvider
 
 object SelectRestaurantDestination : NavigationDestination {
     override val route = "restaurant_select?userId={userId}"
-    override val title = ""
+    override val title = "restaurant_select"
     fun routeWithArgs(userId: Int): String {
         return "restaurant_select?userId=$userId"
     }

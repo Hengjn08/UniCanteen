@@ -67,7 +67,9 @@ object SellerHomeDestination : NavigationDestination {
     override val route = "seller_home"
     override val title = "Food List"
     const val sellerIdArg = "sellerId" // This should refer to the seller's ID
-    val routeWithArgs = "$route/{$sellerIdArg}" // Full route with arguments
+    fun routeWithArgs(sellerId: Int?): String {
+        return "seller_home?sellerId=$sellerId"
+    }
 }
 
 @Composable

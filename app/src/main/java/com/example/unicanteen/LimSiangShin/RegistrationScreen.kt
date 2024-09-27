@@ -71,8 +71,6 @@ object AddUserDestination : NavigationDestination {
 fun RegistrationScreen(
     navController: NavController,
     userRepository: UserRepository,
-//    sellerRepository: SellerRepository,
-    onRegisterButtonClicked: () -> Unit,
     modifier: Modifier = Modifier
 ){
     val viewModel: UserViewModel = viewModel(
@@ -104,26 +102,23 @@ fun RegistrationScreen(
             onConfirmPwChange = { confirmPw = it },
             onPhoneNumberChange = { phoneNumber = it},
             onRegisterButtonClicked = {
-                onRegisterButtonClicked()
                 if(viewModel.validateRegistrationForm(userName,email,phoneNumber,pw)){
                     if (pw == confirmPw) {
-                        viewModel.register(userName, email, pw, phoneNumber) { success, errorMessage ->
-                            if (success) {
+                            if (viewModel.register(userName, email, pw, phoneNumber)) {
                                 Toast.makeText(context, "Register successfully!", Toast.LENGTH_SHORT).show()
                                 // Registration successful, navigate to next screen
                                 navController.navigate(LoginDestination.route)
                             } else {
                                 // Show error message to the user
-                                errorMessage?.let {
                                     Toast.makeText(context, "Email exist.", Toast.LENGTH_SHORT).show()
                                 }
-                            }
-                        }
                     }else{
                         pw = ""
                         confirmPw = ""
                         Toast.makeText(context, "Password is Wrong", Toast.LENGTH_SHORT).show()
                     }
+                }else{
+
                 }
             }
         )
