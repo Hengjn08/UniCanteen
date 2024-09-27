@@ -185,7 +185,8 @@ fun CartCard(
                     Text(
                         text = item.name,
                         fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
                     )
                     Text(
                         text = "RM ${"%.2f".format(item.price)}",

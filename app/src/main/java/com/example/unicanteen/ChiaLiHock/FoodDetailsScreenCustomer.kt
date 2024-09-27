@@ -132,7 +132,7 @@ fun FoodDetailsCard(food: FoodList) {
                     Text(
                         text = it,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = colorResource(id = R.color.purple_grey_40)
+                        color = MaterialTheme.colorScheme.secondary
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))

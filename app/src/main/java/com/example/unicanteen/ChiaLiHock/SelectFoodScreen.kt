@@ -203,7 +203,8 @@ fun FoodCard(food: FoodList, onClick: () -> Unit) {
                 )
                 Text(
                     text = "RM ${"%.2f".format(food.price)}",
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSecondary
                 )
             }
             Image(
