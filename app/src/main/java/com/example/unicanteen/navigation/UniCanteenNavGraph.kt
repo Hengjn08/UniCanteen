@@ -26,6 +26,8 @@ import com.example.unicanteen.HengJunEn.SellerHomeDestination.sellerIdArg
 import com.example.unicanteen.HengJunEn.SellerHomeScreen
 import com.example.unicanteen.HengJunEn.SellerProfileScreen
 import com.example.unicanteen.LimSiangShin.AddUserDestination
+import com.example.unicanteen.LimSiangShin.CustomerProfileDestination
+import com.example.unicanteen.LimSiangShin.CustomerProfileScreen
 import com.example.unicanteen.LimSiangShin.LoginDestination
 import com.example.unicanteen.LimSiangShin.LoginScreen
 import com.example.unicanteen.LimSiangShin.RegistrationScreen
@@ -72,7 +74,7 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = SelectRestaurantDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = CustomerProfileDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
         composable(
@@ -119,7 +121,6 @@ fun UniCanteenNavHost(
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
                 onSignUpTextClicked = {navController.navigate(AddUserDestination.route)},
-                onSignInClicked = {navController.navigate(BottomBarScreen.SellerHome.route) }
             )
         }
 
@@ -128,7 +129,15 @@ fun UniCanteenNavHost(
             RegistrationScreen(
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
-                onSaveButtonClicked = {navController.navigate(LoginDestination.route)}
+                onRegisterButtonClicked = {navController.navigate(LoginDestination.route)}
+            )
+        }
+
+        composable(route = CustomerProfileDestination.route){
+            CustomerProfileScreen(
+                userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
+                navController = navController,
+                currentDestination = currentDestination
             )
         }
 
