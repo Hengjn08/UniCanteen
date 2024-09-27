@@ -44,11 +44,11 @@ import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 
 object OrderListStatusDestination : NavigationDestination {
-    override val route = "Order_List_Status"
+    override val route = "Order_List_Status?userId={userId}"
     override val title = "Order_List_Status"
     // Create a function to generate the route with arguments
     fun routeWithArgs(userId: Int): String {
-        return "food_sales_detail/$userId"
+        return "Order_List_Status?userId=$userId"
     }
 }
 
