@@ -297,7 +297,7 @@ fun EnhancedQuantityDropdown(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.background(Color.White)
+            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
         ) {
             quantities.forEach { qty ->
                 DropdownMenuItem(
