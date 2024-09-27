@@ -48,7 +48,9 @@ object OrderListStatusDestination : NavigationDestination {
     override val title = "Order_List_Status"
     // Create a function to generate the route with arguments
     fun routeWithArgs(userId: Int): String {
+
         return "Order_List_Status?userId=$userId"
+
     }
 }
 
