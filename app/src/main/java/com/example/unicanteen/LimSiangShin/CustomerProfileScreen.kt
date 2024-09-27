@@ -42,8 +42,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+//import androidx.compose.material.icons.filled.Visibility
+//import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -82,7 +82,9 @@ object CustomerProfileDestination : NavigationDestination {
     override val route = "User Profile"
     override val title = ""
     const val userIdArg = "userId"
-    val routeWithArgs = "$route/{$userIdArg}"
+    fun routeWithArgs(userId: Int): String{
+        return "$route/$userId"
+    }
 }
 
 @Composable
