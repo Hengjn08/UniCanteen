@@ -29,9 +29,7 @@ class MainActivity : ComponentActivity() {
 
         }
         setContent {
-            UniCanteenTheme(
-                darkTheme = true
-            ) {
+            UniCanteenTheme {
                 Surface(
                     modifier = Modifier
                         .fillMaxSize()
