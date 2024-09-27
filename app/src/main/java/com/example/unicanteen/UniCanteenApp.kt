@@ -61,7 +61,7 @@ fun UniCanteenTopBar(
                 .padding(20.dp))
         },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
-            containerColor = colorResource(id = R.color.orange_500)
+            containerColor = MaterialTheme.colorScheme.tertiary
         ),
         modifier = modifier.height(120.dp)
     )
@@ -91,7 +91,7 @@ fun BottomNavigationBar(
     }
 
     Surface(
-        color = colorResource(R.color.orange_500),
+        color = MaterialTheme.colorScheme.tertiary,
         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
     ) {
 
@@ -121,7 +121,7 @@ fun BottomNavigationBar(
                     onClick = {
                         navController.navigate(item.route) {
                             popUpTo(navController.graph.findStartDestination().id) {
-//                                saveState = true
+                                //saveState = true
                                 inclusive = false
                             }
                             launchSingleTop = true

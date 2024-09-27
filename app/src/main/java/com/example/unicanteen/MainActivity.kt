@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
@@ -15,8 +16,10 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
         GlobalScope.launch {
             AppDatabase.getDatabase(applicationContext).userDao().getAll()
@@ -29,7 +32,10 @@ class MainActivity : ComponentActivity() {
 
         }
         setContent {
-            UniCanteenTheme {
+            val darkTheme = isSystemInDarkTheme() // Detect system theme
+            UniCanteenTheme(
+                darkTheme = darkTheme
+            ) {
                 Surface(
                     modifier = Modifier
                         .fillMaxSize()

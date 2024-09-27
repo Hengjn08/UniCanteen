@@ -83,7 +83,7 @@ fun SelectRestaurantScreen(
             },
             cartItemCount // Pass the cart item count
         )
-        Column(modifier = Modifier.weight(1f)) {
+        Column(modifier = Modifier.weight(1f).padding(top = 10.dp)) {
             RestaurantList(
                 sellers = sellers,
                 navController = navController
@@ -107,7 +107,7 @@ fun RestaurantCard(seller: Seller, onClick: () -> Unit) {
             .fillMaxWidth()
             .padding(8.dp)
             .clickable(onClick = onClick), // Pass the onClick to handle navigation
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(
@@ -125,7 +125,8 @@ fun RestaurantCard(seller: Seller, onClick: () -> Unit) {
                 Text(
                     text = seller.shopName,
                     style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(bottom = 4.dp)
+                    modifier = Modifier.padding(bottom = 4.dp),
+                    color = MaterialTheme.colorScheme.onSecondary
                 )
                 Text(
                     text = seller.description ?: "",
@@ -168,48 +169,47 @@ fun SearchAndCartBar(onSearch: (String) -> Unit, onCartClick: () -> Unit, cartIt
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(10.dp),
+            .padding(top = 10.dp, start = 10.dp, bottom = 0.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         TextField(
             value = query,
             onValueChange = {
                 query = it
-                onSearch(query)  // Ensure the search function is called with updated query
+                onSearch(query)
             },
-            placeholder = { Text("Search by name", style = MaterialTheme.typography.bodyMedium, color = Color.Gray) },
+            placeholder = { Text("Search by name", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)) },
             modifier = Modifier
                 .weight(1f)
-                .clip(MaterialTheme.shapes.medium) // Rounded corners
-                .background(Color.Black), // Background color
+                .clip(MaterialTheme.shapes.medium)
+                .background(MaterialTheme.colorScheme.surface), // Adapt surface color
             trailingIcon = {
                 if (query.isNotEmpty()) {
                     IconButton(onClick = { query = "" }) {
-                        Icon(Icons.Default.Clear, contentDescription = "Clear")
+                        Icon(Icons.Default.Clear, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurface)
                     }
                 } else {
-                    Icon(Icons.Default.Search, contentDescription = "Search")
+                    Icon(Icons.Default.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onSurface)
                 }
             },
             singleLine = true,
             colors = TextFieldDefaults.colors(
-                focusedTextColor = Color.Black,
-                unfocusedTextColor = Color.Black,
-                focusedContainerColor = Color.LightGray,
-                unfocusedContainerColor = colorResource(id = R.color.search_bar_background),
-                focusedIndicatorColor = Color.Transparent,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
                 unfocusedIndicatorColor = Color.Transparent,
-                focusedLabelColor = Color.LightGray,
+                focusedLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
             )
         )
         Box(modifier = Modifier) {
-            IconButton(onClick = {
-                onCartClick()
-            }) {
+            IconButton(onClick = { onCartClick() }) {
                 Icon(
                     imageVector = Icons.Default.ShoppingCart,
                     contentDescription = "Cart",
-                    modifier = Modifier.size(36.dp)
+                    modifier = Modifier.size(36.dp),
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
             if (cartItemCount > 0) {
@@ -221,20 +221,13 @@ fun SearchAndCartBar(onSearch: (String) -> Unit, onCartClick: () -> Unit, cartIt
                         Text(
                             text = cartItemCount.toString(),
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
                     },
-                    containerColor = Color.Red
+                    containerColor = MaterialTheme.colorScheme.error
                 )
             }
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewRestaurantList() {
-
-
-
-}
