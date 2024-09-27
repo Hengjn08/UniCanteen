@@ -66,7 +66,7 @@ fun SelectFoodScreen(
                 viewModel.searchFoodsByName(query)
             },
             onCartClick = {
-                // Handle cart click logic here (e.g., navigate to the cart screen)
+                navController.navigate("${CartDestination.route}")
             }
         )
 

@@ -20,6 +20,8 @@ interface FoodListDao {
     @Delete
     suspend fun deleteFoodItem(foodItem: FoodList)
 
+
+
     // Fetch a food item by foodId
     @Query("SELECT * FROM foodList WHERE foodId = :foodId")
     suspend fun getFoodItemById(foodId: Int): FoodList?
