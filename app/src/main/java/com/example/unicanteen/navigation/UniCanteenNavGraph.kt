@@ -90,7 +90,7 @@ fun UniCanteenNavHost(
             arguments = listOf(navArgument("sellerId") { type = NavType.IntType
                 defaultValue =1})
         ) {
-                backStackEntry ->
+            backStackEntry ->
             val sellerId = backStackEntry.arguments?.getInt("sellerId") ?: 0
             SellerHomeScreen(
                 navController = navController,
@@ -114,7 +114,6 @@ fun UniCanteenNavHost(
                 orderListRepository = OrderListRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao())
             )
         }
-
 //        composable(route = SellerProdileDestination.route,
 //            arguments = listOf(navArgument("sellerId") { type = NavType.IntType
 //                defaultValue =1})
@@ -163,6 +162,7 @@ fun UniCanteenNavHost(
             RegistrationScreen(
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
+                onRegisterButtonClicked = {navController.navigate(LoginDestination.route)}
             )
         }
 
@@ -208,6 +208,7 @@ fun UniCanteenNavHost(
         ) { backStackEntry ->
             val userId = backStackEntry.arguments?.getInt("userId") ?: 0
             SelectRestaurantScreen(
+                userId = userId,
                 navController = navController,
                 currentDestination = navController.currentDestination,
                 sellerRepository = SellerRepositoryImpl(AppDatabase.getDatabase(navController.context).sellerDao()),
@@ -238,7 +239,7 @@ fun UniCanteenNavHost(
         composable(
             route = FoodDetailCustomerDestination.routeWithArgs,
             arguments = listOf(navArgument(FoodDetailCustomerDestination.foodIdArg) { type = NavType.IntType },
-            )
+               )
         ) { backStackEntry ->
             val foodId = backStackEntry.arguments?.getInt(FoodDetailCustomerDestination.foodIdArg)
             val userId = 1//backStackEntry.arguments?.getInt(LoginDestination.userIdArg)
@@ -279,7 +280,7 @@ fun UniCanteenNavHost(
 
 
         //Seller module route
-//add food screen
+        //add food screen
         composable(
             route = AddFoodDestination.route
         ){
@@ -291,7 +292,7 @@ fun UniCanteenNavHost(
             )
         }
 
-//food details screen
+        //food details screen
         composable(
             route = FoodDetailsDestination.routeWithArgs,
             arguments = listOf(
@@ -303,12 +304,12 @@ fun UniCanteenNavHost(
             FoodDetailsScreen(
                 foodId = foodId ?: return@composable,
                 foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
-                onEditClick = {navController.navigate("${EditFoodDestination.route}/$foodId")},
+                onEditClick = {navController.navigate(EditFoodDestination.route)},
                 navigateBack = {navController.navigateUp()},
             )
         }
 
-//edit food screen
+        //edit food screen
         composable(
             route = EditFoodDestination.routeWithArgs,
             arguments = listOf(navArgument(EditFoodDestination.foodIdArg) {
@@ -325,7 +326,6 @@ fun UniCanteenNavHost(
         }
 
 
-
         composable(
             route = pickUpChoose.route,
             arguments = listOf(
@@ -333,7 +333,7 @@ fun UniCanteenNavHost(
                 navArgument("userId") { type = NavType.IntType }
             )
         ){
-                backStackEntry ->
+            backStackEntry ->
             // Retrieve the orderId and userId from the backStackEntry arguments
             val orderId = backStackEntry.arguments?.getInt("orderId") ?: 0
             val userId = backStackEntry.arguments?.getInt("userId") ?: 0
@@ -409,6 +409,7 @@ fun UniCanteenNavHost(
 
         composable(
             route = reportSaleCheck.route,
+            arguments = listOf(navArgument(reportSaleCheck.chart) { type = NavType.StringType })
         ) { backStackEntry ->
             val sellerId = 1 // Use a constant or retrieve from ViewModel as needed
 

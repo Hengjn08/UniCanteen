@@ -1,5 +1,6 @@
 package com.example.unicanteen.database
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -28,6 +29,10 @@ interface FoodListDao {
     @Query("SELECT * FROM foodList WHERE sellerId = :sellerId")
     suspend fun getFoodItemsBySellerId(sellerId: Int): List<FoodList>
 
+    // Fetch food items by type (e.g., "Vegetarian", "Vegan")
+    @Query("SELECT DISTINCT type FROM foodList WHERE sellerId = :sellerId")
+    suspend fun getFoodTypeBySellerId(sellerId: Int): List<String>
+
     // Fetch all available food items (status = 'Available')
     @Query("SELECT * FROM foodList WHERE status = 'Available'")
     fun getAvailableFoodItems(): List<FoodList>
@@ -51,6 +56,10 @@ interface FoodListDao {
     // search related food items by name based on the seller id
     @Query("SELECT * FROM foodList WHERE sellerId = :sellerId AND foodName LIKE '%' || :query || '%'")
     suspend fun searchFoodItemsByName(sellerId: Int, query: String): List<FoodList>
+
+    // get shopName by sellerId
+    @Query("SELECT shopName FROM sellers WHERE sellerId = :sellerId")
+    suspend fun getShopNameBySellerId(sellerId: Int): String
 
     data class FoodDetailsWithAddOns(
         val foodName: String,

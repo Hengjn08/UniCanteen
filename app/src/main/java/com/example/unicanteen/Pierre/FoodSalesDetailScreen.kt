@@ -42,11 +42,11 @@ import com.github.tehras.charts.piechart.animation.simpleChartAnimation
 import com.github.tehras.charts.piechart.renderer.SimpleSliceDrawer
 
 object FoodSalesDetailDestination : NavigationDestination {
-    override val route = "food_sales_detail/{foodType}/{month}"
+    override val route = "food_sales_detail?foodType={foodType}&month={month}"
     override val title = "Food Sales Detail"
     // Create a function to generate the route with arguments
     fun routeWithArgs(foodType: String, month: String): String {
-        return "food_sales_detail/$foodType/$month"
+        return "food_sales_detail?foodType=$foodType&month=$month"
     }
 }
 
@@ -215,6 +215,7 @@ fun MonthlySalesPieChart(salesData: List<OrderListDao.FoodSalesData>) {
         Text(
             text = "Total: RM ${String.format("%.2f", totalSales.toDouble())}",
             style = MaterialTheme.typography.labelLarge.copy(color = Color.DarkGray), // Make it more visible
+            color = MaterialTheme.colorScheme.onSecondary,
             modifier = Modifier
                 .align(Alignment.Center) // Center the text
                 .padding(8.dp) // Padding for better spacing

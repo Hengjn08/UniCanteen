@@ -3,10 +3,14 @@ package com.example.unicanteen
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,6 +36,8 @@ import com.example.unicanteen.database.OrderRepository
 import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 object FoodDetailCustomerDestination : NavigationDestination {
     override val route = "foodDetailCustomer"
@@ -75,39 +81,65 @@ fun FoodDetailsScreenCustomer(
     foodDetails?.let { food ->
         var totalAddOnPrice by remember { mutableStateOf(0.0) }
         var remarks = ""
-        Scaffold{innerPadding ->
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)) {
-                FoodDetailsCard(food = food)
-                Spacer(modifier = Modifier.height(20.dp))
 
-                // Pass the fetched add-ons to AddOnSection
+        // Use a Box to layer the content and button
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding() // Adjusts for navigation bar space
+        ) {
+            // Scrollable content
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()), // Make content scrollable
+                verticalArrangement = Arrangement.spacedBy(20.dp) // Space between elements
+            ) {
+                // Display the food details card
+                FoodDetailsCard(food = food)
+
+                // Display add-ons with a price update handler
                 totalAddOnPrice = AddOnSection(addOns = addOns, onPriceChange = { price ->
-                    totalAddOnPrice = price // Update the total add-on price
+                    totalAddOnPrice = price
                 })
 
-                Spacer(modifier = Modifier.height(20.dp))
-                remarks=RemarksSection()
-                Spacer(modifier = Modifier.weight(1f))
-                AddToCartButton(totalPrice = food.price + totalAddOnPrice,remarks = remarks,
-                    food = food, orderListViewModel = orderListViewModel, userId, navController)
+                // Display the remarks section
+                remarks = RemarksSection()
             }
 
+            // Add to cart button fixed at the bottom
+            AddToCartButton(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter) // Align button to the bottom center
+                    , // Add padding around the button
+                totalPrice = food.price + totalAddOnPrice,
+                remarks = remarks,
+                food = food,
+                orderListViewModel = orderListViewModel,
+                userId = userId,
+                navController = navController
+            )
         }
-
     } ?: run {
-        // Show loading or error state
-        CircularProgressIndicator()
+        // Show loading state if data is not yet available
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            CircularProgressIndicator()
+        }
     }
 }
+
+
+
 
 @Composable
 fun FoodDetailsCard(food: FoodList) {
     Card(
         shape = RoundedCornerShape(0.dp),
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.orange_500))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary)
     ) {
         Column {
             Image(
@@ -132,7 +164,7 @@ fun FoodDetailsCard(food: FoodList) {
                     Text(
                         text = it,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = colorResource(id = R.color.purple_grey_40)
+                        color = MaterialTheme.colorScheme.secondary
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -212,8 +244,8 @@ fun AddOnSection(addOns: List<AddOn>, onPriceChange: (Double) -> Unit): Double {
 }
 
 @Composable
-fun RemarksSection() :String{
-    var remarks by remember { mutableStateOf("") }
+fun RemarksSection(): String {
+    var remarks by rememberSaveable { mutableStateOf("") } // Save remarks across rotation
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -258,15 +290,17 @@ fun RemarksSection() :String{
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     focusedLabelColor = Color.LightGray,
-                )
+                ),
             )
         }
     }
     return remarks
 }
 
+
 @Composable
 fun AddToCartButton(
+    modifier: Modifier = Modifier,
     totalPrice: Double,
     remarks: String,
     food: FoodList,
@@ -274,14 +308,11 @@ fun AddToCartButton(
     userId: Int,
     navController: NavController
 ) {
-    // State to manage whether the dialog is visible
-    var showDialog by remember { mutableStateOf(false) }
+    var showDialog by rememberSaveable { mutableStateOf(false) } // Save dialog state across rotation
 
-    // Button to add the item to the cart
     Button(
         onClick = {
-            val formatter = SimpleDateFormat("yyyy-MM-dd")
-            val date = formatter.format(java.util.Date())
+            val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
             orderListViewModel.addOrderListItem(
                 sellerId = food.sellerId,
                 foodId = food.foodId,
@@ -292,19 +323,17 @@ fun AddToCartButton(
                 createDate = date,
                 price = totalPrice
             )
-            // Show the confirmation dialog after adding to cart
-            showDialog = true
+            showDialog = true // Show confirmation dialog
         },
-        colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.orange_500)),
-        modifier = Modifier
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
+        modifier = modifier
             .fillMaxWidth()
             .height(65.dp),
         shape = RoundedCornerShape(24.dp)
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -315,7 +344,7 @@ fun AddToCartButton(
                 textAlign = TextAlign.End,
                 modifier = Modifier.weight(1f)
             )
-            Spacer(modifier = Modifier.width(43.dp))
+            Spacer(modifier = Modifier.width(55.dp))
             Text(
                 text = "RM ${"%.2f".format(totalPrice)}",
                 color = Color.White,
@@ -325,24 +354,23 @@ fun AddToCartButton(
         }
     }
 
-    // Show confirmation dialog if the item is added to the cart
+    // Show confirmation dialog when order is added
     if (showDialog) {
         ConfirmationDialog(
             onDismiss = { showDialog = false },
             onVisitCart = {
-                // Navigate to the cart screen here
                 showDialog = false
-                navController.navigate("${CartDestination.route}")
-                // Add navigation logic to the cart screen if necessary
+                navController.navigate(CartDestination.route) // Navigate to cart
             },
             onContinueShopping = {
                 showDialog = false
-                navController.navigate("${SelectRestaurantDestination.route}")
-                // Close the dialog and let the user continue shopping
+                navController.navigate(SelectRestaurantDestination.route) // Navigate to restaurant selection
             }
         )
     }
 }
+
+
 @Composable
 fun ConfirmationDialog(onDismiss: () -> Unit, onVisitCart: () -> Unit, onContinueShopping: () -> Unit) {
     AlertDialog(

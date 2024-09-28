@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -28,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -128,7 +130,7 @@ fun OrderListStatusScreen(
                                 "Order Type: $orderType"
                             },
                             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                            color = Color.Black  // Set text color
+                            color = MaterialTheme.colorScheme.onSecondary  // Set text color
                         )
                     }
                 }
@@ -203,9 +205,12 @@ fun OrderItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .background(Color(0xFFEEEEEE), shape = RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.onPrimary, shape = RoundedCornerShape(8.dp))
+            .border(0.5.dp, MaterialTheme.colorScheme.background, shape = RoundedCornerShape(8.dp)) // Add a black border
+            .shadow(4.dp, shape = RoundedCornerShape(8.dp))
             .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+
     ) {
         Image(
             painter = rememberAsyncImagePainter(model = foodImageUrl),
@@ -221,9 +226,9 @@ fun OrderItem(
             modifier = Modifier.weight(1f)
         ) {
             Text(text = shopName, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold), color = Color.Black)
-            Text(text = foodName, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = Color.Gray)
+            Text(text = foodName, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onSecondary)
             // Display the orderId below the food name
-            Text(text = "Order ID: $orderId", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+            Text(text = "Order ID: $orderId", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSecondary)
         }
 
         // Show only the icon for the order status

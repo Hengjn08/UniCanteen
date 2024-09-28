@@ -56,10 +56,12 @@ import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.UniCanteenTheme
 
 object SellerProdileDestination : NavigationDestination {
-    override val route = "Seller Profile"
-    override val title = ""
+    override val route = "seller_profile"
+    override val title = "Seller Profile"
     const val userIdArg = "userId"
-    val routeWithArgs = "$route/{$userIdArg}"
+   fun routeWithArgs(sellerId: Int): String{
+       return "$route/$sellerId"
+   }
 }
 
 @Composable
