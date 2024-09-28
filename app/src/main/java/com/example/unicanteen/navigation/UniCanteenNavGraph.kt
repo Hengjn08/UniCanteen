@@ -2,6 +2,8 @@ package com.example.unicanteen.navigation
 
 import android.app.Application
 import android.util.Log
+import HelpDestination
+import HelpScreen
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -15,6 +17,8 @@ import androidx.navigation.navArgument
 import com.example.unicanteen.BottomBarScreen
 import com.example.unicanteen.CartDestination
 import com.example.unicanteen.CartScreen
+import com.example.unicanteen.ChiaLiHock.SellerDetailScreen
+import com.example.unicanteen.ChiaLiHock.SellerDetailsDestination
 import com.example.unicanteen.FoodDetailCustomerDestination
 import com.example.unicanteen.FoodDetailsScreenCustomer
 import com.example.unicanteen.HengJunEn.AddFoodDestination
@@ -155,6 +159,8 @@ fun UniCanteenNavHost(
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
                 onSignUpTextClicked = {navController.navigate(AddUserDestination.route)},
+                onHelpClicked = {navController.navigate(LoginDestination.route)}
+//                userId = userId
             )
         }
 
@@ -168,13 +174,22 @@ fun UniCanteenNavHost(
             )
         }
 
-        composable(route = CustomerProfileDestination.route){
+        composable(route = CustomerProfileDestination.route,
+            arguments = listOf(navArgument("userId") { type = NavType.IntType
+                defaultValue =1})){
+            backStackEntry ->
+            val userId = backStackEntry.arguments?.getInt("userId") ?: 0
             CustomerProfileScreen(
                 application = application,
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
-                currentDestination = currentDestination
+                currentDestination = currentDestination,
+                userId = userId
             )
+        }
+
+        composable(route = HelpDestination.route){
+            HelpScreen()
         }
 
         //Customer module route
@@ -259,6 +274,18 @@ fun UniCanteenNavHost(
                 userId = userId,
                 orderRepository = OrderRepositoryImpl(AppDatabase.getDatabase(navController.context).orderDao()),
                 orderListRepository = OrderListRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
+                navController = navController
+            )
+        }
+        composable(
+            route = SellerDetailsDestination.routeWithArgs,
+            arguments = listOf(navArgument(SellerDetailsDestination.sellerIdArg) { type = NavType.IntType })
+        ){backStackEntry->
+            val sellerId = backStackEntry.arguments?.getInt(SellerDetailsDestination.sellerIdArg)
+            SellerDetailScreen(
+                application = application,
+                sellerId = sellerId ?: return@composable,
+                sellerRepository = SellerRepositoryImpl(AppDatabase.getDatabase(navController.context).sellerDao()),
                 navController = navController
             )
         }

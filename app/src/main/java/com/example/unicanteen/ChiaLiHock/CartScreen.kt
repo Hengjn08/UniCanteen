@@ -347,7 +347,7 @@ fun CheckOutButton(totalPrice: Double,orderId:Int, cartViewModel: CartViewModel,
                 textAlign = TextAlign.End,
                 modifier = Modifier.weight(1f)
             )
-            Spacer(modifier = Modifier.width(43.dp))
+            Spacer(modifier = Modifier.width(55.dp))
             Text(
                 text = "RM ${"%.2f".format(totalPrice)}",
                 color = Color.White,

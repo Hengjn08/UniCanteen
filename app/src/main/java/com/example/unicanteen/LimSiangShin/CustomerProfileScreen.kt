@@ -43,6 +43,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
 //import androidx.compose.material.icons.filled.Visibility
 //import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.BottomAppBar
@@ -50,9 +51,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -60,6 +64,8 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -78,11 +84,11 @@ import com.example.unicanteen.model.User
 import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 import com.example.unicanteen.ui.theme.UniCanteenTheme
+import java.lang.Error
 
 object CustomerProfileDestination : NavigationDestination {
-    override val route = "User Profile"
-    override val title = ""
-    const val userIdArg = "userId"
+    override val route = "User_Profile?userId={userId}"
+    override val title = "User_Profile"
     fun routeWithArgs(userId: Int): String{
         return "$route/$userId"
     }
@@ -91,6 +97,7 @@ object CustomerProfileDestination : NavigationDestination {
 @Composable
 fun CustomerProfileScreen(
     application: Application, // Pass application context
+    userId: Int,
     userRepository: UserRepository,
 //    sellerRepository: SellerRepository,
     onSaveButtonClicked: () -> Unit = {},
@@ -104,12 +111,23 @@ fun CustomerProfileScreen(
         factory = AppViewModelProvider.Factory(application = application, userRepository = userRepository)
     )
 
-    var userName by remember { mutableStateOf("123")}
-    var email by remember { mutableStateOf("123") }
-    var pw by remember { mutableStateOf("123") }
-    var confirmPw by remember { mutableStateOf("") }
+    val currentUserName by userViewModel.userName.collectAsState()
+    val currentEmail by userViewModel.email.collectAsState()
+    val currentPhoneNumber by userViewModel.phoneNumber.collectAsState()
+    val currentPassword by userViewModel.password.collectAsState()
 
-    var phoneNumber by remember { mutableStateOf("123") }
+    // Keep a copy of the original values
+    var originalUserName by remember { mutableStateOf(currentUserName) }
+    var originalEmail by remember { mutableStateOf(currentEmail) }
+    var originalPhoneNumber by remember { mutableStateOf(currentPhoneNumber) }
+    var originalPassword by remember { mutableStateOf(currentPassword) }
+
+    var userName by remember { mutableStateOf(currentUserName) }
+    var email by remember { mutableStateOf(currentEmail) }
+    var pw by remember { mutableStateOf(currentPassword) }
+    var confirmPw by remember { mutableStateOf("") }
+    var phoneNumber by remember { mutableStateOf(currentPhoneNumber) }
+//    var errorMessage by rememberSaveable { mutableStateOf("") }
 
     val context = LocalContext.current
 
@@ -124,13 +142,16 @@ fun CustomerProfileScreen(
                 isSeller = false)
         }
     ){ innerPadding ->
+
         CustomerDetailBody(
+            userId = userId,
+            viewModel = userViewModel,
             modifier = modifier.padding(innerPadding),
             userName = userName,
             email = email,
-            pw = pw,
-            confirmPw = confirmPw,
+            password = pw,
             phoneNumber = phoneNumber,
+            confirmPassword = confirmPw,
             onUserNameChange = { userName = it },
             onEmailChange = { email = it },
             onPwChange = { pw = it },
@@ -139,6 +160,29 @@ fun CustomerProfileScreen(
             onSaveButtonClicked = {
                 onSaveButtonClicked()
                 Toast.makeText(context, "Register successfully!", Toast.LENGTH_SHORT).show()
+            },
+            onOrderHistoryClicked = {},
+            onUpdate = {
+                // Update the original values with the new ones on Save
+                originalUserName = userName
+                originalEmail = email
+                originalPhoneNumber = phoneNumber
+                originalPassword = pw
+            },
+            onCancelUpdate = {
+                // Reset all values to their original state when the user cancels
+                userName = originalUserName
+                email = originalEmail
+                phoneNumber = originalPhoneNumber
+                pw = originalPassword
+                confirmPw = ""
+            },
+            onEditClicked = {},
+            update = {
+                userName = userViewModel.userName.value
+                email = userViewModel.email.value
+                phoneNumber = userViewModel.phoneNumber.value
+                pw = userViewModel.password.value
             }
         )
     }
@@ -148,26 +192,43 @@ fun CustomerProfileScreen(
 
 @Composable
 fun CustomerDetailBody(
+    userId: Int,
+    viewModel: UserViewModel,
     modifier: Modifier = Modifier,
     userName: String,
     email: String,
-    pw: String,
+    password: String,
     phoneNumber: String,
+    confirmPassword: String,
 //    navController: NavController,
-    confirmPw: String,
     onUserNameChange: (String) -> Unit,
     onEmailChange: (String) -> Unit,
     onPwChange: (String) -> Unit,
-    onConfirmPwChange: (String) -> Unit,
     onPhoneNumberChange: (String) -> Unit,
-    onSaveButtonClicked: () -> Unit
+    onSaveButtonClicked: () -> Unit,
+    onOrderHistoryClicked: () -> Unit,
+    onConfirmPwChange: (String) -> Unit,
+    onCancelUpdate: () -> Unit,
+    onUpdate: () -> Unit,
+    update:() ->Unit,
+    onEditClicked: () -> Unit
 ) {
+    LaunchedEffect(userId) {
+        viewModel.updateCurrentUserDetail(userId)
+        update()
+    }
+
+
     Column(
-        modifier = Modifier.verticalScroll(rememberScrollState()),
+        modifier = modifier.verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Top
+
     ){
+        var changeAvailable by rememberSaveable { mutableStateOf(false) }
+        val context = LocalContext.current
+
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .padding(0.dp)
                 .background(colorResource(R.color.orange_500))
                 .fillMaxWidth()
@@ -180,10 +241,11 @@ fun CustomerDetailBody(
                     .padding(20.dp),
             ) {
                 Text(
-                    text = "Profile",
+                    text = "Profile $userId",
                     fontSize = 36.sp,
                     fontWeight = FontWeight.Bold,
-                    color = colorResource(R.color.white)
+                    color = colorResource(R.color.white),
+                    textDecoration = TextDecoration.Underline
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -200,6 +262,9 @@ fun CustomerDetailBody(
                 color = colorResource(R.color.white),
                 shape = RoundedCornerShape(8.dp),
                 icon = Icons.Default.Edit,
+                onEditClicked = {
+                    changeAvailable = true
+                },
                 modifier = Modifier
                     .fillMaxWidth()
             )
@@ -215,9 +280,12 @@ fun CustomerDetailBody(
                 color = colorResource(R.color.white),
                 shape = RoundedCornerShape(8.dp),
                 icon = Icons.Default.Edit,
+                onEditClicked = {
+                    changeAvailable = true
+                },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp)
+                    .padding(top = 16.dp)
             )
 
             CustomerDetailLabel(
@@ -232,13 +300,16 @@ fun CustomerDetailBody(
                 color = colorResource(R.color.white),
                 shape = RoundedCornerShape(8.dp),
                 icon = Icons.Default.Edit,
+                onEditClicked = {
+                    changeAvailable = true
+                },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp)
+                    .padding(top = 16.dp)
             )
 
             CustomerDetailLabel(
-                value = pw,
+                value = password,
                 onValueChange = onPwChange,
                 label = "Password",
                 placeholder = "123456",
@@ -250,15 +321,18 @@ fun CustomerDetailBody(
                 shape = RoundedCornerShape(8.dp),
                 isPassword = true,
                 icon = Icons.Default.Edit,
+                onEditClicked = {
+                    changeAvailable = true
+                                },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp)
+                    .padding(top = 16.dp)
             )
         }
 
         HorizontalDivider(
             modifier = Modifier
-                .padding(20.dp)
+                .padding(top = 20.dp, start = 20.dp, end = 20.dp)
                 .fillMaxWidth(),
             thickness = 5.dp,
             color = colorResource(R.color.orange_500)
@@ -283,7 +357,7 @@ fun CustomerDetailBody(
         )
 
         Button(
-            onClick = onSaveButtonClicked,
+            onClick = onOrderHistoryClicked,
             modifier = Modifier
                 .height(50.dp)
                 .fillMaxWidth(),
@@ -293,28 +367,6 @@ fun CustomerDetailBody(
         ) {
             Text(
                 text = "Help Center",
-                color = Color.Black
-            )
-        }
-
-        HorizontalDivider(
-            modifier = Modifier
-                .fillMaxWidth(),
-            thickness = 2.dp,
-            color = colorResource(R.color.orange_500)
-        )
-
-        Button(
-            onClick = onSaveButtonClicked,
-            modifier = Modifier
-                .height(50.dp)
-                .fillMaxWidth(),
-            shape = RectangleShape,
-            colors = ButtonDefaults.buttonColors(Color.White),
-            border = BorderStroke(0.dp, Color.White)
-        ) {
-            Text(
-                text = "Become Seller",
                 color = Color.Black
             )
         }
@@ -345,6 +397,35 @@ fun CustomerDetailBody(
                 )
             }
         }
+
+
+        if(changeAvailable){
+            EditDialog(
+                viewModel = viewModel,
+                userName = userName,
+                email = email,
+                phoneNumber = phoneNumber,
+                password = password,
+                confirmPassword = confirmPassword,
+                onConfirmPasswordChange = onConfirmPwChange,
+                onUserNameChange = onUserNameChange,
+                onEmailChange = onEmailChange,
+                onPhoneNumberChange = onPhoneNumberChange,
+                onPwChange = onPwChange,
+                onUpdate = {
+                    if(viewModel.validateRegistrationForm(userName, password, email, phoneNumber)){
+                        viewModel.updateUserDetail(userId,userName, password, email, phoneNumber)
+                        onUpdate()
+                        changeAvailable = false
+                        Toast.makeText(context, "Detail Changed Successful!", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                onCancel = {
+                    // Invoke the onCancelUpdate callback to reset the values
+                    onCancelUpdate()
+                    changeAvailable = false
+                })
+        }
     }
 }
 
@@ -353,6 +434,7 @@ fun CustomerDetailBody(
 fun CustomerDetailLabel(
     value: String,
     onValueChange: (String) -> Unit,
+    onEditClicked: () -> Unit,
     label: String,
     placeholder: String,
     keyboardOptions: KeyboardOptions,
@@ -360,7 +442,7 @@ fun CustomerDetailLabel(
     shape: RoundedCornerShape,
     isPassword: Boolean = false,
     icon: ImageVector,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ){
     var showPassword by rememberSaveable { mutableStateOf(false) }
     var check by rememberSaveable { mutableStateOf(false) }
@@ -384,14 +466,16 @@ fun CustomerDetailLabel(
                 contentDescription = "",
                 modifier = Modifier
                     .size(24.dp)
-                    .clickable {}
+                    .clickable {
+                        onEditClicked()
+                    }
             )
         },
         modifier = modifier
     )
 
     if(isPassword) {
-        Row {
+        Row(verticalAlignment = Alignment.CenterVertically){
             Checkbox(
                 checked = check,
                 onCheckedChange = {
@@ -399,39 +483,123 @@ fun CustomerDetailLabel(
                     check = !check
                 }
             )
-            Text(text = if (showPassword) "Show Password" else "Hide Password")
+            Text(text = if (showPassword)"Hide Password"  else "Show Password")
         }
     }
 }
 
 @Composable
-fun CustomerOptionButton(
+fun EditDialog(
+    viewModel: UserViewModel,
+    userName: String,
+    email: String,
+    phoneNumber: String,
+    password: String,
+    confirmPassword:String,
+    onUserNameChange: (String) -> Unit,
+    onEmailChange: (String) -> Unit,
+    onPwChange: (String) -> Unit,
+    onPhoneNumberChange: (String) -> Unit,
+    onConfirmPasswordChange:(String) -> Unit,
+    onUpdate: () -> Unit,
+    onCancel: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = { onCancel() },
+        title = { Text("Edit Detail") },
+        text = {
+            Column {
+                dialogText(
+                    value = userName,
+                    onValueChange = onUserNameChange,
+                    modifier = Modifier.padding(top = 8.dp),
+                    label = "User Name",
+                    isError = viewModel.userNameError.isNotEmpty(),
+                    errorMessage = viewModel.userNameError
+                )
+
+                dialogText(
+                    value = email,
+                    onValueChange = onEmailChange,
+                    modifier = Modifier.padding(top = 8.dp),
+                    label = "Email Address",
+                    isError = viewModel.emailError.isNotEmpty(),
+                    errorMessage = viewModel.emailError
+                )
+
+                dialogText(
+                    value = phoneNumber,
+                    onValueChange = onPhoneNumberChange,
+                    modifier = Modifier.padding(top = 8.dp),
+                    label = "Phone Number",
+                    isError = viewModel.phoneNumberError.isNotEmpty(),
+                    errorMessage = viewModel.phoneNumberError
+                )
+
+                dialogText(
+                    value = password,
+                    onValueChange = onPwChange,
+                    modifier = Modifier.padding(top = 8.dp),
+                    label = "Password",
+                    isError = viewModel.passwordError.isNotEmpty(),
+                    errorMessage = viewModel.passwordError
+                )
+
+                dialogText(
+                    value = confirmPassword,
+                    onValueChange = onConfirmPasswordChange,
+                    modifier = Modifier.padding(top = 8.dp),
+                    label = "Confirm Password",
+                    isError = viewModel.passwordError.isNotEmpty(),
+                    errorMessage = viewModel.passwordError
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                onUpdate()
+            }) {
+                Text("Update")
+            }
+        },
+        dismissButton = {
+            Button(onClick = { onCancel() }) {
+                Text("Cancel")
+            }
+        },
+    )
+}
+
+@Composable
+fun dialogText(
+    errorMessage: String,
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
-    placeholder: String,
-    keyboardOptions: KeyboardOptions,
-    color: Color,
-    shape: RoundedCornerShape,
-    visualTransformation: PasswordVisualTransformation,
-    modifier: Modifier = Modifier
+    modifier: Modifier,
+    isError: Boolean
 ){
-    OutlinedTextField(
+    TextField(
         value = value,
         onValueChange = onValueChange,
-        label = {Text(label)},
-        singleLine = true,
-        placeholder = {Text(placeholder)},
-        visualTransformation = visualTransformation,
-        keyboardOptions = keyboardOptions,
-        colors = TextFieldDefaults.colors(unfocusedContainerColor = color,
-            focusedContainerColor = color,
-            focusedLabelColor = color),
-        shape = shape,
-        //isError = value.isNullOrEmpty(),                          <--- need to do back
-        modifier = modifier
-    )
+        modifier = modifier,
+        label = { Text(label) }
+        )
+    if(isError){
+        Text(text = errorMessage,
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.Red,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 2.dp),
+            textAlign = TextAlign.Start
+        )
+    }else{
+
+    }
 }
+
+
 
 @Preview(showBackground = true)
 @Composable

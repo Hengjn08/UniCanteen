@@ -1,5 +1,6 @@
 package com.example.unicanteen
 import android.app.Application
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -29,6 +31,7 @@ import androidx.wear.compose.material.ChipDefaults
 import coil.compose.rememberAsyncImagePainter
 import com.example.unicanteen.ChiaLiHock.CartViewModel
 import com.example.unicanteen.ChiaLiHock.SelectFoodViewModel
+import com.example.unicanteen.ChiaLiHock.SellerDetailsDestination
 import com.example.unicanteen.database.FoodList
 import com.example.unicanteen.database.FoodListRepository
 import com.example.unicanteen.database.OrderListRepository
@@ -64,6 +67,8 @@ fun SelectFoodScreen(
     val cartViewModel: CartViewModel = viewModel(
         factory = AppViewModelProvider.Factory(application = application,orderRepository = orderRepository, orderListRepository = orderListRepository)
     )
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
     // Observe the food list and selected food type from the ViewModel
     val foods by viewModel.filteredFoods.collectAsState() // This will be filtered based on food type
@@ -94,7 +99,14 @@ fun SelectFoodScreen(
 
     Column {
         // Top Bar with title
-        UniCanteenTopBar(title = shopName)
+        if(isPortrait){
+            UniCanteenTopBar(title = shopName, onTitleClick = {
+                navController.navigate(
+                    "${SellerDetailsDestination.route}/${sellerId}"
+                )
+            })
+        }
+
 
         // Search and Cart bar with search function and cart action
         SearchAndCartBar(

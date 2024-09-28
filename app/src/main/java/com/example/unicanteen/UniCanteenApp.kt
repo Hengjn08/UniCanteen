@@ -2,6 +2,7 @@ package com.example.unicanteen
 
 import android.app.Application
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -56,17 +57,26 @@ fun UniCanteenApp(navController: NavHostController = rememberNavController()) {
 fun UniCanteenTopBar(
     modifier: Modifier = Modifier,
     title: String? = "UniCanteen",
-){
+    userId: Int? = null,
+    onTitleClick: () -> Unit = {} // Pass a callback for the click event
+) {
     CenterAlignedTopAppBar(
-        title = { Text(text = title ?: "UniCanteen",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            fontSize = 36.sp,
-            textAlign = TextAlign.Center,
-            color = Color.White,
-            modifier = Modifier.fillMaxHeight()
-                .wrapContentHeight(Alignment.CenterVertically)
-                .padding(20.dp))
+        title = {
+            Text(
+                text = title ?: "UniCanteen",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                fontSize = 36.sp,
+                textAlign = TextAlign.Center,
+                color = Color.White,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .wrapContentHeight(Alignment.CenterVertically)
+                    .padding(20.dp)
+                    .clickable { // Make the title clickable
+                        onTitleClick() // Invoke the click callback
+                    }
+            )
         },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
             containerColor = MaterialTheme.colorScheme.tertiary
