@@ -74,7 +74,9 @@ import com.example.unicanteen.database.SellerRepository
 import com.example.unicanteen.database.SellerRepositoryImpl
 import com.example.unicanteen.database.UserRepositoryImpl
 
-
+object GlobalVariables {
+    var userId: Int? = 1
+}
 @Composable
 fun UniCanteenNavHost(
     navController: NavHostController,
@@ -87,7 +89,7 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = SellerHomeDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = SelectRestaurantDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
 
@@ -179,9 +181,9 @@ fun UniCanteenNavHost(
 
         composable(route = CustomerProfileDestination.route,
             arguments = listOf(navArgument("userId") { type = NavType.IntType
-                defaultValue =1})){
+                defaultValue =GlobalVariables.userId})){
             backStackEntry ->
-            val userId = backStackEntry.arguments?.getInt("userId") ?: 0
+            val userId=GlobalVariables.userId?:0
             CustomerProfileScreen(
                 application = application,
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
@@ -227,11 +229,11 @@ fun UniCanteenNavHost(
             arguments = listOf(
                 // Add orderId as an Int argument
                 navArgument("userId") { type = NavType.IntType
-                    defaultValue = 1
+                    defaultValue = GlobalVariables.userId
                 }
                 )
             ) { backStackEntry ->
-            val userId = backStackEntry.arguments?.getInt("userId") ?: 0
+            val userId = GlobalVariables.userId?:0
             SelectRestaurantScreen(
                 application = application,
                 navController = navController,
@@ -249,7 +251,7 @@ fun UniCanteenNavHost(
                 ) // Ensure argument type matches
         ) { backStackEntry ->
             val sellerId = backStackEntry.arguments?.getInt(SelectFoodDestination.sellerIdArg)
-            val userId=1
+            val userId=GlobalVariables.userId?:0
             // Set up the SelectFoodScreen here, using the sellerId to fetch the relevant foods
             SelectFoodScreen(
                 application = application,
@@ -268,7 +270,7 @@ fun UniCanteenNavHost(
                )
         ) { backStackEntry ->
             val foodId = backStackEntry.arguments?.getInt(FoodDetailCustomerDestination.foodIdArg)
-            val userId = 1//backStackEntry.arguments?.getInt(LoginDestination.userIdArg)
+            val userId=GlobalVariables.userId?:0
             FoodDetailsScreenCustomer(
                 application = application,
                 foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
@@ -284,7 +286,7 @@ fun UniCanteenNavHost(
         composable(
             route = CartDestination.route
         ){
-            val userId = 1//backStackEntry.arguments?.getInt(LoginDestination.userIdArg)
+            val userId=GlobalVariables.userId?:0//backStackEntry.arguments?.getInt(LoginDestination.userIdArg)
             CartScreen(
                 application = application,
                 userId = userId,
@@ -488,11 +490,11 @@ fun UniCanteenNavHost(
             arguments = listOf(
                 // Add orderId as an Int argument
                 navArgument("userId") { type = NavType.IntType
-                defaultValue = 1
+                defaultValue = GlobalVariables.userId?:0
                 }     // Add userId as an Int argument
             )
         ) { backStackEntry ->
-            val userId = backStackEntry.arguments?.getInt("userId") ?: 0
+            val userId=GlobalVariables.userId?:0
 
             // Call the OrderListStatusScreen with the retrieved arguments
             OrderListStatusScreen(

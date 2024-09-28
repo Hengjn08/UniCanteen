@@ -3,6 +3,7 @@ package com.example.unicanteen.LimSiangShin
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -69,9 +70,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.unicanteen.BottomBarScreen
-import com.example.unicanteen.HengJunEn.SellerHomeDestination
+import com.example.unicanteen.Pierre.OrderListStatusDestination
 import com.example.unicanteen.SelectRestaurantDestination
 import com.example.unicanteen.database.UserRepository
+import com.example.unicanteen.navigation.GlobalVariables
 import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 import com.example.unicanteen.ui.theme.UniCanteenTheme
@@ -96,33 +98,36 @@ fun LoginScreen(
     userRepository: UserRepository,
     modifier: Modifier = Modifier
 ){
-    // Obtain Application instance
-
     val userViewModel: UserViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(application = application,userRepository = userRepository)
+        factory = AppViewModelProvider.Factory(application = application, userRepository = userRepository)
     )
 
-    val  loginResult by userViewModel.loginResult.collectAsState()
-    val  currentUserId by userViewModel.currentUserId.collectAsState()
-    val  sellerId by userViewModel.isSellerId.collectAsState()
-    val  isSeller by userViewModel.isSeller.collectAsState()
+    val loginResult by userViewModel.loginResult.collectAsState()
+    val currentUserId by userViewModel.currentUserId.collectAsState()
+    val sellerId by userViewModel.isSellerId.collectAsState()
+    val isSeller by userViewModel.isSeller.collectAsState()
 
-    // Track each login attempt to handle error message properly
     var loginAttempt by remember { mutableStateOf(true) }
-
-    // Variable to track whether we should show the error message
     var showLoginFailed by remember { mutableStateOf(false) }
-
-    var userName by remember { mutableStateOf("")}
+    var userName by remember { mutableStateOf("") }
     var pw by remember { mutableStateOf("") }
-    var userId by remember { mutableStateOf(currentUserId ?:0)}
+    var userId by remember { mutableStateOf(0) }
 
     val context = LocalContext.current
+
+    // LaunchedEffect to update userId when currentUserId changes
+    LaunchedEffect(currentUserId) {
+        currentUserId?.let {
+            userId = it // Update local userId when currentUserId is available
+            Log.d("Login", "User logged in with ID: $userId")
+            GlobalVariables.userId = userId // Set global userId
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {}
-    ){ innerPadding ->
+    ) { innerPadding ->
         LoginBody(
             userId = userId,
             navController = navController,
@@ -131,47 +136,42 @@ fun LoginScreen(
             pw = pw,
             onUserNameChange = { userName = it },
             onPwChange = { pw = it },
-            onSignUpTextClicked = {onSignUpTextClicked() },
-            onHelpClicked = {
-                onHelpClicked()
-            },
-            onForgotPasswordClicked = {onForgotPasswordClicked()},
+            onSignUpTextClicked = { onSignUpTextClicked() },
+            onHelpClicked = { onHelpClicked() },
+            onForgotPasswordClicked = { onForgotPasswordClicked() },
             onSignInClicked = {
-                userViewModel.login(userName,pw)
-                currentUserId?.let { userViewModel.updateCurrentUserDetail(it) }
+                userViewModel.login(userName, pw)
                 loginAttempt = !loginAttempt
+                Log.d("Login", "Login page User logged in with ID: $userId, Global: ${GlobalVariables.userId}, currId: $userId")
+               // navController.navigate("${SelectRestaurantDestination.routeWithArgs(currentUserId!!)}")
             }
         )
 
-        // LaunchedEffect to handle login result and display the right message after each attempt
-        LaunchedEffect(loginAttempt) {
+        // Handle login result and display the appropriate message
+        LaunchedEffect(loginResult) {
             if (loginResult) {
-                // If login is successful, show welcome message and navigate to the next screen
+                // Successful login
                 Toast.makeText(context, "Welcome Back, $userName!", Toast.LENGTH_SHORT).show()
                 if (isSeller) {
-                    navController.navigate(SellerHomeDestination.routeWithArgs(sellerId))
+                    navController.navigate(BottomBarScreen.SellerHome.route)
                 } else {
                     navController.navigate(SelectRestaurantDestination.routeWithArgs(userId))
                 }
-            }else{
+            } else {
                 showLoginFailed = true
-                // Clear the username and password for another try
+                // Clear username and password for retry
                 userName = ""
                 pw = ""
             }
-            // Optionally, reset showLoginFailed after some delay to allow multiple error messages
-            if (showLoginFailed) {
-                    // Only show error message if login failed
-                    Toast.makeText(context, "Login failed. Please try again.", Toast.LENGTH_SHORT).show()
-                    kotlinx.coroutines.delay(2000) // Example delay before hiding the error message
-                    showLoginFailed = false
-            }
 
+            // Show error message for failed login
+            if (showLoginFailed) {
+                Toast.makeText(context, "Login failed. Please try again.", Toast.LENGTH_SHORT).show()
+                kotlinx.coroutines.delay(2000) // Delay before hiding the error message
+                showLoginFailed = false
+            }
         }
     }
-
-
-
 }
 
 @Composable
@@ -285,17 +285,17 @@ fun LoginBody(
 
                 Row (modifier = Modifier) {
 
-                        TextButton(onClick = {onSignUpTextClicked()}) {
-                            Text(text = "Sign Up",
-                                fontStyle = FontStyle.Italic,
-                                textDecoration = TextDecoration.Underline)
-                        }
+                    TextButton(onClick = {onSignUpTextClicked()}) {
+                        Text(text = "Sign Up",
+                            fontStyle = FontStyle.Italic,
+                            textDecoration = TextDecoration.Underline)
+                    }
 
-                        TextButton(onClick = { onForgotPasswordClicked() },modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.End)) {
-                            Text(text = "Forgot Password?",
-                                fontStyle = FontStyle.Italic,
-                                textDecoration = TextDecoration.Underline)
-                        }
+                    TextButton(onClick = { onForgotPasswordClicked() },modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.End)) {
+                        Text(text = "Forgot Password?",
+                            fontStyle = FontStyle.Italic,
+                            textDecoration = TextDecoration.Underline)
+                    }
 
 
                 }
@@ -325,7 +325,7 @@ fun LoginBody(
                         verticalAlignment = Alignment.CenterVertically){
                         Image(painter = painterResource(R.drawable.google_logo),
                             contentDescription = "Google",
-                            )
+                        )
                         Column (modifier = Modifier.fillMaxWidth(),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ){
