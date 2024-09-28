@@ -239,7 +239,7 @@ fun OrderItem(
         // Show only the icon for the order status
         val iconResId = when (orderStatus) {
             "Pending" -> R.drawable.pending
-            "Processing" -> R.drawable.processing
+            "Preparing" -> R.drawable.processing
             "Completed" -> R.drawable.complete
             else -> R.drawable.complete  // Fallback icon if needed
         }

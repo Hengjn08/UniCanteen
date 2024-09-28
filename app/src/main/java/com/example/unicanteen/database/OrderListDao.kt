@@ -235,6 +235,7 @@ interface OrderListDao {
     WHERE ol.orderId = :orderId
     AND ol.userId = :userId
     AND ol.status != 'Cancelled'
+    order by ol.status desc
 """)
     fun getOrderDetailsByOrderIdAndUserId(orderId: Int, userId: Int): LiveData<List<OrderDetailsData>>
 
