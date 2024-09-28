@@ -82,7 +82,7 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = reportSaleCheck.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = SellerHomeDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
         composable(
@@ -162,7 +162,6 @@ fun UniCanteenNavHost(
             RegistrationScreen(
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
-                onRegisterButtonClicked = {navController.navigate(LoginDestination.route)}
             )
         }
 
@@ -214,7 +213,6 @@ fun UniCanteenNavHost(
                 sellerRepository = SellerRepositoryImpl(AppDatabase.getDatabase(navController.context).sellerDao()),
                 orderRepository = OrderRepositoryImpl(AppDatabase.getDatabase(navController.context).orderDao()),
                 orderListRepository = OrderListRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
-                userId = userId,
             )
         }
 
@@ -409,7 +407,6 @@ fun UniCanteenNavHost(
 
         composable(
             route = reportSaleCheck.route,
-            arguments = listOf(navArgument(reportSaleCheck.chart) { type = NavType.StringType })
         ) { backStackEntry ->
             val sellerId = 1 // Use a constant or retrieve from ViewModel as needed
 

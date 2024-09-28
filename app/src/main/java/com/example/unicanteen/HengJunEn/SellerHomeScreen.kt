@@ -1,15 +1,25 @@
 package com.example.unicanteen.HengJunEn
 
+import android.content.res.Configuration
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -96,10 +107,15 @@ fun SellerHomeScreen(
         }
     }
 
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+
     Scaffold (
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            UniCanteenTopBar()
+            if (isPortrait) {
+                UniCanteenTopBar()
+            }
         },
         bottomBar = {
             BottomNavigationBar(
@@ -127,6 +143,8 @@ fun SellerHomeScreen(
             onAvailableChanged = { food, newStatus ->
                 viewModel.updateFoodStatus(food, newStatus)
             },
+            isPortrait = isPortrait,
+            configuration = configuration,
             modifier = modifier.padding(innerPadding)
         )
     }
@@ -137,6 +155,8 @@ fun SellerHomeBody(
     onAvailableChanged: (FoodList,Boolean) -> Unit,
     foods: List<FoodList>,
     onFoodClick: (Int) -> Unit,
+    isPortrait: Boolean,
+    configuration: Configuration,
     modifier: Modifier = Modifier,
 ){
     Column(
@@ -152,94 +172,194 @@ fun SellerHomeBody(
         )
 
         FoodList(
-            //available = available,
             onAvailableChanged = onAvailableChanged,
             foods = foods,
             onFoodClick = onFoodClick,
+            isPortrait = isPortrait,
+            configuration = configuration
         )
     }
 
 }
 
 //To display list of food cards
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun FoodList(
-    onAvailableChanged: (FoodList,Boolean) -> Unit,
+    onAvailableChanged: (FoodList, Boolean) -> Unit,
     foods: List<FoodList>,
     onFoodClick: (Int) -> Unit,
+    isPortrait: Boolean,
+    configuration: Configuration,
     modifier: Modifier = Modifier
-){
-    LazyColumn(modifier = modifier.fillMaxSize()){
-        items(foods) { food ->
-            FoodCard(
-                food = food,
-                modifier = Modifier.clickable{onFoodClick(food.foodId)},
-                onAvailableChanged = { isAvailable ->
-                    onAvailableChanged(food, isAvailable)
-                },
-            )
-            if (foods.indexOf(food) < foods.size - 1) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(
-                        vertical = 12.dp,
-                        horizontal = 8.dp
-                    ),
-                    thickness = 1.dp,
-                    color = Color.Gray
+) {
+    if (isPortrait) {
+        LazyColumn(modifier = modifier.fillMaxSize()) {
+            items(foods) { food ->
+                FoodCard(
+                    food = food,
+                    onAvailableChanged = { isAvailable -> onAvailableChanged(food, isAvailable) },
+                    isPortrait = true,
+                    modifier = Modifier.clickable { onFoodClick(food.foodId) }
+                )
+                // Divider between items
+                if (foods.indexOf(food) < foods.size - 1) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp),
+                        thickness = 1.dp,
+                        color = Color.Gray
+                    )
+                }
+            }
+        }
+    } else {
+        // Landscape with grid layout, showing 2 cards per row
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = modifier.fillMaxSize(),
+            contentPadding = PaddingValues(8.dp)
+        ) {
+            items(foods) { food ->
+                FoodCard(
+                    food = food,
+                    onAvailableChanged = { isAvailable -> onAvailableChanged(food, isAvailable) },
+                    isPortrait = false,
+                    modifier = Modifier.clickable { onFoodClick(food.foodId) }
                 )
             }
         }
     }
 }
 
+
 @Composable
 fun FoodCard(
     food: FoodList,
     onAvailableChanged: (Boolean) -> Unit,
+    isPortrait: Boolean,  // Determines whether the layout is portrait or landscape
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier
-            .padding(8.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
+    if (isPortrait) {
+        // Portrait design (same as before)
+        Card(
+            modifier = modifier
                 .padding(8.dp)
+                .fillMaxWidth()  // Full width in portrait mode
         ) {
-            // Displaying image from URL using Coil's AsyncImage
-            AsyncImage(
-                model = food.imageUrl,  // Image URL from FoodList entity
-                contentDescription = "Food Image",
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .size(80.dp)
-                    .clip(AppShapes.small)
-                    .weight(1f),
-                contentScale = ContentScale.Fit
-            )
-            Column(modifier = Modifier.weight(2f)) {
-                Text(
-                    text = food.foodName,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = Color.Black,
-                    modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                // Display image
+                AsyncImage(
+                    model = food.imageUrl,
+                    contentDescription = "Food Image",
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(AppShapes.small)
+                        .weight(1f),
+                    contentScale = ContentScale.Fit
                 )
-                Text(
-                    text = stringResource(R.string.rm, food.price),
-                    fontSize = 20.sp,
-                    modifier = Modifier.padding(8.dp)
+                Column(modifier = Modifier.weight(2f)) {
+                    Text(
+                        text = food.foodName,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        color = Color.Black,
+                        modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)
+                    )
+                    Text(
+                        text = stringResource(R.string.rm, food.price),
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
+                AvailableFood(
+                    available = food.status == "Available",
+                    onAvailableChanged = onAvailableChanged,
+                    modifier = Modifier.weight(1f)
                 )
             }
-            AvailableFood(
-                available = food.status == "Available",
-                onAvailableChanged = onAvailableChanged,
-                modifier = Modifier.weight(1f)
-            )
+        }
+    } else {
+        // Landscape design (2 sections: image on the left, details on the right)
+        Card(
+            modifier = modifier
+                .padding(8.dp)
+                .fillMaxWidth()  // Full width but structured as a horizontal row
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,  // Align items vertically centered
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                // Section 1: Image
+                AsyncImage(
+                    model = food.imageUrl,
+                    contentDescription = "Food Image",
+                    modifier = Modifier
+                        .size(100.dp)  // Adjust size for landscape mode
+                        .clip(AppShapes.small)
+                        .weight(1f),
+                    contentScale = ContentScale.Crop
+                )
+
+                // Section 2: Food details
+                Column(
+                    modifier = Modifier
+                        .weight(2f)  // Take more space for the text and switch
+                        .padding(start = 16.dp)
+                ) {
+                    // Food name at the top
+                    Text(
+                        text = food.foodName,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        color = Color.Black,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+
+                    // Food description in landscape mode
+                    food.description?.let {
+                        Text(
+                            text = it,
+                            fontSize = 14.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f))  // Pushes the price and availability switch to the bottom
+
+                    // Price and availability switch on the same line
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween  // Ensures price and switch are at opposite sides
+                    ) {
+                        // Price at the bottom-left
+                        Text(
+                            text = stringResource(R.string.rm, food.price),
+                            fontSize = 16.sp,
+                            color = Color.Black
+                        )
+
+                        // Availability switch at the bottom-right
+                        AvailableFood(
+                            available = food.status == "Available",
+                            onAvailableChanged = onAvailableChanged
+                        )
+                    }
+                }
+            }
         }
     }
 }
+
+
+
 
 //Switch to turn on/off availability of food
 @Composable
