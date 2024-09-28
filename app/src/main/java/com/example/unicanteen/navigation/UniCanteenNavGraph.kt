@@ -326,14 +326,10 @@ fun UniCanteenNavHost(
             route = FoodDetailsDestination.routeWithArgs,
             arguments = listOf(
                 navArgument(FoodDetailsDestination.foodIdArg) {
-                type = NavType.IntType },
-                navArgument(LoginDestination.userIdArg){
-                    type= NavType.IntType
-                })
+                type = NavType.IntType }
+                )
         ) { backStackEntry ->
             val foodId = backStackEntry.arguments?.getInt(FoodDetailsDestination.foodIdArg)
-            val userId = backStackEntry.arguments?.getInt(LoginDestination.userIdArg)
-            //val food = Datasource.foods.find { it.id == foodId }
             FoodDetailsScreen(
                 application = application,
                 foodId = foodId ?: return@composable,

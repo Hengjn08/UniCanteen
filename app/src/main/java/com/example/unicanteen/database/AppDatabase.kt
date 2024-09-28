@@ -19,7 +19,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         PaymentDetails::class,
         AddOn::class
     ],
-    version = 3 // Incremented version number
+    version = 4 // Incremented version number
 )
 @TypeConverters(Converters::class) // Correct placement of TypeConverters annotation
 abstract class AppDatabase : RoomDatabase() {
