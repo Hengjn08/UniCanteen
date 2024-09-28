@@ -85,7 +85,7 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = SelectRestaurantDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = SellerHomeDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
         Log.d("AppViewModelProvider", "Application context: $application")
@@ -330,12 +330,18 @@ fun UniCanteenNavHost(
 
         //edit food screen
         composable(
-            route = EditFoodDestination.route,
+            route = EditFoodDestination.routeWithArgs,
+            arguments = listOf(navArgument(EditFoodDestination.foodIdArg) {
+                type = NavType.IntType // Declare argument type
+            })
         ) { backStackEntry ->
-            val foodId = backStackEntry.arguments?.getInt("foodId")
-            val food = Datasource.foods.find { it.id == foodId }
+            val foodId = backStackEntry.arguments?.getInt(EditFoodDestination.foodIdArg)
             EditFoodScreen(
-                navigateBack = {navController.navigateUp()}
+                application = application,
+                foodId = foodId ?: return@composable,
+                foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
+                addOnRepository = AddOnRepositoryImpl(AppDatabase.getDatabase(navController.context).addOnDao()),
+                navController = navController,
             )
         }
 
