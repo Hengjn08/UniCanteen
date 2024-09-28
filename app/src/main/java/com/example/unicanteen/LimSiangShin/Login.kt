@@ -101,7 +101,9 @@ fun LoginScreen(
         factory = AppViewModelProvider.Factory(application = application,userRepository = userRepository)
     )
 
+
     val  loginResult by userViewModel.loginResult.collectAsState()
+
     val  currentUserId by userViewModel.currentUserId.collectAsState()
     val  sellerId by userViewModel.isSellerId.collectAsState()
     val  isSeller by userViewModel.isSeller.collectAsState()
@@ -195,7 +197,7 @@ fun LoginBody(
         Column(
             modifier = modifier
                 .background(colorResource(R.color.orange_500), RoundedCornerShape(50.dp))
-                .padding(vertical =  20.dp, horizontal = 20.dp),
+                .padding(vertical = 20.dp, horizontal = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Column(
@@ -210,7 +212,7 @@ fun LoginBody(
                         fontSize = 36.sp,
                         fontWeight = FontWeight.Bold,
                         color = colorResource(R.color.white))
-                    Column (){
+                    Column {
                         Icon(imageVector = Icons.Default.QuestionMark,
                             contentDescription ="Help",
                             modifier = Modifier
@@ -290,7 +292,9 @@ fun LoginBody(
                                 textDecoration = TextDecoration.Underline)
                         }
 
-                        TextButton(onClick = { onForgotPasswordClicked() },modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.End)) {
+                        TextButton(onClick = { onForgotPasswordClicked() },modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentWidth(Alignment.End)) {
                             Text(text = "Forgot Password?",
                                 fontStyle = FontStyle.Italic,
                                 textDecoration = TextDecoration.Underline)

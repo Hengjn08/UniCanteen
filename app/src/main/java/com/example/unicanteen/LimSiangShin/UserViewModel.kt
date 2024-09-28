@@ -151,18 +151,18 @@ class UserViewModel(
     }
 
 
-//    fun getCurrentUserDetail(userId: Int){
-//        viewModelScope.launch{
-//            val user = userRepository.getUserById(userId)
-//            if (user != null) {
-//                _userName.value = user.userName
-//                _email.value = user.email
-//                _password.value = user.password
-//                _phoneNumber.value = user.phoneNumber.toString()
-//            }
-//
-//        }
-//    }
+    fun getCurrentUserDetail(userId: Int){
+        viewModelScope.launch{
+            val user = userRepository.getUserById(userId)
+            if (user != null) {
+                _userName.value = user.userName
+                _email.value = user.email
+                _password.value = user.password
+                _phoneNumber.value = user.phoneNumber.toString()
+            }
+
+        }
+    }
 
 
     //Validation for each type of text field
@@ -255,5 +255,4 @@ class UserViewModel(
         }
         return correct
     }
-
 }

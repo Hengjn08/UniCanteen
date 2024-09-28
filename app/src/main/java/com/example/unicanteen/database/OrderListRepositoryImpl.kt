@@ -34,4 +34,8 @@ class OrderListRepositoryImpl( private val orderListDao: OrderListDao): OrderLis
         return orderListDao.deleteOrderListById(orderListId)
     }
 
+    override suspend fun getOrderListByUserId(userId: Int): List<OrderList> {
+        return orderListDao.getOrderListByUserId(userId)
+    }
+
 }
