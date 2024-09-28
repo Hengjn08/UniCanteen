@@ -1,6 +1,7 @@
 package com.example.unicanteen
 import android.app.Application
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,6 +47,7 @@ import com.example.unicanteen.ui.theme.AppViewModelProvider
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.lazy.LazyRow
+import com.example.unicanteen.navigation.GlobalVariables
 
 object SelectRestaurantDestination : NavigationDestination {
     override val route = "restaurant_select?userId={userId}"
@@ -65,7 +67,7 @@ fun SelectRestaurantScreen(
     orderRepository: OrderRepository,
     orderListRepository: OrderListRepository
 ) {
-
+    Log.d("SelectRestaurantScreen", "userId: $userId, gLOBAL:  ${GlobalVariables.userId}" )
     val viewModel: SelectRestaurantViewModel = viewModel(
         factory = AppViewModelProvider.Factory(application = application,sellerRepository = sellerRepository)
     )
@@ -205,7 +207,9 @@ fun RestaurantCard(seller: Seller, onClick: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp)
-                    .defaultMinSize(minWidth = 200.dp)
+                    .defaultMinSize(minWidth = 180.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.width(8.dp))
                 Image(
@@ -213,14 +217,14 @@ fun RestaurantCard(seller: Seller, onClick: () -> Unit) {
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(110.dp) // Fixed size for the image
+                        .size(120.dp) // Fixed size for the image
                         .clip(RoundedCornerShape(16.dp))
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        //.padding(8.dp)
+                        .padding(8.dp)
                         .weight(1f)
                 ) {
                     Text(
