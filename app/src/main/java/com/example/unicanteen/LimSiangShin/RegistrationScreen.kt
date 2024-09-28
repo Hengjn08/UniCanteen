@@ -71,7 +71,6 @@ fun RegistrationScreen(
     application: Application, // Pass application context
     userRepository: UserRepository,
     navController: NavController,
-    onRegisterButtonClicked: () -> Unit,
     modifier: Modifier = Modifier
 ){
     val viewModel: UserViewModel = viewModel(

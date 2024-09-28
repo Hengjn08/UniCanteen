@@ -196,6 +196,7 @@ fun UniCanteenNavHost(
 
         composable(route = ForgotPasswordDestination.route){
             ChangePasswordScreen(
+                application = application,
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController
 
