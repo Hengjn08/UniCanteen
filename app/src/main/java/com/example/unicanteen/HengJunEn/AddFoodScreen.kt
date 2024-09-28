@@ -383,7 +383,15 @@ fun FoodTypeDropdown(
     selectedType: String,
     onTypeSelected: (String) -> Unit,
 ) {
-    val foodTypes = listOf("Rice", "Mee")  // Define your food types here
+    val foodTypes = listOf(
+        "Rice",
+        "Mee",
+        "Main Course",
+        "Appetizer",
+        "Salad",
+        "Desset",
+        "Bakery"
+    )
     var expanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(

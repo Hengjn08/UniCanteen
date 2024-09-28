@@ -1,5 +1,7 @@
 package com.example.unicanteen.database
 
+import com.example.unicanteen.database.FoodListDao.UpdatedFoodDetails
+
 class FoodListRepositoryImpl( private val foodListDao: FoodListDao): FoodListRepository{
     override suspend fun insertFood(foodList: FoodList): Long{
         return foodListDao.insertFoodItem(foodList)
@@ -23,5 +25,11 @@ class FoodListRepositoryImpl( private val foodListDao: FoodListDao): FoodListRep
         return foodListDao.searchFoodItemsByName(sellerId, query)
     }
 
+    override suspend fun getFoodDetailsWithAddOns(foodId: Int): List<FoodListDao.FoodDetailsWithAddOns> {
+        return foodListDao.getFoodDetailsWithAddOns(foodId)
+    }
 
+    override suspend fun updateSellerFoodDetails(updatedFoodDetails: UpdatedFoodDetails){
+        return foodListDao.updateSellerFoodDetails(updatedFoodDetails)
+    }
 }

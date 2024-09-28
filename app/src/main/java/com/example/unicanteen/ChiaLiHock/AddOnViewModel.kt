@@ -29,4 +29,35 @@ class AddOnViewModel(private val repository: AddOnRepository) : ViewModel() {
         }
     }
 
+    // Delete add-ons (can be used when removing unwanted add-ons)
+    private suspend fun deleteAddOns(addOns: List<AddOn>) {
+        viewModelScope.launch {
+            addOns.forEach { repository.delete(it) }
+        }
+    }
+
+    // Update the add-ons list when editing a food item
+    fun updateAddOnsForFood(newAddOns: List<AddOn>, foodId: Int) {
+        viewModelScope.launch {
+                // Get existing add-ons for the food item
+                val existingAddOns = repository.getAddOnsForFood(foodId)
+
+                // Identify which add-ons to delete (no longer part of the new add-ons list)
+                val addOnsToDelete = existingAddOns.filter { existing ->
+                    existing.description !in newAddOns.map { it.description }
+                }
+
+                // Delete removed add-ons
+                deleteAddOns(addOnsToDelete)
+
+                // Insert new add-ons that are not in the existing list
+                newAddOns.forEach { newAddOn ->
+                    if (newAddOn.description !in existingAddOns.map { it.description }) {
+                        insertAddOns(newAddOn)
+                    }
+                }
+            }
+
+        }
 }
+

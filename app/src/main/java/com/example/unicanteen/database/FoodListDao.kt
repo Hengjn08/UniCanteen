@@ -20,8 +20,6 @@ interface FoodListDao {
     @Delete
     suspend fun deleteFoodItem(foodItem: FoodList)
 
-
-
     // Fetch a food item by foodId
     @Query("SELECT * FROM foodList WHERE foodId = :foodId")
     suspend fun getFoodItemById(foodId: Int): FoodList?
@@ -54,5 +52,87 @@ interface FoodListDao {
     @Query("SELECT * FROM foodList WHERE sellerId = :sellerId AND foodName LIKE '%' || :query || '%'")
     suspend fun searchFoodItemsByName(sellerId: Int, query: String): List<FoodList>
 
+    data class FoodDetailsWithAddOns(
+        val foodName: String,
+        val type: String,
+        val foodDescription: String,
+        val price: Double,
+        val imageUrl: String,
+        val addOnDescription: String?
+    )
+
+    //display food details with add ons
+    @Query("""
+        SELECT f.foodName, f.type, f.description AS foodDescription, f.price, f.imageUrl, 
+               GROUP_CONCAT(COALESCE(a.description, ''), ', ') AS addOnDescription
+        FROM foodList f
+        LEFT JOIN addOn a ON f.foodId = a.foodId
+        WHERE f.foodId = :foodId
+        GROUP BY f.foodId
+    """)
+    suspend fun getFoodDetailsWithAddOns(foodId: Int): List<FoodDetailsWithAddOns>
+
+    data class UpdatedFoodDetails(
+        val foodId: Int,
+        val foodName: String,
+        val description: String,
+        val price: Double,
+        val type: String,
+        val imageUrl: String,
+        val modifyDate: String
+    )
+    @Query("""
+    UPDATE foodList
+    SET
+        foodName = :foodName,
+        description = :description,
+        price = :price,
+        type = :type,
+        imageUrl = :imageUrl,
+        modifyDate = :modifyDate
+    WHERE foodId = :foodId
+""")
+    suspend fun updateFoodDetails(
+        foodId: Int,
+        foodName: String,
+        description: String,
+        price: Double,
+        type: String,
+        imageUrl: String,
+        modifyDate: String
+    )
+
+    // Usage in your DAO or Repository
+    suspend fun updateSellerFoodDetails(updatedFoodDetails: UpdatedFoodDetails) {
+        updateFoodDetails(
+            foodId = updatedFoodDetails.foodId,
+            foodName = updatedFoodDetails.foodName,
+            description = updatedFoodDetails.description,
+            price = updatedFoodDetails.price,
+            type = updatedFoodDetails.type,
+            imageUrl = updatedFoodDetails.imageUrl,
+            modifyDate = updatedFoodDetails.modifyDate
+        )
+    }
+//    @Query("""
+//    UPDATE FoodList
+//    SET
+//        foodName = :foodName,
+//        description = :description,
+//        price = :price,
+//        type = :type,
+//        imageUrl = :imageUrl,
+//        modifyDate = :modifyDate
+//    WHERE foodId = :foodId
+//""")
+//    suspend fun updateSellerFoodDetails(
+//        foodId: Int,
+//        foodName: String,
+//        description: String,
+//        price: Double,
+//        type: String,
+//        imageUrl: String,
+//        modifyDate: String
+//    )
 
 }

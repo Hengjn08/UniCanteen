@@ -58,12 +58,15 @@ import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 import com.example.unicanteen.ui.theme.UniCanteenTheme
 
-//object SellerOrderListDestination : NavigationDestination {
-//    override val route = "seller_order_list"
-//    override val title = "Order List"
-//    //const val foodIdArg = "foodId"
-//    //val routeWithArgs = "$route/{$foodIdArg}"
-//}
+object SellerOrderListDestination : NavigationDestination {
+    override val route = "seller_order_list"
+    override val title = "Order List"
+    //const val foodIdArg = "foodId"
+    //val routeWithArgs = "$route/{$foodIdArg}"
+    fun routeWithArgs(sellerId: Int): String {
+        return "$route/$sellerId"
+    }
+}
 
 @Composable
 fun OrderListScreen(

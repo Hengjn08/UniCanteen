@@ -60,6 +60,7 @@ import com.example.unicanteen.database.FoodListRepositoryImpl
 import com.example.unicanteen.database.Seller
 import com.example.unicanteen.model.Food
 import com.example.unicanteen.navigation.NavigationDestination
+import com.example.unicanteen.ui.theme.AppShapes
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 import com.example.unicanteen.ui.theme.UniCanteenTheme
 
@@ -67,7 +68,9 @@ object SellerHomeDestination : NavigationDestination {
     override val route = "seller_home"
     override val title = "Food List"
     const val sellerIdArg = "sellerId" // This should refer to the seller's ID
-    val routeWithArgs = "$route/{$sellerIdArg}" // Full route with arguments
+    fun routeWithArgs(sellerId: Int?): String {
+        return "seller_home?sellerId=$sellerId"
+    }
 }
 
 @Composable
@@ -78,14 +81,7 @@ fun SellerHomeScreen(
     currentDestination: NavDestination?,
     sellerId: Int?,
     foodListRepository: FoodListRepository,
-    //canNavigateBack: Boolean,
-    //onEditClick: () -> Unit,
-    //onRemoveClick: () -> Unit,
 ){
-    var available by remember { mutableStateOf(false)}
-    var foodToRemove by remember { mutableStateOf<Food?>(null) }
-    //var showDialog by remember { mutableStateOf(false) }
-
     val viewModel: SellerHomeViewModel = viewModel(
         factory = AppViewModelProvider.Factory(null,foodListRepository)
     )
@@ -138,7 +134,6 @@ fun SellerHomeScreen(
 
 @Composable
 fun SellerHomeBody(
-    //available: Boolean,
     onAvailableChanged: (FoodList,Boolean) -> Unit,
     foods: List<FoodList>,
     onFoodClick: (Int) -> Unit,
@@ -169,24 +164,19 @@ fun SellerHomeBody(
 //To display list of food cards
 @Composable
 private fun FoodList(
-    //available: Boolean,
     onAvailableChanged: (FoodList,Boolean) -> Unit,
-    //onFoodClick: (FoodList) -> Unit,
     foods: List<FoodList>,
     onFoodClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ){
-    //val data = Datasource.foods
     LazyColumn(modifier = modifier.fillMaxSize()){
         items(foods) { food ->
             FoodCard(
                 food = food,
                 modifier = Modifier.clickable{onFoodClick(food.foodId)},
-                //available = available,
                 onAvailableChanged = { isAvailable ->
                     onAvailableChanged(food, isAvailable)
                 },
-                //onClick = { onFoodClick(food.id)}
             )
             if (foods.indexOf(food) < foods.size - 1) {
                 HorizontalDivider(
@@ -224,27 +214,15 @@ fun FoodCard(
                 contentDescription = "Food Image",
                 modifier = Modifier
                     .size(80.dp)
-                    .clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
+                    .clip(AppShapes.small)
+                    .weight(1f),
+                contentScale = ContentScale.Fit
             )
-
-//            Image(
-//                painter = painterResource(food.foodImage.toInt()),
-//                contentDescription = null,
-//                contentScale = ContentScale.FillBounds,
-//                modifier = Modifier
-//                    //.padding(8.dp)
-//                    .size(80.dp)
-//                    //.clickable(onClick = onClick)
-//                    .clip(
-//                        RoundedCornerShape(8.dp)
-//                    )
-//            )
-            Column {
+            Column(modifier = Modifier.weight(2f)) {
                 Text(
                     text = food.foodName,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 28.sp,
+                    fontSize = 20.sp,
                     color = Color.Black,
                     modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)
                 )
@@ -257,6 +235,7 @@ fun FoodCard(
             AvailableFood(
                 available = food.status == "Available",
                 onAvailableChanged = onAvailableChanged,
+                modifier = Modifier.weight(1f)
             )
         }
     }
@@ -272,7 +251,7 @@ fun AvailableFood(
     Switch(
         checked = available,
         onCheckedChange = onAvailableChanged,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .wrapContentWidth(Alignment.End)
     )

@@ -2,6 +2,7 @@ package com.example.unicanteen.HengJunEn
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -48,6 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.example.unicanteen.ChiaLiHock.FoodDetailViewModel
 import com.example.unicanteen.R
 import com.example.unicanteen.UniCanteenTopBar
@@ -56,6 +59,7 @@ import com.example.unicanteen.database.FoodList
 import com.example.unicanteen.database.FoodListRepository
 import com.example.unicanteen.model.Food
 import com.example.unicanteen.navigation.NavigationDestination
+import com.example.unicanteen.ui.theme.AppShapes
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 import com.example.unicanteen.ui.theme.UniCanteenTheme
 import kotlinx.coroutines.coroutineScope
@@ -66,7 +70,6 @@ object FoodDetailsDestination : NavigationDestination {
     const val foodIdArg = "foodId"
     val routeWithArgs = "$route/{$foodIdArg}"
 }
-
 
 @Composable
 fun FoodDetailsScreen(
@@ -115,50 +118,136 @@ fun foodDetailsBody(
 ) {
     var showDialog by rememberSaveable { mutableStateOf(false) }
 
-    Column(
+    LazyColumn(
         modifier = modifier
             .padding(vertical = 16.dp)
             .fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
-    ){
-        NavigateBackIconWithTitle(
-            title = FoodDetailsDestination.title,
-            navigateBack = navigateBack
-        )
-        FoodDetails(
-            food = food,
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .fillMaxWidth(),
-        )
+    ) {
+        item {
+            NavigateBackIconWithTitle(
+                title = FoodDetailsDestination.title,
+                navigateBack = navigateBack
+            )
+        }
 
-        Button(
-            onClick = onEditClick,
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .fillMaxWidth(),
-            shape = MaterialTheme.shapes.small,
-        ) {
-            Text("Edit")
+        item {
+            FoodDetails(
+                food = food,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth(),
+            )
         }
-        OutlinedButton(
-            onClick = { showDialog = true },
-            shape = MaterialTheme.shapes.small,
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .fillMaxWidth()
-        ) {
-            Text("Delete")
+
+        item {
+            Button(
+                onClick = onEditClick,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth(),
+                shape = MaterialTheme.shapes.small,
+            ) {
+                Text("Edit")
+            }
         }
+
+        item {
+            OutlinedButton(
+                onClick = { showDialog = true },
+                shape = MaterialTheme.shapes.small,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth()
+            ) {
+                Text("Delete")
+            }
+        }
+
         if (showDialog) {
-            DeleteConfirmationDialog(
-                onConfirm = {
-                    onDelete()
-                    showDialog = false // Dismiss dialog
-                },
-                onCancel = {
-                    showDialog = false // Dismiss dialog
-                },
+            item {
+                DeleteConfirmationDialog(
+                    onConfirm = {
+                        onDelete()
+                        showDialog = false // Dismiss dialog
+                    },
+                    onCancel = {
+                        showDialog = false // Dismiss dialog
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun FoodDetails(
+    food: FoodList?,
+    modifier: Modifier = Modifier
+){
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = colorResource(R.color.purple_80)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+        ) {
+            if (food != null) {
+
+                AsyncImage(
+                    model = food.imageUrl,  // Image URL from FoodList entity
+                    contentDescription = "Food Image",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(AppShapes.small),
+                    contentScale = ContentScale.Crop
+                )
+
+                FoodDetailsBody(
+                    label = "Name",
+                    foodDetails = food.foodName,
+                    modifier = Modifier.padding(16.dp)
+                )
+
+                FoodDetailsBody(
+                    label = "Description",
+                    foodDetails = food.description,
+                    modifier = Modifier
+                        .padding(16.dp)
+                )
+
+                FoodDetailsBody(
+                    label = "Price",
+                    foodDetails = stringResource(R.string.rm, food.price),
+                    modifier = Modifier
+                        .padding(16.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun FoodDetailsBody(
+    label: String,          //ltr maybe need to change to Int for stringRes
+    foodDetails: String?,
+    modifier: Modifier = Modifier
+){
+    Column(
+        modifier = modifier
+    ){
+        Text(
+            text = label,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
+        if (foodDetails != null) {
+            Text(
+                text = foodDetails,
+                fontSize = 20.sp
             )
         }
     }
@@ -187,80 +276,6 @@ fun NavigateBackIconWithTitle(
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
         )
-    }
-}
-
-@Composable
-fun FoodDetails(
-    food: FoodList?,
-    modifier: Modifier = Modifier
-){
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = colorResource(R.color.purple_80)
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-        ) {
-            if (food != null) {
-//                Image(
-//                    painter = painterResource(food.foodImage.toInt()),
-//                    contentDescription = null,
-//                    contentScale = ContentScale.Fit,
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .height(200.dp)
-//                        .clip(RoundedCornerShape(8.dp))
-//                )
-
-                FoodDetailsBody(
-                    label = "Name",
-                    foodDetails = food.foodName,
-                    modifier = Modifier.padding(16.dp)
-                )
-
-                FoodDetailsBody(
-                    label = "Description",
-                    foodDetails = food.description,
-                    modifier = Modifier
-                        .padding(16.dp)
-                )
-
-                FoodDetailsBody(
-                    label = "Price",
-                    foodDetails = stringResource(R.string.rm, food.price),
-                    modifier = Modifier
-                        .padding(16.dp)
-                )
-            }
-        }
-    }
-
-}
-
-@Composable
-fun FoodDetailsBody(
-    label: String,          //ltr maybe need to change to Int for stringRes
-    foodDetails: String?,
-    modifier: Modifier = Modifier
-){
-    Column(
-        modifier = modifier
-    ){
-        Text(
-            text = label,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
-        )
-        if (foodDetails != null) {
-            Text(
-                text = foodDetails,
-                fontSize = 20.sp
-            )
-        }
     }
 }
 

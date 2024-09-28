@@ -8,6 +8,7 @@ import com.example.unicanteen.ChiaLiHock.FoodDetailViewModel
 import com.example.unicanteen.ChiaLiHock.OrderListViewModel
 import com.example.unicanteen.ChiaLiHock.SelectFoodViewModel
 import com.example.unicanteen.HengJunEn.AddFoodViewModel
+import com.example.unicanteen.HengJunEn.EditFoodViewModel
 import com.example.unicanteen.HengJunEn.SellerFoodDetailsViewModel
 import com.example.unicanteen.HengJunEn.SellerHomeViewModel
 import com.example.unicanteen.HengJunEn.SellerOrderListViewModel
@@ -65,6 +66,9 @@ object AppViewModelProvider {
             }
             else if (modelClass.isAssignableFrom(CartViewModel::class.java)) {
                 return orderRepository?.let { CartViewModel( it, orderListRepository!!) } as T
+            }
+            else if (modelClass.isAssignableFrom(EditFoodViewModel::class.java)) {
+                return foodListRepository?.let { EditFoodViewModel(it) } as T
             }
             else
                 throw IllegalArgumentException("Unknown ViewModel class")
