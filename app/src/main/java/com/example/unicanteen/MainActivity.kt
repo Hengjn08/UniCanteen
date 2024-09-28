@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
@@ -29,7 +30,10 @@ class MainActivity : ComponentActivity() {
 
         }
         setContent {
-            UniCanteenTheme {
+            val darkTheme = isSystemInDarkTheme() // Detect system theme
+            UniCanteenTheme(
+                darkTheme = true
+            ) {
                 Surface(
                     modifier = Modifier
                         .fillMaxSize()

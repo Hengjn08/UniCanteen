@@ -1,0 +1,111 @@
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.unicanteen.R
+import com.example.unicanteen.UniCanteenTopBar
+import com.example.unicanteen.navigation.NavigationDestination
+
+object HelpDestination : NavigationDestination {
+    override val route = "Help?userId={userId}"
+    override val title = "Help"
+    fun routeWithArgs(userId: Int): String{
+        return "${route}/$userId"
+    }
+}
+@Composable
+fun HelpScreen() {
+    Scaffold(
+        topBar = {
+            UniCanteenTopBar()
+        },
+        content = { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Text(
+                    text = "Frequently Asked Questions",
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                FAQItem(
+                    question = "How can I reset my password?",
+                    answer = "You can reset your password by going to the 'Forgot Password' section on the login page.",
+                    imageIds = listOf(R.drawable.pan_mee, R.drawable.pan_mee)
+                )
+                FAQItem(
+                    question = "How do I update my profile?",
+                    answer = "To update your profile, navigate to your profile section and click on 'Edit Profile'.",
+                    imageIds = listOf(R.drawable.pan_mee)
+                )
+                FAQItem(
+                    question = "How do I contact customer support?",
+                    answer = "You can reach out to our customer support via email at support@example.com or call us at 123-456-789.",
+                    imageIds = emptyList()  // No images for this FAQ
+                )
+            }
+        }
+    )
+}
+
+@Composable
+fun FAQItem(question: String, answer: String, imageIds: List<Int>) {
+    var isExpanded by remember { mutableStateOf(false) }
+    Column(modifier = Modifier.fillMaxWidth()) {
+        ClickableText(
+            text = AnnotatedString(question),
+            style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
+            onClick = { isExpanded = !isExpanded }
+        )
+        if (isExpanded) {
+            Text(
+                text = answer,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
+            )
+
+            // Display images if any are provided
+            if (imageIds.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    imageIds.forEach { imageId ->
+                        Image(
+                            painter = painterResource(id = imageId),
+                            contentDescription = "Solution Image",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .padding(4.dp)
+                        )
+                    }
+                }
+            }
+        }
+        Divider()
+    }
+}
+
+@Preview
+@Composable
+fun HelpScreenPreview() {
+    HelpScreen()
+}
