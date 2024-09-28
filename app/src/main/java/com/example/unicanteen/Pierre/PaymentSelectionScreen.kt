@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -63,6 +64,8 @@ fun PaymentSelectionScreen(
 
     // State for showing messages after payment selection
     var updateMessage by remember { mutableStateOf<String?>(null) }
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedPaymentType by remember { mutableStateOf("") }
 // Initialize the ViewModel
     val viewModel: AdminViewModel = viewModel(
         factory = AppViewModelProvider.Factory(application = application,pierreAdminRepository = sellerAdminRepository)
@@ -108,7 +111,8 @@ fun PaymentSelectionScreen(
                         updateMessage = "Success payment method: Pay by Touch Ngo"
 //                        viewModel.uploadPierreTestData(name = "Test Name")
                         viewModel.createPayment(orderId = orderId, userId = userId, payType = "TnGo")
-                        navController.navigate("payment_receipt/$userId/$orderId")
+                        selectedPaymentType = "Pay by Touch Ngo"
+                        showDialog = true
                     }
                 )
 
@@ -121,9 +125,21 @@ fun PaymentSelectionScreen(
 //                        viewModel.uploadPierreTestData(name = "Test Name")
 //                        Log.d("FirebaseUpload", "Simple test data uploaded successfully!")
                         viewModel.createPayment(orderId = orderId, userId = userId, payType = "Pay at Counter")
-                        navController.navigate("payment_receipt/$userId/$orderId")
+                        selectedPaymentType = "Pay at Counter"
+                        showDialog = true
                     }
                 )
+                if (showDialog) {
+                    ConfirmationDialog(
+                        onConfirm = {
+                            // Handle the payment based on selected type
+                            updateMessage = "Success payment method: $selectedPaymentType"
+                            navController.navigate("payment_receipt/$userId/$orderId")
+                        },
+                        onDismiss = { showDialog = false },
+                        message = "Are you sure you want to proceed with $selectedPaymentType?"
+                    )
+                }
 
                 BackButton(
                     onClick = { navController.navigateUp() }
@@ -131,6 +147,31 @@ fun PaymentSelectionScreen(
             }
         }
     }
+}
+@Composable
+fun ConfirmationDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    message: String
+) {
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        title = { Text(text = "Confirm Payment") },
+        text = { Text(text = message) },
+        confirmButton = {
+            Button(onClick = {
+                onConfirm()
+                onDismiss()
+            }) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            Button(onClick = { onDismiss() }) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 @Composable

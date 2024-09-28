@@ -31,6 +31,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import coil.compose.rememberAsyncImagePainter
@@ -89,6 +90,7 @@ fun SelectRestaurantScreen(
             UniCanteenTopBar()
 
         }
+
         SearchAndCartBar(
             onSearch = { query -> viewModel.searchSellersByName(query) },
             onCartClick = { navController.navigate("${CartDestination.route}") },
@@ -152,6 +154,7 @@ fun RestaurantListRow(sellers: List<Seller>, navController: NavController) {
 fun RestaurantCard(seller: Seller, onClick: () -> Unit) {
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+
 
     Card(
         shape = RoundedCornerShape(16.dp),

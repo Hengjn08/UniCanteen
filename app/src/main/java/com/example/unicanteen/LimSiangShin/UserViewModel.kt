@@ -166,7 +166,7 @@ class UserViewModel(
 
 
     //Validation for each type of text field
-    private fun validateUserName(userName: String): Boolean {
+     fun validateUserName(userName: String): Boolean {
         val name = userName.trim()
         var isValid = true
         var errorMessage = ""
@@ -178,7 +178,7 @@ class UserViewModel(
         return isValid
     }
 
-    private fun validateEmail(email: String): Boolean {
+    fun validateEmail(email: String): Boolean {
         val email = email.trim()
         var isValid = true
         var errorMessage = ""
@@ -193,7 +193,7 @@ class UserViewModel(
         return isValid
     }
 
-    private fun validatePhoneNumber(phoneNumber: String): Boolean {
+     fun validatePhoneNumber(phoneNumber: String): Boolean {
         val phoneNumber = phoneNumber.trim()
         var isValid = true
         var errorMessage = ""
@@ -209,7 +209,7 @@ class UserViewModel(
         return isValid
     }
 
-    private fun validatePassword(password: String): Boolean {
+     fun validatePassword(password: String): Boolean {
         val password = password.trim()
         var isValid = true
         var errorMessage = ""
@@ -232,4 +232,28 @@ class UserViewModel(
         }
         return correct
     }
+
+    fun checkEmailExist(email:String):Boolean{
+        var correct = false
+        viewModelScope.launch {
+            val checkUser = userRepository.getUserByEmail(email)
+            if(checkUser != null){
+                correct = true
+            }
+        }
+        return correct
+    }
+
+    fun updateNewPassword(email:String, password: String):Boolean{
+        var correct = false
+        viewModelScope.launch {
+            val checkUser = userRepository.getUserByEmail(email)
+            if(checkUser != null){
+                userRepository.updateUserPassword(password,checkUser.userId)
+                correct = true
+            }
+        }
+        return correct
+    }
+
 }

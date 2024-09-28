@@ -12,7 +12,7 @@ class PierreAdminRepositoryImpl(private val orderListDao: OrderListDao) : Pierre
         return orderListDao.getSalesByFoodType(foodType, sellerId, month)
     }
     override suspend fun getOrderDetailsByOrderIdAndUserId(orderId: Int, userId: Int): LiveData<List<OrderListDao.OrderDetailsData>> {
-        return orderListDao.getOrderDetailsByOrderIdAndUserId(orderId, userId)
+        return orderListDao.getOrderDetailsByOrderIdAndUserId( orderId,userId)
     }
     override suspend fun updateOrderTableNo(userId: Int, orderId: Int, tableNo: Int) {
         return orderListDao.updateOrderTableNo(userId, orderId, tableNo)
