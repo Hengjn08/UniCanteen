@@ -1,5 +1,7 @@
 package com.example.unicanteen.navigation
 
+import HelpDestination
+import HelpScreen
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -13,6 +15,8 @@ import androidx.navigation.navArgument
 import com.example.unicanteen.BottomBarScreen
 import com.example.unicanteen.CartDestination
 import com.example.unicanteen.CartScreen
+import com.example.unicanteen.ChiaLiHock.SellerDetailScreen
+import com.example.unicanteen.ChiaLiHock.SellerDetailsDestination
 import com.example.unicanteen.FoodDetailCustomerDestination
 import com.example.unicanteen.FoodDetailsScreenCustomer
 import com.example.unicanteen.HengJunEn.AddFoodDestination
@@ -58,7 +62,6 @@ import com.example.unicanteen.SelectRestaurantViewModel
 import com.example.unicanteen.data.Datasource
 import com.example.unicanteen.database.AddOnRepositoryImpl
 import com.example.unicanteen.database.AppDatabase
-import com.example.unicanteen.database.FoodListRepository
 import com.example.unicanteen.database.FoodListRepositoryImpl
 import com.example.unicanteen.database.OrderListRepositoryImpl
 import com.example.unicanteen.database.OrderRepositoryImpl
@@ -79,7 +82,7 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = SellerHomeDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = reportSaleCheck.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
         composable(
@@ -111,6 +114,7 @@ fun UniCanteenNavHost(
                 orderListRepository = OrderListRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao())
             )
         }
+
 //        composable(route = SellerProdileDestination.route,
 //            arguments = listOf(navArgument("sellerId") { type = NavType.IntType
 //                defaultValue =1})
@@ -149,6 +153,8 @@ fun UniCanteenNavHost(
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
                 onSignUpTextClicked = {navController.navigate(AddUserDestination.route)},
+                onHelpClicked = {navController.navigate(LoginDestination.route)}
+//                userId = userId
             )
         }
 
@@ -157,16 +163,24 @@ fun UniCanteenNavHost(
             RegistrationScreen(
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
-                onRegisterButtonClicked = {navController.navigate(LoginDestination.route)}
             )
         }
 
-        composable(route = CustomerProfileDestination.route){
+        composable(route = CustomerProfileDestination.route,
+            arguments = listOf(navArgument("userId") { type = NavType.IntType
+                defaultValue =1})){
+                backStackEntry ->
+            val userId = backStackEntry.arguments?.getInt("userId") ?: 0
             CustomerProfileScreen(
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
-                currentDestination = currentDestination
+                currentDestination = currentDestination,
+                userId = userId
             )
+        }
+
+        composable(route = HelpDestination.route){
+            HelpScreen()
         }
 
         //Customer module route
@@ -250,11 +264,22 @@ fun UniCanteenNavHost(
                 navController = navController
             )
         }
+        composable(
+            route = SellerDetailsDestination.routeWithArgs,
+            arguments = listOf(navArgument(SellerDetailsDestination.sellerIdArg) { type = NavType.IntType })
+        ){backStackEntry->
+            val sellerId = backStackEntry.arguments?.getInt(SellerDetailsDestination.sellerIdArg)
+            SellerDetailScreen(
+                sellerId = sellerId ?: return@composable,
+                sellerRepository = SellerRepositoryImpl(AppDatabase.getDatabase(navController.context).sellerDao()),
+                navController = navController
+            )
+        }
 
 
 
         //Seller module route
-        //add food screen
+//add food screen
         composable(
             route = AddFoodDestination.route
         ){
@@ -266,7 +291,7 @@ fun UniCanteenNavHost(
             )
         }
 
-        //food details screen
+//food details screen
         composable(
             route = FoodDetailsDestination.routeWithArgs,
             arguments = listOf(
@@ -283,7 +308,7 @@ fun UniCanteenNavHost(
             )
         }
 
-        //edit food screen
+//edit food screen
         composable(
             route = EditFoodDestination.routeWithArgs,
             arguments = listOf(navArgument(EditFoodDestination.foodIdArg) {
@@ -298,6 +323,7 @@ fun UniCanteenNavHost(
                 navController = navController,
             )
         }
+
 
 
         composable(
@@ -443,4 +469,3 @@ fun UniCanteenNavHost(
 
     }
 }
-
