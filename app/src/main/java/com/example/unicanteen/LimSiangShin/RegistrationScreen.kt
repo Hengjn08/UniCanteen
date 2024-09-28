@@ -63,16 +63,12 @@ import com.example.unicanteen.ui.theme.UniCanteenTheme
 object AddUserDestination : NavigationDestination {
     override val route = "Registration"
     override val title = ""
-    const val userIdArg = "userId"
-    val routeWithArgs = "$route/{$userIdArg}"
 }
 
 @Composable
 fun RegistrationScreen(
     navController: NavController,
     userRepository: UserRepository,
-//    sellerRepository: SellerRepository,
-    onRegisterButtonClicked: () -> Unit,
     modifier: Modifier = Modifier
 ){
     val viewModel: UserViewModel = viewModel(
@@ -104,26 +100,23 @@ fun RegistrationScreen(
             onConfirmPwChange = { confirmPw = it },
             onPhoneNumberChange = { phoneNumber = it},
             onRegisterButtonClicked = {
-                onRegisterButtonClicked()
                 if(viewModel.validateRegistrationForm(userName,email,phoneNumber,pw)){
                     if (pw == confirmPw) {
-                        viewModel.register(userName, email, pw, phoneNumber) { success, errorMessage ->
-                            if (success) {
+                            if (viewModel.register(userName, email, pw, phoneNumber)) {
                                 Toast.makeText(context, "Register successfully!", Toast.LENGTH_SHORT).show()
                                 // Registration successful, navigate to next screen
                                 navController.navigate(LoginDestination.route)
                             } else {
                                 // Show error message to the user
-                                errorMessage?.let {
                                     Toast.makeText(context, "Email exist.", Toast.LENGTH_SHORT).show()
                                 }
-                            }
-                        }
                     }else{
                         pw = ""
                         confirmPw = ""
                         Toast.makeText(context, "Password is Wrong", Toast.LENGTH_SHORT).show()
                     }
+                }else{
+
                 }
             }
         )
@@ -150,15 +143,14 @@ fun AddUserDetailBody(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center){
 
-        Box(
+        Column(
             modifier = modifier
                 .background(colorResource(R.color.orange_500), RoundedCornerShape(70.dp))
-                .height(640.dp)
                 .padding(start = 20.dp, end = 20.dp, bottom = 40.dp),
-            contentAlignment = Alignment.Center
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Column(
-                modifier = modifier.verticalScroll(rememberScrollState()),
+                modifier = modifier.verticalScroll(rememberScrollState()).padding(top = 20.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Row (modifier = Modifier
@@ -202,7 +194,7 @@ fun AddUserDetailBody(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp),
+                        .padding(top = 16.dp),
                     isError = viewModel.userNameError.isNotEmpty(),
                     errorMessage = viewModel.userNameError
                 )
@@ -221,7 +213,7 @@ fun AddUserDetailBody(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp),
+                        .padding(top = 16.dp),
                     isError = viewModel.emailError.isNotEmpty(),
                     errorMessage = viewModel.emailError
                 )
@@ -241,7 +233,7 @@ fun AddUserDetailBody(
                     errorMessage = viewModel.phoneNumberError,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp)
+                        .padding(top = 16.dp)
                 )
 
                 EditTextField(
@@ -260,7 +252,7 @@ fun AddUserDetailBody(
                     errorMessage = viewModel.passwordError,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp)
+                        .padding(top = 16.dp)
                 )
 
                 EditTextField(
@@ -279,12 +271,12 @@ fun AddUserDetailBody(
                     errorMessage = viewModel.passwordError,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp)
+                        .padding(top = 16.dp)
                 )
 
                 Button(onClick = onRegisterButtonClicked,
                     modifier = Modifier
-                        .padding(top = 40.dp)
+                        .padding(top = 20.dp)
                         .fillMaxSize()
                         .height(70.dp),
                     shape = RoundedCornerShape(8.dp),

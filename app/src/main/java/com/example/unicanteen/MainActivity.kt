@@ -16,10 +16,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         enableEdgeToEdge()
         GlobalScope.launch {
             AppDatabase.getDatabase(applicationContext).userDao().getAll()
@@ -34,7 +32,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val darkTheme = isSystemInDarkTheme() // Detect system theme
             UniCanteenTheme(
-                darkTheme = false
+                darkTheme = true
             ) {
                 Surface(
                     modifier = Modifier

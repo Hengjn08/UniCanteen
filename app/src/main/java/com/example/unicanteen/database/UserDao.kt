@@ -22,7 +22,7 @@ interface UserDao {
         suspend fun deleteUser(user: User)
 
         @Query("SELECT * FROM user WHERE userId = :userId")
-        fun getUserById(userId: Int): User?
+        suspend fun getUserById(userId: Int): User?
 
         @Query("SELECT * FROM user WHERE email = :email")
         suspend fun getUserByEmail(email: String): User?
@@ -41,6 +41,18 @@ interface UserDao {
 
         @Query("SELECT sellerId FROM sellers WHERE userId = :userId")
         suspend fun checkUserIsSeller(userId: Int): Int?
+
+        @Query("UPDATE user SET userName = :userName, email = :email,phoneNumber = :phoneNumber,password = :password WHERE userId = :userId")
+        suspend fun updateUserDetail(userName: String,email: String, phoneNumber: String, password: String, userId: Int)
+
+        @Query("UPDATE user SET email = :email WHERE userId = :userId")
+        suspend fun updateUserEmail(email: String,userId: Int)
+
+        @Query("UPDATE user SET phoneNumber = :phoneNumber WHERE userId = :userId")
+        suspend fun updateUserPhoneNumber(phoneNumber: String,userId: Int)
+
+        @Query("UPDATE user SET password = :password WHERE userId = :userId")
+        suspend fun updateUserPassword(password: String,userId: Int)
 }
 
 

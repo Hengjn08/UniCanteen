@@ -117,6 +117,7 @@ fun SaleMonthlyScreen(
                     .padding(12.dp)                      // Add padding around the dropdown
                     .fillMaxWidth(0.5f)                 // Make the dropdown button half the width of its parent
                     .align(Alignment.CenterHorizontally) // Center align the dropdown
+
             )
             // Display the pie chart if there are sales data
             if (salesData.isNotEmpty()) {
@@ -153,7 +154,7 @@ fun PierreCustomDropdown(
     Box(
         modifier = modifier
             .wrapContentSize()
-            .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
+            .border(0.5.dp, MaterialTheme.colorScheme.background, RoundedCornerShape(8.dp))
             .padding(2.dp)
             .clickable { expanded = true } // Show dropdown on click
     ) {
@@ -168,7 +169,7 @@ fun PierreCustomDropdown(
             Text(
                 text = selectedItem,
                 fontSize = 16.sp,
-                color = Color.Black
+                color = MaterialTheme.colorScheme.onSecondary
             )
             Icon(imageVector = Icons.Filled.ArrowDropDown, contentDescription = "Dropdown arrow")
         }
@@ -271,7 +272,8 @@ fun MonthlySalesPieChart(salesData: List<OrderListDao.FoodTypeSalesData>) {
         // Overlay total sales amount
         Text(
             text = "Total: RM ${String.format("%.2f", totalSales.toDouble())}",
-            style = MaterialTheme.typography.labelLarge.copy(color = Color.DarkGray), // Make it more visible
+            style = MaterialTheme.typography.labelLarge.copy(color = Color.DarkGray),
+            color = MaterialTheme.colorScheme.onSecondary,// Make it more visible
             modifier = Modifier
                 .align(Alignment.Center) // Center the text
                 .padding(8.dp) // Padding for better spacing
