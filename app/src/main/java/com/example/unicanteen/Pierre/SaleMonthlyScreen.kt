@@ -1,6 +1,7 @@
 package com.example.unicanteen.Pierre
 
 import android.app.Application
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -39,6 +40,7 @@ import com.github.tehras.charts.piechart.animation.simpleChartAnimation
 import com.github.tehras.charts.piechart.renderer.SimpleSliceDrawer
 import kotlin.random.Random
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -83,12 +85,16 @@ fun SaleMonthlyScreen(
     LaunchedEffect(selectedMonth) {
         viewModel.loadMonthlySales(selectedMonth, sellerId)
     }
-
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            UniCanteenTopBar()
+            if (isPortrait) {
+                UniCanteenTopBar()
+
+            }
         },
         bottomBar = {
             BottomNavigationBar(
@@ -158,7 +164,7 @@ fun PierreCustomDropdown(
     Box(
         modifier = modifier
             .wrapContentSize()
-            .border(0.5.dp, MaterialTheme.colorScheme.background, RoundedCornerShape(8.dp))
+            .border(0.5.dp, MaterialTheme.colorScheme.onBackground, RoundedCornerShape(8.dp))
             .padding(2.dp)
             .clickable { expanded = true } // Show dropdown on click
     ) {
