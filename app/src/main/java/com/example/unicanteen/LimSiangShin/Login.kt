@@ -1,5 +1,6 @@
 package com.example.unicanteen.LimSiangShin
 
+import android.app.Application
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
@@ -73,14 +74,17 @@ object LoginDestination : NavigationDestination {
 
 @Composable
 fun LoginScreen(
+    application: Application, // Pass application context
     onSignUpTextClicked:()->Unit = {},
     navController: NavController,
     userRepository: UserRepository,
 //    sellerRepository: SellerRepository,
     modifier: Modifier = Modifier
 ){
+    // Obtain Application instance
+
     val userViewModel: UserViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(userRepository = userRepository)
+        factory = AppViewModelProvider.Factory(application = application,userRepository = userRepository)
     )
 
 //    val sellerViewModel: SellerRepository = viewModel(

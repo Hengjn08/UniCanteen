@@ -1,6 +1,8 @@
 package com.example.unicanteen.Pierre
 
+import android.app.Application
 import android.provider.CalendarContract.Colors
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 
@@ -50,6 +52,7 @@ object choosePayment : NavigationDestination {
 
 @Composable
 fun PaymentSelectionScreen(
+    application: Application, // Pass application context
     navController: NavController,
     currentDestination: NavDestination?,
     sellerAdminRepository: PierreAdminRepository,
@@ -57,11 +60,12 @@ fun PaymentSelectionScreen(
     orderId: Int,
     modifier: Modifier = Modifier
 ){
+
     // State for showing messages after payment selection
     var updateMessage by remember { mutableStateOf<String?>(null) }
 // Initialize the ViewModel
     val viewModel: AdminViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(pierreAdminRepository = sellerAdminRepository)
+        factory = AppViewModelProvider.Factory(application = application,pierreAdminRepository = sellerAdminRepository)
     )
     Scaffold(
 
@@ -102,6 +106,7 @@ fun PaymentSelectionScreen(
                     onClick = {
                         // Handle the payment via Touch Ngo
                         updateMessage = "Success payment method: Pay by Touch Ngo"
+//                        viewModel.uploadPierreTestData(name = "Test Name")
                         viewModel.createPayment(orderId = orderId, userId = userId, payType = "TnGo")
                         navController.navigate("payment_receipt/$userId/$orderId")
                     }
@@ -113,6 +118,8 @@ fun PaymentSelectionScreen(
                     onClick = {
                         // Handle the payment at counter
                         updateMessage = "Success payment method: Pay at Counter"
+//                        viewModel.uploadPierreTestData(name = "Test Name")
+//                        Log.d("FirebaseUpload", "Simple test data uploaded successfully!")
                         viewModel.createPayment(orderId = orderId, userId = userId, payType = "Pay at Counter")
                         navController.navigate("payment_receipt/$userId/$orderId")
                     }

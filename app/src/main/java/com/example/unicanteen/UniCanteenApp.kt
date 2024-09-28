@@ -1,5 +1,7 @@
 package com.example.unicanteen
 
+import android.app.Application
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -39,7 +42,12 @@ import com.example.unicanteen.navigation.UniCanteenNavHost
 
 @Composable
 fun UniCanteenApp(navController: NavHostController = rememberNavController()) {
-    UniCanteenNavHost(navController = navController)
+    val context = LocalContext.current
+    val application = context.applicationContext as Application
+    Log.d("FirebaseInitializer", "Firebase initialized successfully.")
+
+    UniCanteenNavHost(navController = navController,
+        application = application)
 }
 
 //Top Navigation Bar

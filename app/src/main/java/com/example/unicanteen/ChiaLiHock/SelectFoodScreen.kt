@@ -1,4 +1,5 @@
 package com.example.unicanteen
+import android.app.Application
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -45,6 +47,7 @@ object SelectFoodDestination : NavigationDestination {
 
 @Composable
 fun SelectFoodScreen(
+    application: Application, // Pass application context
     userId: Int,
     orderRepository: OrderRepository,
     orderListRepository: OrderListRepository,
@@ -53,12 +56,13 @@ fun SelectFoodScreen(
     navController: NavController,
     currentDestination: NavDestination?
 ) {
+
     // Create the ViewModel
     val viewModel: SelectFoodViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(foodListRepository = foodListRepository)
+        factory = AppViewModelProvider.Factory(application = application,foodListRepository = foodListRepository)
     )
     val cartViewModel: CartViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(orderRepository = orderRepository, orderListRepository = orderListRepository)
+        factory = AppViewModelProvider.Factory(application = application,orderRepository = orderRepository, orderListRepository = orderListRepository)
     )
 
     // Observe the food list and selected food type from the ViewModel

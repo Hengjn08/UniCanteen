@@ -1,5 +1,6 @@
 package com.example.unicanteen.HengJunEn
 
+import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -70,13 +72,14 @@ object SellerOrderListDestination : NavigationDestination {
 
 @Composable
 fun OrderListScreen(
+    application: Application, // Pass application context
     navController: NavController,
     currentDestination: NavDestination?,
     sellerId: Int,
     orderListRepository: OrderListRepository,
 ){
-    val orderListViewModel: SellerOrderListViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(orderListRepository = orderListRepository)
+      val orderListViewModel: SellerOrderListViewModel = viewModel(
+        factory = AppViewModelProvider.Factory(application = application,orderListRepository = orderListRepository)
     )
 
     LaunchedEffect(sellerId) {

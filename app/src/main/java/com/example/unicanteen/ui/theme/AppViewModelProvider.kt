@@ -1,5 +1,6 @@
 package com.example.unicanteen.ui.theme
 
+import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.unicanteen.ChiaLiHock.AddOnViewModel
@@ -29,6 +30,7 @@ import com.example.unicanteen.database.UserRepository
 object AppViewModelProvider {
     @Suppress("UNCHECKED_CAST")
     class Factory(
+        private val application: Application, // Application parameter for ViewModel initialization
         private val sellerRepository: SellerRepository? = null,
         private val foodListRepository: FoodListRepository? = null,
         private val pierreAdminRepository: PierreAdminRepository? = null,
@@ -37,37 +39,47 @@ object AppViewModelProvider {
         private val orderListRepository: OrderListRepository? = null,
         private val orderRepository: OrderRepository? = null
     ) : ViewModelProvider.Factory {
+
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            if (modelClass.isAssignableFrom(SelectRestaurantViewModel::class.java)) {
-                return sellerRepository?.let { SelectRestaurantViewModel(it) } as T
-            } else if (modelClass.isAssignableFrom(SelectFoodViewModel::class.java)) {
-                return foodListRepository?.let { SelectFoodViewModel(it) } as T
-            } else if( modelClass.isAssignableFrom(FoodDetailViewModel::class.java)){
-                return foodListRepository?.let { FoodDetailViewModel(it) } as T
+            return when {
+                modelClass.isAssignableFrom(SelectRestaurantViewModel::class.java) -> {
+                    sellerRepository?.let { SelectRestaurantViewModel(it) } as T
+                }
+                modelClass.isAssignableFrom(SelectFoodViewModel::class.java) -> {
+                    foodListRepository?.let { SelectFoodViewModel(it) } as T
+                }
+                modelClass.isAssignableFrom(FoodDetailViewModel::class.java) -> {
+                    foodListRepository?.let { FoodDetailViewModel(it) } as T
+                }
+                modelClass.isAssignableFrom(AdminViewModel::class.java) -> {
+                    pierreAdminRepository?.let { AdminViewModel(it, application) } as T
+                }
+                modelClass.isAssignableFrom(UserViewModel::class.java) -> {
+                    userRepository?.let { UserViewModel(it) } as T
+                }
+                modelClass.isAssignableFrom(AddOnViewModel::class.java) -> {
+                    addOnRepository?.let { AddOnViewModel(it) } as T
+                }
+                modelClass.isAssignableFrom(SellerHomeViewModel::class.java) -> {
+                    foodListRepository?.let { SellerHomeViewModel(it) } as T
+                }
+                modelClass.isAssignableFrom(SellerFoodDetailsViewModel::class.java) -> {
+                    foodListRepository?.let { SellerFoodDetailsViewModel(it) } as T
+                }
+                modelClass.isAssignableFrom(AddFoodViewModel::class.java) -> {
+                    foodListRepository?.let { AddFoodViewModel(it) } as T
+                }
+                modelClass.isAssignableFrom(SellerOrderListViewModel::class.java) -> {
+                    orderListRepository?.let { SellerOrderListViewModel(it) } as T
+                }
+                modelClass.isAssignableFrom(OrderListViewModel::class.java) -> {
+                    orderListRepository?.let { OrderListViewModel(it, orderRepository!!) } as T
+                }
+                modelClass.isAssignableFrom(CartViewModel::class.java) -> {
+                    orderRepository?.let { CartViewModel(it, orderListRepository!!) } as T
+                }
+                else -> throw IllegalArgumentException("Unknown ViewModel class")
             }
-            else if (modelClass.isAssignableFrom(AdminViewModel::class.java)) {
-                return pierreAdminRepository?.let {AdminViewModel(it)} as T // Add this line to handle AdminViewModel
-            } else if (modelClass.isAssignableFrom(UserViewModel::class.java)) {
-                return userRepository?.let { UserViewModel(it) } as T // Add this line to handle AdminViewModel
-            } else if( modelClass.isAssignableFrom(AddOnViewModel::class.java)){
-                return addOnRepository?.let { AddOnViewModel(it) } as T
-            }else if (modelClass.isAssignableFrom(SellerHomeViewModel::class.java)) {
-                return foodListRepository?.let { SellerHomeViewModel(it) } as T
-            } else if (modelClass.isAssignableFrom(SellerFoodDetailsViewModel::class.java)) {
-                return foodListRepository?.let {SellerFoodDetailsViewModel(it)} as T
-            }else if (modelClass.isAssignableFrom(AddFoodViewModel::class.java)) {
-                return foodListRepository?.let { AddFoodViewModel(it) } as T
-            }else if (modelClass.isAssignableFrom(SellerOrderListViewModel::class.java)) {
-                return orderListRepository?.let { SellerOrderListViewModel(it) } as T
-            }
-            else if (modelClass.isAssignableFrom(OrderListViewModel::class.java)) {
-                return orderListRepository?.let { OrderListViewModel(it, orderRepository!!) } as T
-            }
-            else if (modelClass.isAssignableFrom(CartViewModel::class.java)) {
-                return orderRepository?.let { CartViewModel( it, orderListRepository!!) } as T
-            }
-            else
-                throw IllegalArgumentException("Unknown ViewModel class")
         }
     }
 }
