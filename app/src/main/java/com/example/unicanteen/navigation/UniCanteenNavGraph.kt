@@ -34,8 +34,10 @@ import com.example.unicanteen.HengJunEn.SellerHomeScreen
 import com.example.unicanteen.HengJunEn.SellerOrderListDestination
 import com.example.unicanteen.HengJunEn.SellerProfileScreen
 import com.example.unicanteen.LimSiangShin.AddUserDestination
+import com.example.unicanteen.LimSiangShin.ChangePasswordScreen
 import com.example.unicanteen.LimSiangShin.CustomerProfileDestination
 import com.example.unicanteen.LimSiangShin.CustomerProfileScreen
+import com.example.unicanteen.LimSiangShin.ForgotPasswordDestination
 import com.example.unicanteen.LimSiangShin.LoginDestination
 import com.example.unicanteen.LimSiangShin.LoginScreen
 import com.example.unicanteen.LimSiangShin.RegistrationScreen
@@ -159,7 +161,8 @@ fun UniCanteenNavHost(
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
                 onSignUpTextClicked = {navController.navigate(AddUserDestination.route)},
-                onHelpClicked = {navController.navigate(LoginDestination.route)}
+                onForgotPasswordClicked = {navController.navigate(ForgotPasswordDestination.route)},
+                onHelpClicked = {navController.navigate(HelpDestination.route)}
 //                userId = userId
             )
         }
@@ -170,7 +173,6 @@ fun UniCanteenNavHost(
                 application = application,
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
-                onRegisterButtonClicked = {navController.navigate(LoginDestination.route)}
             )
         }
 
@@ -185,6 +187,18 @@ fun UniCanteenNavHost(
                 navController = navController,
                 currentDestination = currentDestination,
                 userId = userId
+            )
+        }
+
+        composable(route = HelpDestination.route){
+            HelpScreen()
+        }
+
+        composable(route = ForgotPasswordDestination.route){
+            ChangePasswordScreen(
+                userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
+                navController = navController
+
             )
         }
 
