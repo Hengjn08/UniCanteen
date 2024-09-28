@@ -1,5 +1,6 @@
 package com.example.unicanteen.Pierre
 
+import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -34,6 +36,7 @@ import com.example.unicanteen.BottomNavigationBar
 import com.example.unicanteen.UniCanteenTopBar
 import com.example.unicanteen.database.OrderListDao
 import com.example.unicanteen.database.PierreAdminRepository
+import com.example.unicanteen.database.UserRepository
 import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 import com.github.tehras.charts.piechart.PieChart
@@ -52,6 +55,7 @@ object FoodSalesDetailDestination : NavigationDestination {
 
 @Composable
 fun FoodSalesDetailScreen(
+    application: Application, // Pass application context
     navController: NavController,
     currentDestination: NavDestination?,
     foodType: String, // Food type passed as an argument
@@ -60,9 +64,10 @@ fun FoodSalesDetailScreen(
     month: String?, // Accept month as a nullable parameter
     modifier: Modifier = Modifier
 ) {
+
     // Initialize the ViewModel
     val viewModel: AdminViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(pierreAdminRepository = sellerAdminRepository)
+        factory = AppViewModelProvider.Factory(application = application,pierreAdminRepository = sellerAdminRepository)
     )
 
     // Set the initial month to "2024-09" if no month is provided
@@ -215,6 +220,7 @@ fun MonthlySalesPieChart(salesData: List<OrderListDao.FoodSalesData>) {
         Text(
             text = "Total: RM ${String.format("%.2f", totalSales.toDouble())}",
             style = MaterialTheme.typography.labelLarge.copy(color = Color.DarkGray), // Make it more visible
+            color = MaterialTheme.colorScheme.onSecondary,
             modifier = Modifier
                 .align(Alignment.Center) // Center the text
                 .padding(8.dp) // Padding for better spacing

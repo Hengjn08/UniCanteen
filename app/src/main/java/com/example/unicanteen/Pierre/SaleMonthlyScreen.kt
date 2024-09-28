@@ -1,5 +1,6 @@
 package com.example.unicanteen.Pierre
 
+import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -38,6 +39,7 @@ import com.github.tehras.charts.piechart.animation.simpleChartAnimation
 import com.github.tehras.charts.piechart.renderer.SimpleSliceDrawer
 import kotlin.random.Random
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.unicanteen.database.PierreAdminRepository
@@ -57,14 +59,16 @@ object reportSaleCheck : NavigationDestination {
 
 @Composable
 fun SaleMonthlyScreen(
+    application: Application, // Pass application context
     navController: NavController,
     currentDestination: NavDestination?,
     sellerAdminRepository: PierreAdminRepository,
     sellerId: Int,  // Accept sellerId as a parameter
     modifier: Modifier = Modifier,
 ) {
+
     val viewModel: AdminViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(pierreAdminRepository = sellerAdminRepository)
+        factory = AppViewModelProvider.Factory(application = application,pierreAdminRepository = sellerAdminRepository)
     )
     val month = "2024-09"  // Set your initial month here or make it dynamic
 
@@ -117,6 +121,7 @@ fun SaleMonthlyScreen(
                     .padding(12.dp)                      // Add padding around the dropdown
                     .fillMaxWidth(0.5f)                 // Make the dropdown button half the width of its parent
                     .align(Alignment.CenterHorizontally) // Center align the dropdown
+
             )
             // Display the pie chart if there are sales data
             if (salesData.isNotEmpty()) {
@@ -153,7 +158,7 @@ fun PierreCustomDropdown(
     Box(
         modifier = modifier
             .wrapContentSize()
-            .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
+            .border(0.5.dp, MaterialTheme.colorScheme.background, RoundedCornerShape(8.dp))
             .padding(2.dp)
             .clickable { expanded = true } // Show dropdown on click
     ) {
@@ -168,7 +173,7 @@ fun PierreCustomDropdown(
             Text(
                 text = selectedItem,
                 fontSize = 16.sp,
-                color = Color.Black
+                color = MaterialTheme.colorScheme.onSecondary
             )
             Icon(imageVector = Icons.Filled.ArrowDropDown, contentDescription = "Dropdown arrow")
         }
@@ -271,7 +276,8 @@ fun MonthlySalesPieChart(salesData: List<OrderListDao.FoodTypeSalesData>) {
         // Overlay total sales amount
         Text(
             text = "Total: RM ${String.format("%.2f", totalSales.toDouble())}",
-            style = MaterialTheme.typography.labelLarge.copy(color = Color.DarkGray), // Make it more visible
+            style = MaterialTheme.typography.labelLarge.copy(color = Color.DarkGray),
+            color = MaterialTheme.colorScheme.onSecondary,// Make it more visible
             modifier = Modifier
                 .align(Alignment.Center) // Center the text
                 .padding(8.dp) // Padding for better spacing

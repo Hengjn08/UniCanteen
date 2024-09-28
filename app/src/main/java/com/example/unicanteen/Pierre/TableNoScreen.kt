@@ -1,5 +1,6 @@
 package com.example.unicanteen.Pierre
 
+import android.app.Application
 import android.content.Context
 import android.os.Build
 import android.os.VibrationEffect
@@ -67,6 +68,7 @@ object InputTableNoDestination : NavigationDestination {
 
 @Composable
 fun TableNoScreen(
+    application: Application, // Pass application context
     navController: NavController,
     currentDestination: NavDestination?,
     sellerAdminRepository: PierreAdminRepository,
@@ -74,9 +76,10 @@ fun TableNoScreen(
     orderId: Int,
     modifier: Modifier = Modifier
 ) {
+
     // Initialize the ViewModel
     val viewModel: AdminViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(pierreAdminRepository = sellerAdminRepository)
+        factory = AppViewModelProvider.Factory(application = application,pierreAdminRepository = sellerAdminRepository)
     )
 
     var tableNoInput by remember { mutableStateOf("") }  // TextField input state
@@ -107,13 +110,14 @@ fun TableNoScreen(
                 .fillMaxWidth(0.6f)
                 .height(180.dp)
                 .border(2.dp, Color.Gray, RoundedCornerShape(8.dp))  // Border around the box
-                .background(Color.White),
+                .background(MaterialTheme.colorScheme.onPrimary),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "Table No.",  // Title inside the box
                 fontWeight = FontWeight.Bold,
-                fontSize = 24.sp
+                fontSize = 24.sp,
+                color = MaterialTheme.colorScheme.onSecondary
             )
         }
 
@@ -169,7 +173,7 @@ fun TableNoScreen(
                 imageVector = Icons.Default.ArrowBack,
                 contentDescription = "Back",
                 modifier = Modifier.size(40.dp),
-                tint = Color.Black
+                tint = MaterialTheme.colorScheme.onSurface
             )
         }
     }

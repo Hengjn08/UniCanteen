@@ -57,6 +57,7 @@ fun HelpScreen() {
                     thickness = 4.dp,
                     modifier = Modifier.fillMaxWidth(),
                     color = colorResource(R.color.orange_500),
+
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 FAQItem(
@@ -135,7 +136,6 @@ fun HelpScreen() {
                     answer = "To become a seller, go to the 'Profile' section and click on 'Become a Seller'. Follow the instructions to complete your registration.",
                     imageIds = listOf(R.drawable.pan_mee)
                 )
-
             }
         }
     )
@@ -144,7 +144,6 @@ fun HelpScreen() {
 @Composable
 fun FAQItem(question: String, answer: String, imageIds: List<Int>) {
     var isExpanded by remember { mutableStateOf(false) }
-
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(vertical = 8.dp)) {
@@ -192,11 +191,9 @@ fun FAQItem(question: String, answer: String, imageIds: List<Int>) {
                 }
             }
         }
-
         Divider()
     }
 }
-
 
 @Preview
 @Composable

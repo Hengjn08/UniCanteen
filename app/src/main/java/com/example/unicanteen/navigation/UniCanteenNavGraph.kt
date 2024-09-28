@@ -1,5 +1,7 @@
 package com.example.unicanteen.navigation
 
+import android.app.Application
+import android.util.Log
 import HelpDestination
 import HelpScreen
 import androidx.compose.runtime.Composable
@@ -15,6 +17,8 @@ import androidx.navigation.navArgument
 import com.example.unicanteen.BottomBarScreen
 import com.example.unicanteen.CartDestination
 import com.example.unicanteen.CartScreen
+import com.example.unicanteen.ChiaLiHock.SellerDetailScreen
+import com.example.unicanteen.ChiaLiHock.SellerDetailsDestination
 import com.example.unicanteen.FoodDetailCustomerDestination
 import com.example.unicanteen.FoodDetailsScreenCustomer
 import com.example.unicanteen.HengJunEn.AddFoodDestination
@@ -74,6 +78,7 @@ import com.example.unicanteen.database.UserRepositoryImpl
 @Composable
 fun UniCanteenNavHost(
     navController: NavHostController,
+    application: Application,  // Add Application parameter here
     modifier: Modifier = Modifier,
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -82,9 +87,10 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = ForgotPasswordDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = SellerHomeDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
+        Log.d("AppViewModelProvider", "Application context: $application")
         composable(
             route = SellerHomeDestination.route,
             arguments = listOf(navArgument("sellerId") { type = NavType.IntType
@@ -93,6 +99,7 @@ fun UniCanteenNavHost(
             backStackEntry ->
             val sellerId = backStackEntry.arguments?.getInt("sellerId") ?: 0
             SellerHomeScreen(
+                application = application,
                 navController = navController,
                 currentDestination = currentDestination,
                 onFoodClick = { navController.navigate("${FoodDetailsDestination.route}/${it}") },
@@ -108,6 +115,7 @@ fun UniCanteenNavHost(
             backStackEntry ->
             val sellerId = backStackEntry.arguments?.getInt("sellerId") ?: 0
             OrderListScreen(
+                application = application,
                 navController = navController,
                 currentDestination = currentDestination,
                 sellerId = sellerId,
@@ -149,6 +157,7 @@ fun UniCanteenNavHost(
                 backStackEntry ->
             val userId = backStackEntry.arguments?.getInt("userId") ?: 0
             LoginScreen(
+                application = application,
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
                 onSignUpTextClicked = {navController.navigate(AddUserDestination.route)},
@@ -161,6 +170,7 @@ fun UniCanteenNavHost(
 
         composable(route = AddUserDestination.route){
             RegistrationScreen(
+                application = application,
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
             )
@@ -172,6 +182,7 @@ fun UniCanteenNavHost(
             backStackEntry ->
             val userId = backStackEntry.arguments?.getInt("userId") ?: 0
             CustomerProfileScreen(
+                application = application,
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
                 currentDestination = currentDestination,
@@ -187,7 +198,12 @@ fun UniCanteenNavHost(
             ChangePasswordScreen(
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController
+
             )
+        }
+
+        composable(route = HelpDestination.route){
+            HelpScreen()
         }
 
         //Customer module route
@@ -215,6 +231,7 @@ fun UniCanteenNavHost(
             ) { backStackEntry ->
             val userId = backStackEntry.arguments?.getInt("userId") ?: 0
             SelectRestaurantScreen(
+                application = application,
                 navController = navController,
                 currentDestination = navController.currentDestination,
                 sellerRepository = SellerRepositoryImpl(AppDatabase.getDatabase(navController.context).sellerDao()),
@@ -233,6 +250,7 @@ fun UniCanteenNavHost(
             val userId=1
             // Set up the SelectFoodScreen here, using the sellerId to fetch the relevant foods
             SelectFoodScreen(
+                application = application,
                 userId = userId,
                 orderRepository = OrderRepositoryImpl(AppDatabase.getDatabase(navController.context).orderDao()),
                 orderListRepository = OrderListRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
@@ -250,6 +268,7 @@ fun UniCanteenNavHost(
             val foodId = backStackEntry.arguments?.getInt(FoodDetailCustomerDestination.foodIdArg)
             val userId = 1//backStackEntry.arguments?.getInt(LoginDestination.userIdArg)
             FoodDetailsScreenCustomer(
+                application = application,
                 foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
                 addOnRepository = AddOnRepositoryImpl(AppDatabase.getDatabase(navController.context).addOnDao()),
                 orderRepository = OrderRepositoryImpl(AppDatabase.getDatabase(navController.context).orderDao()),
@@ -265,9 +284,22 @@ fun UniCanteenNavHost(
         ){
             val userId = 1//backStackEntry.arguments?.getInt(LoginDestination.userIdArg)
             CartScreen(
+                application = application,
                 userId = userId,
                 orderRepository = OrderRepositoryImpl(AppDatabase.getDatabase(navController.context).orderDao()),
                 orderListRepository = OrderListRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
+                navController = navController
+            )
+        }
+        composable(
+            route = SellerDetailsDestination.routeWithArgs,
+            arguments = listOf(navArgument(SellerDetailsDestination.sellerIdArg) { type = NavType.IntType })
+        ){backStackEntry->
+            val sellerId = backStackEntry.arguments?.getInt(SellerDetailsDestination.sellerIdArg)
+            SellerDetailScreen(
+                application = application,
+                sellerId = sellerId ?: return@composable,
+                sellerRepository = SellerRepositoryImpl(AppDatabase.getDatabase(navController.context).sellerDao()),
                 navController = navController
             )
         }
@@ -280,6 +312,7 @@ fun UniCanteenNavHost(
             route = AddFoodDestination.route
         ){
             AddFoodScreen(
+                application = application,
                 sellerId = 1,   //temporary
                 foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
                 addOnRepository = AddOnRepositoryImpl(AppDatabase.getDatabase(navController.context).addOnDao()),
@@ -301,6 +334,7 @@ fun UniCanteenNavHost(
             val userId = backStackEntry.arguments?.getInt(LoginDestination.userIdArg)
             //val food = Datasource.foods.find { it.id == foodId }
             FoodDetailsScreen(
+                application = application,
                 foodId = foodId ?: return@composable,
                 foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
                 onEditClick = {navController.navigate(EditFoodDestination.route)},
@@ -310,12 +344,18 @@ fun UniCanteenNavHost(
 
         //edit food screen
         composable(
-            route = EditFoodDestination.route,
+            route = EditFoodDestination.routeWithArgs,
+            arguments = listOf(navArgument(EditFoodDestination.foodIdArg) {
+                type = NavType.IntType // Declare argument type
+            })
         ) { backStackEntry ->
-            val foodId = backStackEntry.arguments?.getInt("foodId")
-            val food = Datasource.foods.find { it.id == foodId }
+            val foodId = backStackEntry.arguments?.getInt(EditFoodDestination.foodIdArg)
             EditFoodScreen(
-                navigateBack = {navController.navigateUp()}
+                application = application,
+                foodId = foodId ?: return@composable,
+                foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
+                addOnRepository = AddOnRepositoryImpl(AppDatabase.getDatabase(navController.context).addOnDao()),
+                navController = navController,
             )
         }
 
@@ -332,6 +372,7 @@ fun UniCanteenNavHost(
             val orderId = backStackEntry.arguments?.getInt("orderId") ?: 0
             val userId = backStackEntry.arguments?.getInt("userId") ?: 0
             PickupOrDeliveryScreen(
+                application = application,
                 navController = navController,
                 currentDestination = currentDestination,
                 sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
@@ -353,6 +394,7 @@ fun UniCanteenNavHost(
 
             // Call the TableNoScreen with the retrieved arguments
             TableNoScreen(
+                application = application,
                 navController = navController,
                 currentDestination = navController.currentDestination,
                 sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
@@ -373,6 +415,7 @@ fun UniCanteenNavHost(
 
             // Call the TableNoScreen with the retrieved arguments
             PaymentSelectionScreen(
+                application = application,
                 navController = navController,
                 currentDestination = navController.currentDestination,
                 sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
@@ -393,6 +436,7 @@ fun UniCanteenNavHost(
 
             // Call the TableNoScreen with the retrieved arguments
             paymentReceiptScreen(
+                application = application,
                 navController = navController,
                 currentDestination = navController.currentDestination,
                 sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
@@ -408,6 +452,7 @@ fun UniCanteenNavHost(
 
             // Call your SaleMonthlyScreen composable
             SaleMonthlyScreen(
+                application = application,
                 navController = navController,
                 currentDestination = navController.currentDestination,
                 sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
@@ -428,6 +473,7 @@ fun UniCanteenNavHost(
 
             // Call the FoodSalesDetailScreen
             FoodSalesDetailScreen(
+                application = application,
                 navController = navController,
                 currentDestination = navController.currentDestination,
                 foodType = foodType,
@@ -452,6 +498,7 @@ fun UniCanteenNavHost(
 
             // Call the OrderListStatusScreen with the retrieved arguments
             OrderListStatusScreen(
+                application = application,
                 navController = navController,
                 currentDestination = navController.currentDestination,
                 sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),

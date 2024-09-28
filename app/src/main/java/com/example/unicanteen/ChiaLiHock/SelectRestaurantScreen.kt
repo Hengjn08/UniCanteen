@@ -1,4 +1,6 @@
 package com.example.unicanteen
+import android.app.Application
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,6 +26,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -39,6 +43,9 @@ import com.example.unicanteen.database.OrderListRepository
 import com.example.unicanteen.database.OrderRepository
 import com.example.unicanteen.database.SellerRepository
 import com.example.unicanteen.ui.theme.AppViewModelProvider
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.lazy.LazyRow
 
 object SelectRestaurantDestination : NavigationDestination {
     override val route = "restaurant_select?userId={userId}"
@@ -50,6 +57,7 @@ object SelectRestaurantDestination : NavigationDestination {
 
 @Composable
 fun SelectRestaurantScreen(
+    application: Application, // Pass application context
     userId: Int,
     navController: NavController,
     currentDestination: NavDestination?,
@@ -57,11 +65,12 @@ fun SelectRestaurantScreen(
     orderRepository: OrderRepository,
     orderListRepository: OrderListRepository
 ) {
+
     val viewModel: SelectRestaurantViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(sellerRepository = sellerRepository)
+        factory = AppViewModelProvider.Factory(application = application,sellerRepository = sellerRepository)
     )
     val cartViewModel: CartViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(orderRepository = orderRepository, orderListRepository = orderListRepository)
+        factory = AppViewModelProvider.Factory(application = application,orderRepository = orderRepository, orderListRepository = orderListRepository)
     )
     val sellers by viewModel.sellers.collectAsState()
 
@@ -73,90 +82,45 @@ fun SelectRestaurantScreen(
         cartViewModel.fetchCartItemsCount(userId)
     }
 
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
-    Column {
-        UniCanteenTopBar()
+    Column(modifier = Modifier.fillMaxSize()) {
+        if (isPortrait) {
+            UniCanteenTopBar()
+
+        }
+
         SearchAndCartBar(
-            onSearch = { query ->
-                viewModel.searchSellersByName(query)
-            },
-            onCartClick = {
-                navController.navigate("${CartDestination.route}")
-            },
-            cartItemCount // Pass the cart item count
+            onSearch = { query -> viewModel.searchSellersByName(query) },
+            onCartClick = { navController.navigate("${CartDestination.route}") },
+            cartItemCount
         )
-        Column(modifier = Modifier.weight(1f)) {
-            RestaurantList(
-                sellers = sellers,
-                navController = navController
-            )
-        }
-        BottomNavigationBar(
-            navController = navController,
-            currentDestination = currentDestination,
-            isSeller = false
-        )
-    }
-}
-
-
-
-@Composable
-fun RestaurantCard(seller: Seller, onClick: () -> Unit) {
-
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .clickable(onClick = onClick), // Pass the onClick to handle navigation
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
+                .weight(1f)
+                .padding(top = if (isPortrait) 10.dp else 0.dp) // Adjust padding based on orientation
         ) {
-            Spacer(modifier = Modifier.width(8.dp))
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-                    .weight(1f)
-            ) {
-                Text(
-                    text = seller.shopName,
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
-                Text(
-                    text = seller.description ?: "",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+            // Use LazyColumn for portrait mode and LazyRow for landscape mode
+            if (isPortrait) {
+                RestaurantListColumn(sellers = sellers, navController = navController)
+            } else {
+                RestaurantListRow(sellers = sellers, navController = navController)
             }
-            Image(
-                painter = rememberAsyncImagePainter(seller.shopImage),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(120.dp) // Fixed size for the image
-                    .clip(RoundedCornerShape(16.dp))
-            )
         }
+        BottomNavigationBar(navController = navController, currentDestination = currentDestination, isSeller = false)
     }
 }
 
 @Composable
-fun RestaurantList(
-    sellers: List<Seller>,
-    navController: NavController,
-) {
+fun RestaurantListColumn(sellers: List<Seller>, navController: NavController) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(vertical = 8.dp) // Padding for the list
     ) {
         items(sellers) { seller ->
-            RestaurantCard(seller = seller,
+            RestaurantCard(
+                seller = seller,
                 onClick = {
                     navController.navigate("${SelectFoodDestination.route}/${seller.sellerId}")
                 }
@@ -164,6 +128,116 @@ fun RestaurantList(
         }
     }
 }
+
+@Composable
+fun RestaurantListRow(sellers: List<Seller>, navController: NavController) {
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp), // Padding for the row
+        contentPadding = PaddingValues(horizontal = 8.dp) // Horizontal padding for the list
+    ) {
+        items(sellers) { seller ->
+            RestaurantCard(
+                seller = seller,
+                onClick = {
+                    navController.navigate("${SelectFoodDestination.route}/${seller.sellerId}")
+                }
+            )
+        }
+    }
+}
+
+
+
+@Composable
+fun RestaurantCard(seller: Seller, onClick: () -> Unit) {
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+
+
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        if (isPortrait) {
+            // Use original design for portrait mode
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .weight(1f)
+                ) {
+                    Text(
+                        text = seller.shopName,
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.padding(bottom = 4.dp),
+                        color = MaterialTheme.colorScheme.onSecondary
+                    )
+                    Text(
+                        text = seller.description ?: "",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                Image(
+                    painter = rememberAsyncImagePainter(seller.shopImage),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(120.dp) // Fixed size for the image
+                        .clip(RoundedCornerShape(16.dp))
+                )
+            }
+        } else {
+            // Landscape design
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .defaultMinSize(minWidth = 200.dp)
+            ) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Image(
+                    painter = rememberAsyncImagePainter(seller.shopImage),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(110.dp) // Fixed size for the image
+                        .clip(RoundedCornerShape(16.dp))
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        //.padding(8.dp)
+                        .weight(1f)
+                ) {
+                    Text(
+                        text = seller.shopName,
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.padding(bottom = 4.dp),
+                        color = MaterialTheme.colorScheme.onSecondary
+                    )
+
+                }
+            }
+        }
+    }
+}
+
+
+
 @Composable
 fun SearchAndCartBar(onSearch: (String) -> Unit, onCartClick: () -> Unit, cartItemCount: Int) {
     var query by remember { mutableStateOf("") }
@@ -171,48 +245,53 @@ fun SearchAndCartBar(onSearch: (String) -> Unit, onCartClick: () -> Unit, cartIt
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(10.dp),
+            .padding(top = 10.dp, start = 10.dp, end = 10.dp), // Add end padding for better spacing
         verticalAlignment = Alignment.CenterVertically
     ) {
         TextField(
             value = query,
             onValueChange = {
                 query = it
-                onSearch(query)  // Ensure the search function is called with updated query
+                onSearch(query)
             },
-            placeholder = { Text("Search by name", style = MaterialTheme.typography.bodyMedium, color = Color.Gray) },
+            placeholder = {
+                Text(
+                    "Search by name",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                )
+            },
             modifier = Modifier
                 .weight(1f)
-                .clip(MaterialTheme.shapes.medium) // Rounded corners
-                .background(Color.Black), // Background color
+                .clip(MaterialTheme.shapes.medium)
+                .background(MaterialTheme.colorScheme.surface),
             trailingIcon = {
                 if (query.isNotEmpty()) {
                     IconButton(onClick = { query = "" }) {
-                        Icon(Icons.Default.Clear, contentDescription = "Clear")
+                        Icon(Icons.Default.Clear, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurface)
                     }
                 } else {
-                    Icon(Icons.Default.Search, contentDescription = "Search")
+                    Icon(Icons.Default.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onSurface)
                 }
             },
             singleLine = true,
             colors = TextFieldDefaults.colors(
-                focusedTextColor = Color.Black,
-                unfocusedTextColor = Color.Black,
-                focusedContainerColor = Color.LightGray,
-                unfocusedContainerColor = colorResource(id = R.color.search_bar_background),
-                focusedIndicatorColor = Color.Transparent,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
                 unfocusedIndicatorColor = Color.Transparent,
-                focusedLabelColor = Color.LightGray,
+                focusedLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
             )
         )
         Box(modifier = Modifier) {
-            IconButton(onClick = {
-                onCartClick()
-            }) {
+            IconButton(onClick = { onCartClick() }) {
                 Icon(
                     imageVector = Icons.Default.ShoppingCart,
                     contentDescription = "Cart",
-                    modifier = Modifier.size(36.dp)
+                    modifier = Modifier.size(36.dp),
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
             if (cartItemCount > 0) {
@@ -224,20 +303,13 @@ fun SearchAndCartBar(onSearch: (String) -> Unit, onCartClick: () -> Unit, cartIt
                         Text(
                             text = cartItemCount.toString(),
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
                     },
-                    containerColor = Color.Red
+                    containerColor = MaterialTheme.colorScheme.error
                 )
             }
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewRestaurantList() {
-
-
-
-}

@@ -1,5 +1,6 @@
 package com.example.unicanteen.Pierre
 
+import android.app.Application
 import android.provider.CalendarContract.Colors
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -26,6 +27,7 @@ import com.example.unicanteen.UniCanteenTopBar
 import com.example.unicanteen.ui.theme.UniCanteenTheme
 
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Snackbar
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +49,7 @@ object pickUpChoose : NavigationDestination {
 
 @Composable
 fun PickupOrDeliveryScreen(
+    application: Application, // Pass application context
     navController: NavController,
     currentDestination: NavDestination?,
     sellerAdminRepository: PierreAdminRepository,
@@ -55,9 +58,10 @@ fun PickupOrDeliveryScreen(
     modifier: Modifier = Modifier
 
 ) {
+
     // Initialize the ViewModel
     val viewModel: AdminViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(pierreAdminRepository = sellerAdminRepository)
+        factory = AppViewModelProvider.Factory(application = application,pierreAdminRepository = sellerAdminRepository)
     )
     // State for showing messages after update
     var updateMessage by remember { mutableStateOf<String?>(null) }
@@ -140,9 +144,8 @@ fun BackButton(onClick: () -> Unit) {
             imageVector = Icons.Default.ArrowBack,
             contentDescription = "Back",
             modifier = Modifier.size(60.dp),
-            colorResource(
-                id = R.color.black
-            )
+            tint = MaterialTheme.colorScheme.onSurface,
+
         )
 
     }

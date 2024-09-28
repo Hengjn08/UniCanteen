@@ -1,5 +1,6 @@
 package com.example.unicanteen
 
+import android.app.Application
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -49,13 +51,15 @@ object CartDestination : NavigationDestination {
 
 @Composable
 fun CartScreen(
+    application: Application, // Pass application context
     userId: Int, // Pass orderId as a parameter
     orderRepository: OrderRepository,
     orderListRepository: OrderListRepository,
     navController: NavController
 ) {
+
     val cartViewModel: CartViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(orderRepository = orderRepository, orderListRepository = orderListRepository)
+        factory = AppViewModelProvider.Factory(application = application,orderRepository = orderRepository, orderListRepository = orderListRepository)
     )
 
     var totalPrice by remember { mutableStateOf(0.0) }
@@ -185,7 +189,8 @@ fun CartCard(
                     Text(
                         text = item.name,
                         fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
                     )
                     Text(
                         text = "RM ${"%.2f".format(item.price)}",
@@ -281,7 +286,7 @@ fun EnhancedQuantityDropdown(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(4.dp)
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp)),
+                .background(MaterialTheme.colorScheme.onPrimary, RoundedCornerShape(8.dp)),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -321,7 +326,7 @@ fun CheckOutButton(totalPrice: Double,orderId:Int, cartViewModel: CartViewModel,
             cartViewModel.updateOrderPrice(orderId,totalPrice)
             navController.navigate("pickUp/$userId/$orderId")
         },
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF6AD44)),
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
         modifier = Modifier
             .fillMaxWidth()
             .height(65.dp),
@@ -342,7 +347,7 @@ fun CheckOutButton(totalPrice: Double,orderId:Int, cartViewModel: CartViewModel,
                 textAlign = TextAlign.End,
                 modifier = Modifier.weight(1f)
             )
-            Spacer(modifier = Modifier.width(43.dp))
+            Spacer(modifier = Modifier.width(55.dp))
             Text(
                 text = "RM ${"%.2f".format(totalPrice)}",
                 color = Color.White,

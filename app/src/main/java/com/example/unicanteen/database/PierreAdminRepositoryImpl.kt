@@ -1,5 +1,6 @@
 package com.example.unicanteen.database
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 
 class PierreAdminRepositoryImpl(private val orderListDao: OrderListDao) : PierreAdminRepository {
@@ -24,9 +25,20 @@ class PierreAdminRepositoryImpl(private val orderListDao: OrderListDao) : Pierre
         return orderListDao.getTableNoByUserAndOrder(userId, orderId)
     }
     // Implement the new method
-    override suspend fun createPayment(orderId: Int, userId: Int, payType: String) {
-        orderListDao.createPaymentRecord(orderId, userId, payType)
+    override suspend fun createPayment(orderId: Int, userId: Int, payType: String): Boolean {
+        return try {
+            // Attempt to create a payment record
+            orderListDao.createPaymentRecord(orderId, userId, payType)
+            // If successful, return true
+            true
+        } catch (e: Exception) {
+            // Log the exception
+            Log.e("PierreAdminRepositoryImpl", "Error creating payment record", e)
+            // Return false if there was an error
+            false
+        }
     }
+
     // Implement the new method for getting the latest payment details
     override suspend fun getLatestPaymentDetails(userId: Int, orderId: Int): LiveData<List<OrderListDao.PaymentDetails>> {
         return orderListDao.getLatestPaymentDetails(userId, orderId)
