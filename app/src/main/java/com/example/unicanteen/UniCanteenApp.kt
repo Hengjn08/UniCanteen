@@ -49,6 +49,7 @@ fun UniCanteenApp(navController: NavHostController = rememberNavController()) {
 fun UniCanteenTopBar(
     modifier: Modifier = Modifier,
     title: String? = "UniCanteen",
+    userId: Int? = null,
     onTitleClick: () -> Unit = {} // Pass a callback for the click event
 ) {
     CenterAlignedTopAppBar(
