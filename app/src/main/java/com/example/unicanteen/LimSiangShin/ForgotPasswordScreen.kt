@@ -1,5 +1,6 @@
 package com.example.unicanteen.LimSiangShin
 
+import android.app.Application
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -87,13 +88,14 @@ object ForgotPasswordDestination : NavigationDestination {
 
 @Composable
 fun ChangePasswordScreen(
+    application: Application, // Pass application context
     navController: NavController,
     userRepository: UserRepository,
     modifier: Modifier = Modifier
 ) {
 
     val userViewModel: UserViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(userRepository = userRepository)
+        factory = AppViewModelProvider.Factory(application = application,userRepository = userRepository)
     )
 
     var email by remember { mutableStateOf("") }
