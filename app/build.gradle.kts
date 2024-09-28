@@ -66,6 +66,8 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.compose.material)
+    implementation(libs.firebase.database.ktx)
+//    implementation(libs.androidx.ui.desktop)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -83,6 +85,7 @@ dependencies {
     //firebase
     implementation(platform("com.google.firebase:firebase-bom:33.3.0"))
     implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-database")
 
     //view model
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
@@ -95,7 +98,6 @@ dependencies {
     implementation ("io.coil-kt:coil-compose:2.4.0")
 
     //extended icon
-    implementation(platform("androidx.compose:compose-bom:2023.06.01"))
     implementation("androidx.compose.material:material-icons-extended")
 
 }

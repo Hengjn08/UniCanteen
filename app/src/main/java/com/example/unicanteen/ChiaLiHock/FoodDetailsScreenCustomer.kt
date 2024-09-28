@@ -1,5 +1,6 @@
 package com.example.unicanteen
 
+import android.app.Application
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -15,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -48,6 +50,7 @@ object FoodDetailCustomerDestination : NavigationDestination {
 
 @Composable
 fun FoodDetailsScreenCustomer(
+    application: Application, // Pass application context
     foodListRepository: FoodListRepository,
     addOnRepository: AddOnRepository,
     orderListRepository: OrderListRepository,
@@ -57,13 +60,14 @@ fun FoodDetailsScreenCustomer(
     navController: NavController
 ) {
     val foodDetailViewModel: FoodDetailViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(foodListRepository = foodListRepository)
+        factory = AppViewModelProvider.Factory(application = application,foodListRepository = foodListRepository)
     )
     val addOnViewModel: AddOnViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(addOnRepository = addOnRepository)
+        factory = AppViewModelProvider.Factory(application = application,addOnRepository = addOnRepository)
     )
     val orderListViewModel: OrderListViewModel = viewModel(
         factory = AppViewModelProvider.Factory(
+            application = application,
             orderListRepository = orderListRepository,
             orderRepository = orderRepository
         )

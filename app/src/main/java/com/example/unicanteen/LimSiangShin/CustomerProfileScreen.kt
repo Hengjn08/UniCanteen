@@ -1,5 +1,6 @@
 package com.example.unicanteen.LimSiangShin
 
+import android.app.Application
 import android.graphics.drawable.Icon
 import android.text.BoringLayout
 import android.widget.Toast
@@ -95,6 +96,7 @@ object CustomerProfileDestination : NavigationDestination {
 
 @Composable
 fun CustomerProfileScreen(
+    application: Application, // Pass application context
     userId: Int,
     userRepository: UserRepository,
 //    sellerRepository: SellerRepository,
@@ -103,8 +105,10 @@ fun CustomerProfileScreen(
     currentDestination: NavDestination?,
     modifier: Modifier = Modifier
 ){
+    // Obtain Application instance
+
     val userViewModel: UserViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(userRepository = userRepository)
+        factory = AppViewModelProvider.Factory(application = application, userRepository = userRepository)
     )
 
     val currentUserName by userViewModel.userName.collectAsState()

@@ -9,7 +9,7 @@ interface PierreAdminRepository {
     suspend fun updateOrderTableNo(userId: Int, orderId: Int, tableNo: Int)  // New method
     suspend fun updateOrderType(orderId: Int, userId: Int, orderType: String)
     suspend fun getTableNoByUserAndOrder(userId: Int, orderId: Int): Int
-    suspend fun createPayment(orderId: Int, userId: Int, payType: String)
+    suspend fun createPayment(orderId: Int, userId: Int, payType: String): Boolean
     suspend fun getLatestPaymentDetails(userId: Int, orderId: Int): LiveData<List<OrderListDao.PaymentDetails>> // New method for latest payment details
     suspend fun getPaymentOrderDetails(userId: Int, orderId: Int): LiveData<List<OrderListDao.paymentOrderDetailsData>>
     suspend fun getLatestOrderId(userId: Int): Int

@@ -1,5 +1,6 @@
 package com.example.unicanteen.Pierre
 
+import android.app.Application
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -31,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -42,6 +44,7 @@ import com.example.unicanteen.BottomNavigationBar
 import com.example.unicanteen.R
 import com.example.unicanteen.UniCanteenTopBar
 import com.example.unicanteen.database.PierreAdminRepository
+import com.example.unicanteen.database.UserRepository
 import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 
@@ -56,14 +59,16 @@ object OrderListStatusDestination : NavigationDestination {
 
 @Composable
 fun OrderListStatusScreen(
+    application: Application, // Pass application context
     navController: NavController,
     currentDestination: NavDestination?,
     sellerAdminRepository: PierreAdminRepository,
     userId: Int,  // Accept sellerId as a parameter
     modifier: Modifier = Modifier,
 ) {
+
     val viewModel: AdminViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(pierreAdminRepository = sellerAdminRepository)
+        factory = AppViewModelProvider.Factory(application = application,pierreAdminRepository = sellerAdminRepository)
     )
     LaunchedEffect(userId) {
         viewModel.getOrderId(userId)

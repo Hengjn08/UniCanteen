@@ -1,5 +1,7 @@
 package com.example.unicanteen.Pierre
 
+import android.app.Application
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -30,10 +33,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -59,6 +64,7 @@ object paymentReceiptDestination : NavigationDestination {
 
 @Composable
 fun paymentReceiptScreen(
+    application: Application, // Pass application context
     navController: NavController,
     currentDestination: NavDestination?,
     sellerAdminRepository: PierreAdminRepository,
@@ -66,16 +72,20 @@ fun paymentReceiptScreen(
     orderId: Int,
     modifier: Modifier = Modifier,
 ){
+    Log.d("FireBasePaymentReceiptScreen", "Entered PaymentReceiptScreen with orderId: $orderId and userId: $userId")
+    val stableOrderId = remember { orderId }
+    val stableUserId = remember { userId }
     val viewModel: AdminViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(pierreAdminRepository = sellerAdminRepository)
+        factory = AppViewModelProvider.Factory(application = application,pierreAdminRepository = sellerAdminRepository)
     )
     // Load the order details using the orderId and userId
     LaunchedEffect(orderId, userId) {
+        Log.d("FirebasePaymentReceiptScreen", "Loading payment receipt for orderId: $orderId, userId: $userId")
         viewModel.loadPaymentRecipt(orderId, userId)
         viewModel.loadOrderListPaymentRecipt(orderId, userId)
     }
     // Collect StateFlow for monthly sales data
-    val paymentReceiptDatas by viewModel.paymentReceiptData.collectAsState()
+    val paymentReceiptDatas by viewModel.paymentReceiptData.collectAsState(emptyList())
     val paymentOrderDetailsData by viewModel.paymentOrderDetailsData.collectAsState()
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -138,32 +148,46 @@ fun paymentReceiptScreen(
                             }
 
                             Divider(color = Color.Gray, thickness = 1.dp) // Divider line
+                            // Display a loading indicator while data is being loaded (if needed)
+                            if (paymentOrderDetailsData.isEmpty()) {
+                                // Show a loading spinner or a placeholder
+                                CircularProgressIndicator()
+                            } else {
+                                LazyColumn {
+                                    items(paymentOrderDetailsData) { paymentDetails ->
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            // Combining food name and quantity
+                                            Text(
+                                                text = "${paymentDetails.foodName} (qty x ${paymentDetails.foodQty})",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                modifier = Modifier.weight(2f).padding(8.dp)
+                                            )
+                                            Text(
+                                                text = String.format(
+                                                    "%.2f",
+                                                    paymentDetails.unitPrice
+                                                ),
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                modifier = Modifier.weight(1f).padding(8.dp)
+                                            )
+                                            Text(
+                                                text = String.format(
+                                                    "%.2f",
+                                                    paymentDetails.totalPrice
+                                                ),
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                modifier = Modifier.weight(1f).padding(8.dp)
+                                            )
+                                        }
 
-                            LazyColumn {
-                                items(paymentOrderDetailsData) { paymentDetails ->
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        // Combining food name and quantity
-                                        Text(
-                                            text = "${paymentDetails.foodName} (qty x ${paymentDetails.foodQty})",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            modifier = Modifier.weight(2f).padding(8.dp)
-                                        )
-                                        Text(
-                                            text = String.format("%.2f", paymentDetails.unitPrice),
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            modifier = Modifier.weight(1f).padding(8.dp)
-                                        )
-                                        Text(
-                                            text = String.format("%.2f", paymentDetails.totalPrice),
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            modifier = Modifier.weight(1f).padding(8.dp)
-                                        )
+                                        Divider(
+                                            color = Color.LightGray,
+                                            thickness = 0.5.dp
+                                        ) // Divider line for each row
                                     }
-
-                                    Divider(color = Color.LightGray, thickness = 0.5.dp) // Divider line for each row
                                 }
                             }
                         }

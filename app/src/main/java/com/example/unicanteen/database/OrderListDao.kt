@@ -257,13 +257,16 @@ interface OrderListDao {
     fun getLatestPaymentDetails(userId: Int, orderId: Int): LiveData<List<PaymentDetails>>
 
     data class PaymentDetails(
-        val userName: String,
-        val orderId: Int,
-        val totalAmt: Double,
-        val createDate: String,
-        val payType: String,
-        val status: String
-    )
+        val userName: String = "",
+        val orderId: Int = 0,
+        val totalAmt: Double = 0.0,
+        val createDate: String = "",
+        val payType: String = "",
+        val status: String = ""
+    ) {
+        // No-argument constructor (needed by Firebase)
+        constructor() : this("", 0, 0.0, "", "", "")
+    }
 
     @Query("""
         SELECT 
@@ -338,6 +341,7 @@ interface OrderListDao {
     }
     @Query("SELECT orderId FROM orders WHERE userId = :userId ORDER BY orderId DESC LIMIT 1")
     suspend fun getLatestOrderId(userId: Int): Int
+    // Data class to represent the order details
 
 
 }
