@@ -1,9 +1,6 @@
 package com.example.unicanteen.HengJunEn
 
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.border
+import android.app.Application
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -71,16 +68,17 @@ object EditFoodDestination : NavigationDestination {
 
 @Composable
 fun EditFoodScreen(
+    application: Application,
     foodId: Int,
     foodListRepository: FoodListRepository,
     addOnRepository: AddOnRepository,
     navController: NavController
 ) {
     val editFoodViewModel: EditFoodViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(foodListRepository = foodListRepository)
+        factory = AppViewModelProvider.Factory(application = application, foodListRepository = foodListRepository)
     )
     val addOnViewModel: AddOnViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(addOnRepository = addOnRepository)
+        factory = AppViewModelProvider.Factory(application = application, addOnRepository = addOnRepository)
     )
 
     // Collect the state from ViewModel
