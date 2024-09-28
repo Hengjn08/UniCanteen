@@ -107,13 +107,14 @@ fun TableNoScreen(
                 .fillMaxWidth(0.6f)
                 .height(180.dp)
                 .border(2.dp, Color.Gray, RoundedCornerShape(8.dp))  // Border around the box
-                .background(Color.White),
+                .background(MaterialTheme.colorScheme.onPrimary),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "Table No.",  // Title inside the box
                 fontWeight = FontWeight.Bold,
-                fontSize = 24.sp
+                fontSize = 24.sp,
+                color = MaterialTheme.colorScheme.onSecondary
             )
         }
 
@@ -169,7 +170,7 @@ fun TableNoScreen(
                 imageVector = Icons.Default.ArrowBack,
                 contentDescription = "Back",
                 modifier = Modifier.size(40.dp),
-                tint = Color.Black
+                tint = MaterialTheme.colorScheme.onSurface
             )
         }
     }

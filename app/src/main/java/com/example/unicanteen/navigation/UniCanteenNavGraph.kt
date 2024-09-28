@@ -15,6 +15,8 @@ import androidx.navigation.navArgument
 import com.example.unicanteen.BottomBarScreen
 import com.example.unicanteen.CartDestination
 import com.example.unicanteen.CartScreen
+import com.example.unicanteen.ChiaLiHock.SellerDetailScreen
+import com.example.unicanteen.ChiaLiHock.SellerDetailsDestination
 import com.example.unicanteen.FoodDetailCustomerDestination
 import com.example.unicanteen.FoodDetailsScreenCustomer
 import com.example.unicanteen.HengJunEn.AddFoodDestination
@@ -80,7 +82,7 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = HelpDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = reportSaleCheck.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
         composable(
@@ -258,6 +260,17 @@ fun UniCanteenNavHost(
                 userId = userId,
                 orderRepository = OrderRepositoryImpl(AppDatabase.getDatabase(navController.context).orderDao()),
                 orderListRepository = OrderListRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
+                navController = navController
+            )
+        }
+        composable(
+            route = SellerDetailsDestination.routeWithArgs,
+            arguments = listOf(navArgument(SellerDetailsDestination.sellerIdArg) { type = NavType.IntType })
+        ){backStackEntry->
+            val sellerId = backStackEntry.arguments?.getInt(SellerDetailsDestination.sellerIdArg)
+            SellerDetailScreen(
+                sellerId = sellerId ?: return@composable,
+                sellerRepository = SellerRepositoryImpl(AppDatabase.getDatabase(navController.context).sellerDao()),
                 navController = navController
             )
         }

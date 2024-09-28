@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -107,7 +108,7 @@ fun FoodDetailsCard(food: FoodList) {
     Card(
         shape = RoundedCornerShape(0.dp),
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.orange_500))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary)
     ) {
         Column {
             Image(
@@ -132,7 +133,7 @@ fun FoodDetailsCard(food: FoodList) {
                     Text(
                         text = it,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = colorResource(id = R.color.purple_grey_40)
+                        color = MaterialTheme.colorScheme.secondary
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -258,7 +259,8 @@ fun RemarksSection() :String{
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     focusedLabelColor = Color.LightGray,
-                )
+                ),
+               // keyboardOptions = KeyboardOptions.Default.copy(imeAction = androidx.compose.ui.text.input.ImeAction.Done)
             )
         }
     }
@@ -295,7 +297,7 @@ fun AddToCartButton(
             // Show the confirmation dialog after adding to cart
             showDialog = true
         },
-        colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.orange_500)),
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
         modifier = Modifier
             .fillMaxWidth()
             .height(65.dp),

@@ -1,5 +1,6 @@
 package com.example.unicanteen
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -48,20 +49,29 @@ fun UniCanteenApp(navController: NavHostController = rememberNavController()) {
 fun UniCanteenTopBar(
     modifier: Modifier = Modifier,
     title: String? = "UniCanteen",
-){
+    userId: Int? = null,
+    onTitleClick: () -> Unit = {} // Pass a callback for the click event
+) {
     CenterAlignedTopAppBar(
-        title = { Text(text = title ?: "UniCanteen",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            fontSize = 36.sp,
-            textAlign = TextAlign.Center,
-            color = Color.White,
-            modifier = Modifier.fillMaxHeight()
-                .wrapContentHeight(Alignment.CenterVertically)
-                .padding(20.dp))
+        title = {
+            Text(
+                text = title ?: "UniCanteen",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                fontSize = 36.sp,
+                textAlign = TextAlign.Center,
+                color = Color.White,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .wrapContentHeight(Alignment.CenterVertically)
+                    .padding(20.dp)
+                    .clickable { // Make the title clickable
+                        onTitleClick() // Invoke the click callback
+                    }
+            )
         },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
-            containerColor = colorResource(id = R.color.orange_500)
+            containerColor = MaterialTheme.colorScheme.tertiary
         ),
         modifier = modifier.height(120.dp)
     )
@@ -91,7 +101,7 @@ fun BottomNavigationBar(
     }
 
     Surface(
-        color = colorResource(R.color.orange_500),
+        color = MaterialTheme.colorScheme.tertiary,
         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
     ) {
 
@@ -121,7 +131,7 @@ fun BottomNavigationBar(
                     onClick = {
                         navController.navigate(item.route) {
                             popUpTo(navController.graph.findStartDestination().id) {
-//                                saveState = true
+                                //saveState = true
                                 inclusive = false
                             }
                             launchSingleTop = true

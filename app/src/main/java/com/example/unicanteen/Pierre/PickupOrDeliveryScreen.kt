@@ -26,6 +26,7 @@ import com.example.unicanteen.UniCanteenTopBar
 import com.example.unicanteen.ui.theme.UniCanteenTheme
 
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Snackbar
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -140,9 +141,8 @@ fun BackButton(onClick: () -> Unit) {
             imageVector = Icons.Default.ArrowBack,
             contentDescription = "Back",
             modifier = Modifier.size(60.dp),
-            colorResource(
-                id = R.color.black
-            )
+            tint = MaterialTheme.colorScheme.onSurface,
+
         )
 
     }

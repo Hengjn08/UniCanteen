@@ -185,7 +185,8 @@ fun CartCard(
                     Text(
                         text = item.name,
                         fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
                     )
                     Text(
                         text = "RM ${"%.2f".format(item.price)}",
@@ -281,7 +282,7 @@ fun EnhancedQuantityDropdown(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(4.dp)
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp)),
+                .background(MaterialTheme.colorScheme.onPrimary, RoundedCornerShape(8.dp)),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -321,7 +322,7 @@ fun CheckOutButton(totalPrice: Double,orderId:Int, cartViewModel: CartViewModel,
             cartViewModel.updateOrderPrice(orderId,totalPrice)
             navController.navigate("pickUp/$userId/$orderId")
         },
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF6AD44)),
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
         modifier = Modifier
             .fillMaxWidth()
             .height(65.dp),

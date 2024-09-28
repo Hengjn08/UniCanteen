@@ -1,5 +1,7 @@
 package com.example.unicanteen.database
 
+import androidx.lifecycle.LiveData
+
 class FoodListRepositoryImpl( private val foodListDao: FoodListDao): FoodListRepository{
     override suspend fun insertFood(foodList: FoodList): Long{
         return foodListDao.insertFoodItem(foodList)
@@ -22,6 +24,14 @@ class FoodListRepositoryImpl( private val foodListDao: FoodListDao): FoodListRep
     override suspend fun searchFoodItemsByName(sellerId: Int, query: String): List<FoodList> {
         return foodListDao.searchFoodItemsByName(sellerId, query)
     }
+    override suspend fun getFoodTypeBySellerId(sellerId: Int): List<String> {
+        return foodListDao.getFoodTypeBySellerId(sellerId)
+    }
+    override suspend fun getShopNameBySellerId(sellerId: Int): String {
+        return foodListDao.getShopNameBySellerId(sellerId)
+    }
+
+
 
 
 }
