@@ -17,6 +17,9 @@ class SellerHomeViewModel(private val foodListRepository: FoodListRepository): V
 
     private var sellerId: Int? = null
 
+    private val _shopName = MutableStateFlow<String?>(null)
+    val shopName: StateFlow<String?> = _shopName
+
     fun displayFoodsBySellerId(sellerId: Int) {
         viewModelScope.launch {
             this@SellerHomeViewModel.sellerId = sellerId
@@ -34,7 +37,15 @@ class SellerHomeViewModel(private val foodListRepository: FoodListRepository): V
                 _foods.value = foodListRepository.getFoodsBySellerId(it)
             }
         }
-}
+    }
+
+    //get shopName by sellerId
+    fun getShopNameBySellerId(sellerId: Int) {
+        viewModelScope.launch {
+            val shopName = foodListRepository.getShopNameBySellerId(sellerId)
+            _shopName.value = shopName
+        }
+    }
 
 }
 

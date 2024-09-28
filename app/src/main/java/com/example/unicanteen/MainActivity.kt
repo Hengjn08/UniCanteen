@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val darkTheme = isSystemInDarkTheme() // Detect system theme
             UniCanteenTheme(
-                darkTheme = true
+                darkTheme = false
             ) {
                 Surface(
                     modifier = Modifier
