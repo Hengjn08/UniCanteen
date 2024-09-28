@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "3716123176",
+    "project_id": "unicanteen12",
+    "storage_bucket": "unicanteen12.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:3716123176:android:a3592ebf513b1dae97031d",
+        "android_client_info": {
+          "package_name": "com.example.unicanteen"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChp2pqvUgYi9HeuQza6odCG_Nu6X4a3B0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
