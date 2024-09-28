@@ -1,6 +1,7 @@
 package com.example.unicanteen.HengJunEn
 
 import android.Manifest
+import android.app.Application
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.Toast
@@ -95,17 +96,19 @@ object AddFoodDestination : NavigationDestination {
 
 @Composable
 fun AddFoodScreen(
+    application: Application, // Pass application context
     sellerId: Int,
     navigateBack: () -> Unit,
     foodListRepository: FoodListRepository,
     addOnRepository: AddOnRepository,
     modifier: Modifier = Modifier
 ){
+
     val addFoodViewModel: AddFoodViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(foodListRepository = foodListRepository)
+        factory = AppViewModelProvider.Factory(application = application,foodListRepository = foodListRepository)
     )
     val addOnViewModel: AddOnViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(addOnRepository = addOnRepository)
+        factory = AppViewModelProvider.Factory(application = application,addOnRepository = addOnRepository)
     )
     var foodName by remember { mutableStateOf("")}
     var foodDes by remember { mutableStateOf("") }

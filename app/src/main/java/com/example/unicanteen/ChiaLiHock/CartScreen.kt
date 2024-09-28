@@ -1,5 +1,6 @@
 package com.example.unicanteen
 
+import android.app.Application
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -49,13 +51,15 @@ object CartDestination : NavigationDestination {
 
 @Composable
 fun CartScreen(
+    application: Application, // Pass application context
     userId: Int, // Pass orderId as a parameter
     orderRepository: OrderRepository,
     orderListRepository: OrderListRepository,
     navController: NavController
 ) {
+
     val cartViewModel: CartViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(orderRepository = orderRepository, orderListRepository = orderListRepository)
+        factory = AppViewModelProvider.Factory(application = application,orderRepository = orderRepository, orderListRepository = orderListRepository)
     )
 
     var totalPrice by remember { mutableStateOf(0.0) }

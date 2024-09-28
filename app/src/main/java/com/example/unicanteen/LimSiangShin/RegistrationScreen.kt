@@ -1,5 +1,6 @@
 package com.example.unicanteen.LimSiangShin
 
+import android.app.Application
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -63,16 +64,21 @@ import com.example.unicanteen.ui.theme.UniCanteenTheme
 object AddUserDestination : NavigationDestination {
     override val route = "Registration"
     override val title = ""
+    const val userIdArg = "userId"
+    val routeWithArgs = "$route/{$userIdArg}"
 }
 
 @Composable
 fun RegistrationScreen(
-    navController: NavController,
+    application: Application, // Pass application context
     userRepository: UserRepository,
+    navController: NavController,
+//    sellerRepository: SellerRepository,
+    onRegisterButtonClicked: () -> Unit,
     modifier: Modifier = Modifier
 ){
     val viewModel: UserViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(userRepository = userRepository))
+        factory = AppViewModelProvider.Factory(application = application,userRepository = userRepository))
 
     var userName by remember { mutableStateOf("")}
     var email by remember { mutableStateOf("") }
@@ -233,7 +239,7 @@ fun AddUserDetailBody(
                     errorMessage = viewModel.phoneNumberError,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 16.dp)
+                        .padding(bottom = 16.dp)
                 )
 
                 EditTextField(

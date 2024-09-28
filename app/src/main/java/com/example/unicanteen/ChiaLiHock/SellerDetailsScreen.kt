@@ -30,6 +30,7 @@ import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppShapes
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 import kotlin.math.round
+import android.app.Application
 
 object SellerDetailsDestination : NavigationDestination {
     override val route = "sellerDetails"
@@ -39,12 +40,13 @@ object SellerDetailsDestination : NavigationDestination {
 }
 @Composable
 fun SellerDetailScreen(
+    application: Application,
     sellerId: Int,
     sellerRepository: SellerRepository,
     navController: NavController
 ) {
     val viewModel: SelectRestaurantViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(sellerRepository = sellerRepository)
+        factory = AppViewModelProvider.Factory(application = application,sellerRepository = sellerRepository)
     )
 
     LaunchedEffect(sellerId) {

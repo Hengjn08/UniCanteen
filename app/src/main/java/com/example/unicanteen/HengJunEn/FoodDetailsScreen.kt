@@ -1,5 +1,6 @@
 package com.example.unicanteen.HengJunEn
 
+import android.app.Application
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -73,13 +75,15 @@ object FoodDetailsDestination : NavigationDestination {
 
 @Composable
 fun FoodDetailsScreen(
+    application: Application, // Pass application context
     foodId: Int,
     foodListRepository: FoodListRepository,
     navigateBack: () -> Unit,
     onEditClick: () -> Unit,
 ) {
+
     val sellerFoodDetailsViewModel: SellerFoodDetailsViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(null, foodListRepository)
+        factory = AppViewModelProvider.Factory(application = application,foodListRepository = foodListRepository)
     )
 
     val food by sellerFoodDetailsViewModel.foodDetails.collectAsState()
