@@ -64,8 +64,6 @@ import com.example.unicanteen.ui.theme.UniCanteenTheme
 object AddUserDestination : NavigationDestination {
     override val route = "Registration"
     override val title = ""
-    const val userIdArg = "userId"
-    val routeWithArgs = "$route/{$userIdArg}"
 }
 
 @Composable
@@ -73,7 +71,6 @@ fun RegistrationScreen(
     application: Application, // Pass application context
     userRepository: UserRepository,
     navController: NavController,
-//    sellerRepository: SellerRepository,
     onRegisterButtonClicked: () -> Unit,
     modifier: Modifier = Modifier
 ){
@@ -151,7 +148,7 @@ fun AddUserDetailBody(
 
         Column(
             modifier = modifier
-                .background(colorResource(R.color.orange_500), RoundedCornerShape(70.dp))
+                .background(colorResource(R.color.orange_500), RoundedCornerShape(50.dp))
                 .padding(start = 20.dp, end = 20.dp, bottom = 40.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -239,7 +236,7 @@ fun AddUserDetailBody(
                     errorMessage = viewModel.phoneNumberError,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp)
+                        .padding(top = 16.dp)
                 )
 
                 EditTextField(

@@ -9,6 +9,7 @@ import com.example.unicanteen.ChiaLiHock.FoodDetailViewModel
 import com.example.unicanteen.ChiaLiHock.OrderListViewModel
 import com.example.unicanteen.ChiaLiHock.SelectFoodViewModel
 import com.example.unicanteen.HengJunEn.AddFoodViewModel
+import com.example.unicanteen.HengJunEn.EditFoodViewModel
 import com.example.unicanteen.HengJunEn.SellerFoodDetailsViewModel
 import com.example.unicanteen.HengJunEn.SellerHomeViewModel
 import com.example.unicanteen.HengJunEn.SellerOrderListViewModel
@@ -37,7 +38,7 @@ object AppViewModelProvider {
         private val addOnRepository: AddOnRepository? = null,
         private val userRepository: UserRepository? = null,
         private val orderListRepository: OrderListRepository? = null,
-        private val orderRepository: OrderRepository? = null
+        private val orderRepository: OrderRepository? = null,
     ) : ViewModelProvider.Factory {
 
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -78,6 +79,10 @@ object AppViewModelProvider {
                 modelClass.isAssignableFrom(CartViewModel::class.java) -> {
                     orderRepository?.let { CartViewModel(it, orderListRepository!!) } as T
                 }
+                (modelClass.isAssignableFrom(EditFoodViewModel::class.java)) -> {
+                    foodListRepository?.let { EditFoodViewModel(it) } as T
+                }
+
                 else -> throw IllegalArgumentException("Unknown ViewModel class")
             }
         }

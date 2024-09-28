@@ -34,8 +34,10 @@ import com.example.unicanteen.HengJunEn.SellerHomeScreen
 import com.example.unicanteen.HengJunEn.SellerOrderListDestination
 import com.example.unicanteen.HengJunEn.SellerProfileScreen
 import com.example.unicanteen.LimSiangShin.AddUserDestination
+import com.example.unicanteen.LimSiangShin.ChangePasswordScreen
 import com.example.unicanteen.LimSiangShin.CustomerProfileDestination
 import com.example.unicanteen.LimSiangShin.CustomerProfileScreen
+import com.example.unicanteen.LimSiangShin.ForgotPasswordDestination
 import com.example.unicanteen.LimSiangShin.LoginDestination
 import com.example.unicanteen.LimSiangShin.LoginScreen
 import com.example.unicanteen.LimSiangShin.RegistrationScreen
@@ -85,7 +87,7 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = SelectRestaurantDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = SellerHomeDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
         Log.d("AppViewModelProvider", "Application context: $application")
@@ -159,7 +161,8 @@ fun UniCanteenNavHost(
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
                 onSignUpTextClicked = {navController.navigate(AddUserDestination.route)},
-                onHelpClicked = {navController.navigate(LoginDestination.route)}
+                onForgotPasswordClicked = {navController.navigate(ForgotPasswordDestination.route)},
+                onHelpClicked = {navController.navigate(HelpDestination.route)}
 //                userId = userId
             )
         }
@@ -170,7 +173,6 @@ fun UniCanteenNavHost(
                 application = application,
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
-                onRegisterButtonClicked = {navController.navigate(LoginDestination.route)}
             )
         }
 
@@ -185,6 +187,18 @@ fun UniCanteenNavHost(
                 navController = navController,
                 currentDestination = currentDestination,
                 userId = userId
+            )
+        }
+
+        composable(route = HelpDestination.route){
+            HelpScreen()
+        }
+
+        composable(route = ForgotPasswordDestination.route){
+            ChangePasswordScreen(
+                userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
+                navController = navController
+
             )
         }
 
@@ -330,12 +344,18 @@ fun UniCanteenNavHost(
 
         //edit food screen
         composable(
-            route = EditFoodDestination.route,
+            route = EditFoodDestination.routeWithArgs,
+            arguments = listOf(navArgument(EditFoodDestination.foodIdArg) {
+                type = NavType.IntType // Declare argument type
+            })
         ) { backStackEntry ->
-            val foodId = backStackEntry.arguments?.getInt("foodId")
-            val food = Datasource.foods.find { it.id == foodId }
+            val foodId = backStackEntry.arguments?.getInt(EditFoodDestination.foodIdArg)
             EditFoodScreen(
-                navigateBack = {navController.navigateUp()}
+                application = application,
+                foodId = foodId ?: return@composable,
+                foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
+                addOnRepository = AddOnRepositoryImpl(AppDatabase.getDatabase(navController.context).addOnDao()),
+                navController = navController,
             )
         }
 

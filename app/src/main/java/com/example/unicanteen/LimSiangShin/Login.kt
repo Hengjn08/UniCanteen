@@ -1,5 +1,6 @@
 package com.example.unicanteen.LimSiangShin
 
+
 import android.app.Application
 import android.content.Context
 import android.widget.Toast
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
@@ -56,6 +58,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -87,6 +90,7 @@ fun LoginScreen(
     application: Application, // Pass application context
     onSignUpTextClicked:()->Unit = {},
     onHelpClicked: () -> Unit,
+    onForgotPasswordClicked: () -> Unit,
     navController: NavController,
     userRepository: UserRepository,
     modifier: Modifier = Modifier
@@ -130,6 +134,7 @@ fun LoginScreen(
             onHelpClicked = {
                 onHelpClicked()
             },
+            onForgotPasswordClicked = {onForgotPasswordClicked()},
             onSignInClicked = {
                 userViewModel.login(userName,pw)
                 currentUserId?.let { userViewModel.updateCurrentUserDetail(it) }
@@ -179,16 +184,18 @@ fun LoginBody(
     onPwChange: (String) -> Unit,
     onHelpClicked:() -> Unit,
     onSignUpTextClicked: () -> Unit,
+    onForgotPasswordClicked:()->Unit,
     onSignInClicked: () -> Unit
 ) {
     Column (
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center){
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally){
 
         Column(
             modifier = modifier
-                .background(colorResource(R.color.orange_500), RoundedCornerShape(100.dp))
-                .padding(start = 20.dp, end = 20.dp, bottom = 10.dp),
+                .background(colorResource(R.color.orange_500), RoundedCornerShape(50.dp))
+                .padding(vertical =  20.dp, horizontal = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Column(
@@ -210,7 +217,8 @@ fun LoginBody(
                                 .size(width = 50.dp, height = 40.dp)
                                 .padding(start = 10.dp)
                                 .background(colorResource(R.color.orange_500), CircleShape)
-                                .border(2.dp,Color.White, CircleShape)
+                                .border(2.dp, Color.White, CircleShape)
+
                                 .clickable {
                                     onHelpClicked()
                                 },
@@ -221,9 +229,9 @@ fun LoginBody(
 
                 Row (modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 20.dp),
+                    .padding(vertical = 10.dp),
                     horizontalArrangement = Arrangement.Center){
-                    Text(text = "Sign Up",
+                    Text(text = "Sign In",
                         color = colorResource(R.color.white))
                 }
 
@@ -275,17 +283,20 @@ fun LoginBody(
                 )
 
                 Row (modifier = Modifier) {
-                    TextButton(onClick = {onSignUpTextClicked()}) {
-                        Text(text = "Sign Up",
-                            fontStyle = FontStyle.Italic,
-                            textDecoration = TextDecoration.Underline)
-                    }
 
-                    TextButton(onClick = { /*TODO*/ },modifier = Modifier.padding(start = 145.dp)) {
-                        Text(text = "Forgot Password?",
-                            fontStyle = FontStyle.Italic,
-                            textDecoration = TextDecoration.Underline)
-                    }
+                        TextButton(onClick = {onSignUpTextClicked()}) {
+                            Text(text = "Sign Up",
+                                fontStyle = FontStyle.Italic,
+                                textDecoration = TextDecoration.Underline)
+                        }
+
+                        TextButton(onClick = { onForgotPasswordClicked() },modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.End)) {
+                            Text(text = "Forgot Password?",
+                                fontStyle = FontStyle.Italic,
+                                textDecoration = TextDecoration.Underline)
+                        }
+
+
                 }
 
                 HorizontalDivider(modifier = Modifier.padding(top = 20.dp),thickness = 2.dp, color = Color.White)
@@ -301,7 +312,8 @@ fun LoginBody(
                 Button(
                     onClick = { /*TODO*/ },
                     modifier = Modifier
-                        .padding(top = 20.dp)
+                        .padding(vertical = 20.dp)
+
                         .fillMaxWidth()
                         .height(50.dp),
                     shape = RoundedCornerShape(8.dp),
@@ -327,7 +339,7 @@ fun LoginBody(
                 Button(
                     onClick = { /*TODO*/ },
                     modifier = Modifier
-                        .padding(top = 20.dp)
+                        .padding(vertical = 20.dp)
                         .fillMaxWidth()
                         .height(50.dp),
                     shape = RoundedCornerShape(8.dp),
