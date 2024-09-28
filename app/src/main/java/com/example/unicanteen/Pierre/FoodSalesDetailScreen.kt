@@ -1,6 +1,7 @@
 package com.example.unicanteen.Pierre
 
 import android.app.Application
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -79,7 +81,8 @@ fun FoodSalesDetailScreen(
     LaunchedEffect(selectedMonth) {
         viewModel.loadSalesByFoodType(sellerId,foodType, selectedMonth) // Modify your ViewModel method to accept month
     }
-
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     // Collect StateFlow for food sales data
     val foodSalesData by viewModel.foodSalesData.collectAsState()
     // Collect monthly sales data for food type
@@ -87,7 +90,10 @@ fun FoodSalesDetailScreen(
 
 
     Scaffold(
-        topBar = { UniCanteenTopBar() },
+        topBar = { if (isPortrait) {
+            UniCanteenTopBar()
+
+        } },
         bottomBar = { BottomNavigationBar(
             navController = navController,
             currentDestination = currentDestination,

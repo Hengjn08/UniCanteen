@@ -69,6 +69,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.unicanteen.BottomBarScreen
+import com.example.unicanteen.HengJunEn.SellerHomeDestination
 import com.example.unicanteen.SelectRestaurantDestination
 import com.example.unicanteen.database.UserRepository
 import com.example.unicanteen.navigation.NavigationDestination
@@ -114,7 +115,7 @@ fun LoginScreen(
 
     var userName by remember { mutableStateOf("")}
     var pw by remember { mutableStateOf("") }
-    var userId by remember { mutableStateOf(currentUserId ?:1)}
+    var userId by remember { mutableStateOf(currentUserId ?:0)}
 
     val context = LocalContext.current
 
@@ -148,9 +149,9 @@ fun LoginScreen(
                 // If login is successful, show welcome message and navigate to the next screen
                 Toast.makeText(context, "Welcome Back, $userName!", Toast.LENGTH_SHORT).show()
                 if (isSeller) {
-                    navController.navigate(BottomBarScreen.SellerHome.route)
+                    navController.navigate(SellerHomeDestination.routeWithArgs(sellerId))
                 } else {
-                    navController.navigate(CustomerProfileDestination.routeWithArgs(userId))
+                    navController.navigate(SelectRestaurantDestination.routeWithArgs(userId))
                 }
             }else{
                 showLoginFailed = true
