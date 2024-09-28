@@ -1,5 +1,7 @@
 package com.example.unicanteen.navigation
 
+import HelpDestination
+import HelpScreen
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -150,6 +152,8 @@ fun UniCanteenNavHost(
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
                 onSignUpTextClicked = {navController.navigate(AddUserDestination.route)},
+                onHelpClicked = {navController.navigate(LoginDestination.route)}
+//                userId = userId
             )
         }
 
@@ -158,16 +162,24 @@ fun UniCanteenNavHost(
             RegistrationScreen(
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
-                onRegisterButtonClicked = {navController.navigate(LoginDestination.route)}
             )
         }
 
-        composable(route = CustomerProfileDestination.route){
+        composable(route = CustomerProfileDestination.route,
+            arguments = listOf(navArgument("userId") { type = NavType.IntType
+                defaultValue =1})){
+            backStackEntry ->
+            val userId = backStackEntry.arguments?.getInt("userId") ?: 0
             CustomerProfileScreen(
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
-                currentDestination = currentDestination
+                currentDestination = currentDestination,
+                userId = userId
             )
+        }
+
+        composable(route = HelpDestination.route){
+            HelpScreen()
         }
 
         //Customer module route
