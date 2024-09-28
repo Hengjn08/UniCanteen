@@ -4,6 +4,7 @@ import android.app.Application
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,8 +36,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.unicanteen.R
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -71,7 +74,7 @@ fun RegistrationScreen(
     application: Application, // Pass application context
     userRepository: UserRepository,
     navController: NavController,
-    onRegisterButtonClicked: () -> Unit,
+    onHelpClicked: () -> Unit,
     modifier: Modifier = Modifier
 ){
     val viewModel: UserViewModel = viewModel(
@@ -102,6 +105,7 @@ fun RegistrationScreen(
             onPwChange = { pw = it },
             onConfirmPwChange = { confirmPw = it },
             onPhoneNumberChange = { phoneNumber = it},
+            onHelpClicked = {onHelpClicked()},
             onRegisterButtonClicked = {
                 if(viewModel.validateRegistrationForm(userName,email,phoneNumber,pw)){
                     if (pw == confirmPw) {
@@ -118,8 +122,6 @@ fun RegistrationScreen(
                         confirmPw = ""
                         Toast.makeText(context, "Password is Wrong", Toast.LENGTH_SHORT).show()
                     }
-                }else{
-
                 }
             }
         )
@@ -141,6 +143,7 @@ fun AddUserDetailBody(
     onConfirmPwChange: (String) -> Unit,
     onPhoneNumberChange: (String) -> Unit,
     onRegisterButtonClicked: () -> Unit,
+    onHelpClicked: () -> Unit
 ) {
     Column (
         modifier = Modifier.fillMaxSize(),
@@ -164,14 +167,19 @@ fun AddUserDetailBody(
                         fontSize = 36.sp,
                         fontWeight = FontWeight.Bold,
                         color = colorResource(R.color.white))
-                    IconButton(onClick = { /*TODO*/ },
-                        colors = IconButtonDefaults
-                            .iconButtonColors(colorResource(R.color.white)),
-                        modifier = Modifier
-                            .size(width = 50.dp, height = 40.dp)
-                            .padding(start = 10.dp)
-                    ) {
-
+                    Column {
+                        Icon(imageVector = Icons.Default.QuestionMark,
+                            contentDescription ="Help",
+                            modifier = Modifier
+                                .size(width = 50.dp, height = 40.dp)
+                                .padding(start = 10.dp)
+                                .background(colorResource(R.color.orange_500), CircleShape)
+                                .border(2.dp, Color.White, CircleShape)
+                                .clickable {
+                                    onHelpClicked()
+                                },
+                            tint = Color.White
+                        )
                     }
                 }
                 Row (modifier = Modifier
