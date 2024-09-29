@@ -31,11 +31,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -45,9 +49,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
 import com.example.unicanteen.BottomNavigationBar
+import com.example.unicanteen.HengJunEn.SellerHomeViewModel
 import com.example.unicanteen.R
 import com.example.unicanteen.UniCanteenTopBar
 import com.example.unicanteen.database.OrderListDao
@@ -160,9 +166,9 @@ fun OrderListStatusScreen(
 
                 // Call ListStatusColumn or ListStatusRow based on screen orientation
                 if (isPortrait) {
-                    ListStatusColumn(orderListData = orderListData)
+                    ListStatusColumn(orderListData = orderListData,viewModel)
                 } else {
-                    ListStatusRow(orderListData = orderListData)
+                    ListStatusRow(orderListData = orderListData,viewModel)
                 }
             }
         }
@@ -171,7 +177,7 @@ fun OrderListStatusScreen(
 
 
 @Composable
-fun ListStatusColumn(orderListData: List<OrderListDao.OrderDetailsData>) {
+fun ListStatusColumn(orderListData: List<OrderListDao.OrderDetailsData>, viewModel: AdminViewModel) {
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(vertical = 8.dp)
@@ -182,14 +188,15 @@ fun ListStatusColumn(orderListData: List<OrderListDao.OrderDetailsData>) {
                 shopName = orderDetails.sellerShopName,
                 foodName = orderDetails.foodName,
                 orderStatus = orderDetails.orderStatus,
-                orderId = orderDetails.orderListId
+                orderId = orderDetails.orderListId,
+                viewModel = viewModel
             )
         }
     }
 }
 
 @Composable
-fun ListStatusRow(orderListData: List<OrderListDao.OrderDetailsData>) {
+fun ListStatusRow(orderListData: List<OrderListDao.OrderDetailsData>, viewModel: AdminViewModel) {
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
@@ -211,9 +218,9 @@ fun ListStatusRow(orderListData: List<OrderListDao.OrderDetailsData>) {
                         .fillMaxWidth()
                         .padding(12.dp)
                 ) {
-                    Image(
-                        painter = rememberImagePainter(data = orderDetails.foodImage),
-                        contentDescription = "Food Image",
+                    LoadFoodImage(
+                        foodImagePath = orderDetails.foodImage,
+                        viewModel = viewModel,
                         modifier = Modifier
                             .size(80.dp)  // Set a larger size for the image
                             .clip(RoundedCornerShape(8.dp))
@@ -295,6 +302,7 @@ fun OrderItem(
     foodName: String,
     orderStatus: String,
     orderId: Int,
+    viewModel: AdminViewModel
 ) {
     Row(
         modifier = Modifier
@@ -307,9 +315,9 @@ fun OrderItem(
         verticalAlignment = Alignment.CenterVertically,
 
     ) {
-        Image(
-            painter = rememberAsyncImagePainter(model = foodImageUrl),
-            contentDescription = null,
+        LoadFoodImage(
+            foodImagePath = foodImageUrl,
+            viewModel =  viewModel,
             modifier = Modifier
                 .size(64.dp)
                 .clip(RoundedCornerShape(8.dp))
@@ -341,3 +349,29 @@ fun OrderItem(
         )
     }
 }
+@Composable
+private fun LoadFoodImage(
+    foodImagePath: String,
+    viewModel: AdminViewModel,
+    modifier: Modifier = Modifier
+) {
+    var imageUrl by remember { mutableStateOf<String?>(null) }
+
+    // Fetch the latest image URL from Firebase when the Composable is first launched
+    LaunchedEffect(foodImagePath) {
+        viewModel.getLatestImageUrl(foodImagePath) { url ->
+            imageUrl = url
+        }
+    }
+
+    // Display the image when the URL is available
+    AsyncImage(
+        model = imageUrl,
+        contentDescription = "Food Image",
+        modifier = Modifier
+            .size(100.dp)
+            .clip(RoundedCornerShape(8.dp)),
+        contentScale = ContentScale.Crop
+    )
+}
+
