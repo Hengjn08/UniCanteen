@@ -1,6 +1,7 @@
 package com.example.unicanteen.Pierre
 
 import android.app.Application
+import android.content.res.Configuration
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -13,12 +14,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -32,17 +36,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import com.example.unicanteen.BottomNavigationBar
 import com.example.unicanteen.R
 import com.example.unicanteen.UniCanteenTopBar
+import com.example.unicanteen.database.OrderListDao
 import com.example.unicanteen.database.PierreAdminRepository
 import com.example.unicanteen.database.UserRepository
 import com.example.unicanteen.navigation.NavigationDestination
@@ -85,11 +93,16 @@ fun OrderListStatusScreen(
     val tableNo by viewModel.tableNo.collectAsState()
     // Collect StateFlow for monthly sales data
     val orderListData by viewModel.orderDetailsData.collectAsState()
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            UniCanteenTopBar()
+            if (isPortrait) {
+                UniCanteenTopBar()
+
+            }
         },
         bottomBar = {
             BottomNavigationBar(
@@ -112,6 +125,7 @@ fun OrderListStatusScreen(
                         .padding(12.dp)
                         .align(Alignment.CenterHorizontally)
                 )
+
                 // Check if the list is not empty before displaying the orderType
                 if (orderListData.isNotEmpty()) {
                     // Extract orderType from the first record
@@ -130,8 +144,9 @@ fun OrderListStatusScreen(
                             .align(Alignment.CenterHorizontally)
                     ) {
                         Text(
-                            text = if(orderType == "Delivery"){"Order Type: $orderType, Table No: $tableNo "}
-                            else {
+                            text = if (orderType == "Delivery") {
+                                "Order Type: $orderType, Table No: $tableNo"
+                            } else {
                                 "Order Type: $orderType"
                             },
                             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
@@ -139,27 +154,102 @@ fun OrderListStatusScreen(
                         )
                     }
                 }
+
                 // Display status options with indicators
                 OrderStatusHeader()
 
-                // List of orders with food images and status
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentPadding = PaddingValues(vertical = 8.dp)
+                // Call ListStatusColumn or ListStatusRow based on screen orientation
+                if (isPortrait) {
+                    ListStatusColumn(orderListData = orderListData)
+                } else {
+                    ListStatusRow(orderListData = orderListData)
+                }
+            }
+        }
+    )
+}
+
+
+@Composable
+fun ListStatusColumn(orderListData: List<OrderListDao.OrderDetailsData>) {
+    LazyColumn(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(vertical = 8.dp)
+    ) {
+        items(orderListData) { orderDetails ->
+            OrderItem(
+                foodImageUrl = orderDetails.foodImage,
+                shopName = orderDetails.sellerShopName,
+                foodName = orderDetails.foodName,
+                orderStatus = orderDetails.orderStatus,
+                orderId = orderDetails.orderListId
+            )
+        }
+    }
+}
+
+@Composable
+fun ListStatusRow(orderListData: List<OrderListDao.OrderDetailsData>) {
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        contentPadding = PaddingValues(horizontal = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(orderListData) { orderDetails ->
+            // Wrap each item in a Box or Card with increased width
+            Card(
+                modifier = Modifier
+                    .width(300.dp)  // Increase width for better visibility of text
+                    .padding(8.dp),
+                shape = RoundedCornerShape(12.dp),
+            ) {
+                // Custom OrderItem composable for horizontal view
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp)
                 ) {
-                    items(orderListData) { orderDetails ->
-                        OrderItem(
-                            foodImageUrl = orderDetails.foodImage,
-                            shopName = orderDetails.sellerShopName,
-                            foodName = orderDetails.foodName,
-                            orderStatus = orderDetails.orderStatus,
-                            orderId = orderDetails.orderListId
+                    Image(
+                        painter = rememberImagePainter(data = orderDetails.foodImage),
+                        contentDescription = "Food Image",
+                        modifier = Modifier
+                            .size(80.dp)  // Set a larger size for the image
+                            .clip(RoundedCornerShape(8.dp))
+                    )
+
+                    Spacer(modifier = Modifier.width(12.dp))  // Add spacing between image and text
+
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)  // Use remaining width for text content
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = orderDetails.sellerShopName,
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis  // Truncate text if too long
+                        )
+                        Text(
+                            text = orderDetails.foodName,
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis  // Truncate text if too long
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Status: ${orderDetails.orderStatus}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSecondary,
+                            fontWeight = FontWeight.Medium
                         )
                     }
                 }
             }
         }
-    )
+    }
 }
 
 

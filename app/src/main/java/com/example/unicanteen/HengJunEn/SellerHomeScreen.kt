@@ -93,7 +93,7 @@ fun SellerHomeScreen(
     navController: NavController,
     modifier: Modifier = Modifier,
     currentDestination: NavDestination?,
-    sellerId: Int?,
+    sellerId: Int,
     foodListRepository: FoodListRepository,
 ){
     val viewModel: SellerHomeViewModel = viewModel(
@@ -102,12 +102,12 @@ fun SellerHomeScreen(
 
     // Observe the food list from the ViewModel
     val foods by viewModel.foods.collectAsState()
+    val shopName by viewModel.shopName.collectAsState()
 
     // Trigger the ViewModel to fetch food list by sellerId when screen is first launched
     LaunchedEffect(sellerId) {
-        sellerId?.let {
-            viewModel.displayFoodsBySellerId(it)
-        }
+        viewModel.displayFoodsBySellerId(sellerId)
+        viewModel.getShopNameBySellerId(sellerId)
     }
 
     val configuration = LocalConfiguration.current
@@ -117,7 +117,9 @@ fun SellerHomeScreen(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             if (isPortrait) {
-                UniCanteenTopBar()
+                UniCanteenTopBar(
+                    title = "UniCanteen\n$shopName"
+                )
             }
         },
         bottomBar = {
@@ -178,22 +180,19 @@ fun SellerHomeBody(
             onAvailableChanged = onAvailableChanged,
             foods = foods,
             onFoodClick = onFoodClick,
-            isPortrait = isPortrait,
-            configuration = configuration
+            isPortrait = isPortrait
         )
     }
 
 }
 
 //To display list of food cards
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun FoodList(
     onAvailableChanged: (FoodList, Boolean) -> Unit,
     foods: List<FoodList>,
     onFoodClick: (Int) -> Unit,
     isPortrait: Boolean,
-    configuration: Configuration,
     modifier: Modifier = Modifier
 ) {
     if (isPortrait) {
@@ -208,7 +207,7 @@ private fun FoodList(
                 // Divider between items
                 if (foods.indexOf(food) < foods.size - 1) {
                     HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp),
+                        modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
                         thickness = 1.dp,
                         color = Color.Gray
                     )
@@ -260,10 +259,10 @@ fun FoodCard(
                     model = food.imageUrl,
                     contentDescription = "Food Image",
                     modifier = Modifier
-                        .size(80.dp)
-                        .clip(AppShapes.small)
+                        .size(100.dp)
+                        .clip(RoundedCornerShape(8.dp))
                         .weight(1f),
-                    contentScale = ContentScale.Fit
+                    contentScale = ContentScale.Crop
                 )
                 Column(modifier = Modifier.weight(2f)) {
                     Text(
@@ -271,19 +270,20 @@ fun FoodCard(
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
                         color = Color.Black,
-                        modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)
+                        modifier = Modifier.padding(start = 8.dp)
                     )
-                    Text(
-                        text = stringResource(R.string.rm, food.price),
-                        fontSize = 20.sp,
-                        modifier = Modifier.padding(8.dp)
-                    )
+                    Row() {
+                        Text(
+                            text = stringResource(R.string.rm, food.price),
+                            fontSize = 20.sp,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                        AvailableFood(
+                            available = food.status == "Available",
+                            onAvailableChanged = onAvailableChanged,
+                        )
+                    }
                 }
-                AvailableFood(
-                    available = food.status == "Available",
-                    onAvailableChanged = onAvailableChanged,
-                    modifier = Modifier.weight(1f)
-                )
             }
         }
     } else {

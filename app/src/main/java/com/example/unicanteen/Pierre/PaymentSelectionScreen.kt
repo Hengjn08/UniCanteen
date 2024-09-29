@@ -1,6 +1,7 @@
 package com.example.unicanteen.Pierre
 
 import android.app.Application
+import android.content.res.Configuration
 import android.provider.CalendarContract.Colors
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -35,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -66,88 +68,172 @@ fun PaymentSelectionScreen(
     var updateMessage by remember { mutableStateOf<String?>(null) }
     var showDialog by remember { mutableStateOf(false) }
     var selectedPaymentType by remember { mutableStateOf("") }
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 // Initialize the ViewModel
     val viewModel: AdminViewModel = viewModel(
         factory = AppViewModelProvider.Factory(application = application,pierreAdminRepository = sellerAdminRepository)
     )
-    Scaffold(
-
-    ) { innerPadding ->
+    Scaffold(topBar = {
+        if (isPortrait) {
+            UniCanteenTopBar()
+        }
+    }) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),  // Apply padding to avoid overlapping with bottom bar
+                .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            UniCanteenTopBar()
-
-            // Display message if there is one
-            updateMessage?.let {
-                Snackbar(
-                    modifier = Modifier.padding(8.dp),
-                    content = {
-                        Text(text = it, color = if (it.startsWith("Success")) Color.Green else Color.Red)
-                    }
-                )
-            }
-
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Choose Payment Method",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 24.dp)
-                )
-
-                OptionButton2(
-                    text = "Pay by Touch Ngo",
-                    icon = R.drawable.touch_ngo_icon, // Replace with your actual icon resource
-                    onClick = {
-                        // Handle the payment via Touch Ngo
-                        updateMessage = "Success payment method: Pay by Touch Ngo"
-//                        viewModel.uploadPierreTestData(name = "Test Name")
-                        viewModel.createPayment(orderId = orderId, userId = userId, payType = "TnGo")
-                        selectedPaymentType = "Pay by Touch Ngo"
-                        showDialog = true
-                    }
-                )
-
-                OptionButton2(
-                    text = "Pay at Counter",
-                    icon = R.drawable.counter_icon, // Replace with your actual icon resource
-                    onClick = {
-                        // Handle the payment at counter
-                        updateMessage = "Success payment method: Pay at Counter"
-//                        viewModel.uploadPierreTestData(name = "Test Name")
-//                        Log.d("FirebaseUpload", "Simple test data uploaded successfully!")
-                        viewModel.createPayment(orderId = orderId, userId = userId, payType = "Pay at Counter")
-                        selectedPaymentType = "Pay at Counter"
-                        showDialog = true
-                    }
-                )
-                if (showDialog) {
-                    ConfirmationDialog(
-                        onConfirm = {
-                            // Handle the payment based on selected type
-                            updateMessage = "Success payment method: $selectedPaymentType"
-                            navController.navigate("payment_receipt/$userId/$orderId")
-                        },
-                        onDismiss = { showDialog = false },
-                        message = "Are you sure you want to proceed with $selectedPaymentType?"
-                    )
-                }
-
-                BackButton(
-                    onClick = { navController.navigateUp() }
-                )
+            Spacer(modifier = Modifier.height(30.dp))
+            Text(
+                text = "Payment Method",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            if (isPortrait) {
+                portraitTypeSelection(viewModel, navController, orderId, userId)
+            } else {
+                landscapeTypeSelection(viewModel, navController, orderId, userId)
             }
         }
     }
 }
+
+@Composable
+fun portraitTypeSelection(
+    viewModel: AdminViewModel, // Replace with your ViewModel type
+    navController: NavController,
+    orderId: Int,
+    userId: Int
+) {
+    var updateMessage by remember { mutableStateOf<String?>(null) }
+    var selectedPaymentType by remember { mutableStateOf("") }
+    var showDialog by remember { mutableStateOf(false) }
+
+
+    // Display message if there is one
+    updateMessage?.let {
+        Snackbar(
+            modifier = Modifier.padding(8.dp),
+            content = {
+                Text(text = it, color = if (it.startsWith("Success")) Color.Green else Color.Red)
+            }
+        )
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        OptionButton2(
+            text = "Pay by Touch Ngo",
+            icon = R.drawable.touch_ngo_icon,
+            onClick = {
+                updateMessage = "Success payment method: Pay by Touch Ngo"
+                viewModel.createPayment(orderId = orderId, userId = userId, payType = "TnGo")
+                selectedPaymentType = "Pay by Touch Ngo"
+                showDialog = true
+            }
+        )
+
+        OptionButton2(
+            text = "Pay at Counter",
+            icon = R.drawable.counter_icon,
+            onClick = {
+                updateMessage = "Success payment method: Pay at Counter"
+                viewModel.createPayment(orderId = orderId, userId = userId, payType = "Pay at Counter")
+                selectedPaymentType = "Pay at Counter"
+                showDialog = true
+            }
+        )
+
+        if (showDialog) {
+            ConfirmationDialog(
+                onConfirm = {
+                    updateMessage = "Success payment method: $selectedPaymentType"
+                    navController.navigate("payment_receipt/$userId/$orderId")
+                },
+                onDismiss = { showDialog = false },
+                message = "Are you sure you want to proceed with $selectedPaymentType?"
+            )
+        }
+
+        BackButton(
+            onClick = { navController.navigateUp() }
+        )
+    }
+}
+
+@Composable
+fun landscapeTypeSelection(
+    viewModel: AdminViewModel, // Replace with your ViewModel type
+    navController: NavController,
+    orderId: Int,
+    userId: Int
+) {
+    var updateMessage by remember { mutableStateOf<String?>(null) }
+    var selectedPaymentType by remember { mutableStateOf("") }
+    var showDialog by remember { mutableStateOf(false) }
+
+    // Display message if there is one
+    updateMessage?.let {
+        Snackbar(
+            modifier = Modifier.padding(8.dp),
+            content = {
+                Text(text = it, color = if (it.startsWith("Success")) Color.Green else Color.Red)
+            }
+        )
+    }
+
+    Row(
+        modifier = Modifier.fillMaxSize(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+
+        OptionButton2(
+            text = "Pay by Touch Ngo",
+            icon = R.drawable.touch_ngo_icon,
+            onClick = {
+                updateMessage = "Success payment method: Pay by Touch Ngo"
+                viewModel.createPayment(orderId = orderId, userId = userId, payType = "TnGo")
+                selectedPaymentType = "Pay by Touch Ngo"
+                showDialog = true
+            }
+        )
+
+        OptionButton2(
+            text = "Pay at Counter",
+            icon = R.drawable.counter_icon,
+            onClick = {
+                updateMessage = "Success payment method: Pay at Counter"
+                viewModel.createPayment(orderId = orderId, userId = userId, payType = "Pay at Counter")
+                selectedPaymentType = "Pay at Counter"
+                showDialog = true
+            }
+        )
+
+        if (showDialog) {
+            ConfirmationDialog(
+                onConfirm = {
+                    updateMessage = "Success payment method: $selectedPaymentType"
+                    navController.navigate("payment_receipt/$userId/$orderId")
+                },
+                onDismiss = { showDialog = false },
+                message = "Are you sure you want to proceed with $selectedPaymentType?"
+            )
+        }
+
+        BackButton(
+            onClick = { navController.navigateUp() }
+        )
+    }
+}
+
 @Composable
 fun ConfirmationDialog(
     onConfirm: () -> Unit,
@@ -175,7 +261,7 @@ fun ConfirmationDialog(
 }
 
 @Composable
-fun OptionButton2(text: String, icon: Int, onClick: () -> Unit) {
+fun OptionButton2(text: String, icon: Int, onClick: () -> Unit,modifier: Modifier = Modifier) {
     Button(
         onClick = onClick,
         shape = RoundedCornerShape(8.dp),

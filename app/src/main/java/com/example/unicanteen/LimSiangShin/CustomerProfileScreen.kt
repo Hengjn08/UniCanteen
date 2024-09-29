@@ -1,14 +1,12 @@
 package com.example.unicanteen.LimSiangShin
 
 import android.app.Application
-import android.graphics.drawable.Icon
-import android.text.BoringLayout
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -44,8 +42,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
-//import androidx.compose.material.icons.filled.Visibility
-//import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -81,6 +77,7 @@ import com.example.unicanteen.database.SellerRepositoryImpl
 import com.example.unicanteen.database.UserRepository
 import com.example.unicanteen.database.UserRepositoryImpl
 import com.example.unicanteen.model.User
+import com.example.unicanteen.navigation.GlobalVariables
 import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 import com.example.unicanteen.ui.theme.UniCanteenTheme
@@ -90,7 +87,7 @@ object CustomerProfileDestination : NavigationDestination {
     override val route = "User_Profile?userId={userId}"
     override val title = "User_Profile"
     fun routeWithArgs(userId: Int): String{
-        return "$route/$userId"
+        return "User_Profile?userId=?$userId"
     }
 }
 
@@ -112,11 +109,9 @@ fun CustomerProfileScreen(
         factory = AppViewModelProvider.Factory(application = application, userRepository = userRepository)
     )
 
-//    val profileViewModel:ProfileViewModel = viewModel(
-//        factory = AppViewModelProvider.Factory(application = application, userRepository = userRepository)
-//    )
-
-
+    val profileViewModel:ProfileViewModel = viewModel(
+        factory = AppViewModelProvider.Factory(application = application, userRepository = userRepository)
+    )
 
     // Keep a copy of the original values
     var originalUserName by remember { mutableStateOf("") }
@@ -129,8 +124,23 @@ fun CustomerProfileScreen(
     var pw by remember { mutableStateOf("") }
     var confirmPw by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
+    var userId by remember { mutableStateOf(userId) }
 
     val context = LocalContext.current
+
+    LaunchedEffect(userId) {
+        userName = profileViewModel.getUserName(userId)
+        email = profileViewModel.getEmail(userId)
+        phoneNumber = profileViewModel.getPhoneNumber(userId)
+        pw = profileViewModel.getPassword(userId)
+
+        originalUserName = userName
+        originalEmail = email
+        originalPhoneNumber = phoneNumber
+        originalPassword = pw
+        Log.d("Login", "Login page User logged in with ID: $userId, Global: ${GlobalVariables.userId}, currId: $userId")
+
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -143,18 +153,6 @@ fun CustomerProfileScreen(
                 isSeller = false)
         }
     ){ innerPadding ->
-
-//        LaunchedEffect(userId) {
-//            userName = profileViewModel.getUserName(userId)
-//            email = profileViewModel.getEmail(userId)
-//            phoneNumber = profileViewModel.getPhoneNumber(userId)
-//            pw = profileViewModel.getPassword(userId)
-//
-//            originalUserName = userName
-//            originalEmail = email
-//            originalPhoneNumber = phoneNumber
-//            originalPassword = pw
-//        }
 
         CustomerDetailBody(
             userId = userId,
@@ -231,7 +229,6 @@ fun CustomerDetailBody(
     Column(
         modifier = modifier.verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Top
-
     ){
         var changeAvailable by rememberSaveable { mutableStateOf(false) }
         val context = LocalContext.current

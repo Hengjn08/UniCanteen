@@ -21,19 +21,15 @@ class ProfileViewModel(
     private val userRepository: UserRepository,
 ): ViewModel(){
 
-    // LiveData for the selected food type
     private val _userName = MutableStateFlow<String?>(null)
     val userName: StateFlow<String?> = _userName
 
-    // LiveData for the selected food type
     private val _email = MutableStateFlow<String?>(null)
     val email: StateFlow<String?> = _email
 
-    // LiveData for the selected food type
     private val _phoneNumber = MutableStateFlow<String?>(null)
     val phoneNumber: StateFlow<String?> = _phoneNumber
 
-    // LiveData for the selected food type
     private val _password = MutableStateFlow<String?>(null)
     val password: StateFlow<String?> = _password
 

@@ -1,6 +1,7 @@
 package com.example.unicanteen.LimSiangShin
 
 import android.app.Application
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -48,6 +49,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -66,6 +68,7 @@ import com.example.unicanteen.BottomNavigationBar
 import com.example.unicanteen.UniCanteenTopBar
 import com.example.unicanteen.database.UserRepository
 import com.example.unicanteen.model.User
+import com.example.unicanteen.navigation.GlobalVariables
 import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 import com.example.unicanteen.ui.theme.UniCanteenTheme
@@ -95,16 +98,62 @@ fun SellerProfileScreen(
         factory = AppViewModelProvider.Factory(application = application, userRepository = userRepository)
     )
 
-    var originalUserName by remember { mutableStateOf("") }
-    var originalEmail by remember { mutableStateOf("") }
-    var originalPhoneNumber by remember { mutableStateOf("") }
-    var originalPassword by remember { mutableStateOf("") }
+    val profileViewModel: ProfileViewModel = viewModel(
+        factory = AppViewModelProvider.Factory(application = application, userRepository = userRepository)
+    )
 
-    var userName by remember { mutableStateOf("")}
-    var email by remember { mutableStateOf("") }
-    var pw by remember { mutableStateOf("") }
+    LaunchedEffect(userId) {
+        Log.d("ProfileViewModel", "get the userId1 : $userId")
+        userViewModel.updateCurrentUserDetail(userId)
+        Log.d("ProfileViewModel", "Log complete")
+    }
+    val currentUserName by userViewModel.userName.collectAsState()
+    val currentEmail by userViewModel.email.collectAsState()
+    val currentPhoneNumber by userViewModel.phoneNumber.collectAsState()
+    val currentPassword by userViewModel.password.collectAsState()
+
+    Log.d("ProfileViewModel", "get the currentuserName : $currentUserName")
+
+    var userName by remember { mutableStateOf(currentUserName)}
+    var email by remember { mutableStateOf(currentEmail) }
+    var pw by remember { mutableStateOf(currentPassword) }
     var confirmPw by remember { mutableStateOf("") }
-    var phoneNumber by remember { mutableStateOf("") }
+    var phoneNumber by remember { mutableStateOf(currentPhoneNumber) }
+    Log.d("ProfileViewModel", "get the userName : $userName")
+
+    var originalUserName by remember { mutableStateOf(userName) }
+    var originalEmail by remember { mutableStateOf(email) }
+    var originalPhoneNumber by remember { mutableStateOf(phoneNumber) }
+    var originalPassword by remember { mutableStateOf(pw) }
+
+//    LaunchedEffect(userId) {
+//        Log.d("ProfileViewModel", "get the userId2 : $userId")
+//        userViewModel.updateCurrentUserDetail(userId)
+//        userName = userViewModel.userName.value
+//        email = userViewModel.email.value
+//        phoneNumber = userViewModel.phoneNumber.value
+//        pw = userViewModel.password.value
+//        Log.d("ProfileViewModel", "get the userName2 : $userName")
+//    }
+
+
+    LaunchedEffect(currentUserName) {
+        userName = currentUserName
+        Log.d("ProfileViewModel", "get the userName1 : $userName")
+        email = currentEmail
+        phoneNumber = currentPhoneNumber
+        pw = currentPassword
+
+        originalUserName = userName
+        originalEmail = email
+        originalPhoneNumber = phoneNumber
+        originalPassword = pw
+    }
+
+
+
+    Log.d("ProfileViewModel", "get the userName3 : $originalUserName")
+
 
     val context = LocalContext.current
 
@@ -142,6 +191,7 @@ fun SellerProfileScreen(
                 originalEmail = email
                 originalPhoneNumber = phoneNumber
                 originalPassword = pw
+                confirmPw = ""
             },
             onCancelUpdate = {
                 // Reset all values to their original state when the user cancels
@@ -151,12 +201,7 @@ fun SellerProfileScreen(
                 pw = originalPassword
                 confirmPw = ""
             },
-            update = {
-                userName = userViewModel.userName.value
-                email = userViewModel.email.value
-                phoneNumber = userViewModel.phoneNumber.value
-                pw = userViewModel.password.value
-            }
+            update = {}
         )
     }
 
@@ -188,10 +233,7 @@ fun SellerDetailBody(
     onHelpClicked:() -> Unit,
     update:() ->Unit
 ) {
-    LaunchedEffect(userId) {
-        viewModel.updateCurrentUserDetail(userId)
-        update()
-    }
+
     var changeAvailable by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
 
@@ -304,128 +346,129 @@ fun SellerDetailBody(
                     .padding(top = 16.dp)
             )
         }
-    }
-    HorizontalDivider(
-        modifier = Modifier
-            .padding(40.dp)
-            .fillMaxWidth(),
-        thickness = 5.dp,
-        color = colorResource(R.color.orange_500)
-    )
 
-    Button(
-        onClick = { onManageShopClicked() },
-        modifier = Modifier
-            .height(50.dp)
-            .fillMaxWidth(),
-        shape = RectangleShape,
-        colors = ButtonDefaults.buttonColors(Color.White),
-        border = BorderStroke(0.dp, Color.White)
-    ) {
-        Text(
-            text = "Manage Shop",
-            color = Color.Black
+        HorizontalDivider(
+            modifier = Modifier
+                .padding(40.dp)
+                .fillMaxWidth(),
+            thickness = 5.dp,
+            color = colorResource(R.color.orange_500)
         )
-    }
 
-    HorizontalDivider(
-        modifier = Modifier
-            .fillMaxWidth(),
-        thickness = 2.dp,
-        color = colorResource(R.color.orange_500)
-    )
-
-    Button(
-        onClick = { onReportClicked() },
-        modifier = Modifier
-            .height(50.dp)
-            .fillMaxWidth(),
-        shape = RectangleShape,
-        colors = ButtonDefaults.buttonColors(Color.White),
-        border = BorderStroke(0.dp, Color.White)
-    ) {
-        Text(
-            text = "Shop Profit",
-            color = Color.Black
-        )
-    }
-
-    HorizontalDivider(
-        modifier = Modifier
-            .fillMaxWidth(),
-        thickness = 2.dp,
-        color = colorResource(R.color.orange_500)
-    )
-
-    Button(
-        onClick = { onHelpClicked() },
-        modifier = Modifier
-            .height(50.dp)
-            .fillMaxWidth(),
-        shape = RectangleShape,
-        colors = ButtonDefaults.buttonColors(Color.White),
-        border = BorderStroke(0.dp, Color.White)
-    ) {
-        Text(
-            text = "Help Center",
-            color = Color.Black
-        )
-    }
-
-    HorizontalDivider(
-        modifier = Modifier
-            .fillMaxWidth(),
-        thickness = 2.dp,
-        color = colorResource(R.color.orange_500)
-    )
-
-    Button(
-        onClick = {},
-        modifier = Modifier
-            .padding(20.dp)
-            .height(50.dp)
-            .fillMaxWidth(),
-        shape = RectangleShape,
-        colors = ButtonDefaults.buttonColors(colorResource(R.color.orange_500)),
-        border = BorderStroke(3.dp, Color.Red)
-    ) {
-        Text(
-            text = "Log Out",
-            color = Color.Red
-        )
-    }
-
-    if (changeAvailable) {
-        EditDialog(
-            viewModel = viewModel,
-            userName = userName,
-            email = email,
-            phoneNumber = phoneNumber,
-            password = pw,
-            confirmPassword = confirmPw,
-            onConfirmPasswordChange = onConfirmPwChange,
-            onUserNameChange = onUserNameChange,
-            onEmailChange = onEmailChange,
-            onPhoneNumberChange = onPhoneNumberChange,
-            onPwChange = onPwChange,
-            onUpdate = {
-                if (pw == confirmPw) {
-                    if (viewModel.register(userName, email, pw, phoneNumber)) {
-                        viewModel.updateUserDetail(userId, userName, pw, email, phoneNumber)
-                        onUpdate()
-                        changeAvailable = false
-                        Toast.makeText(context, "Detail Changed Successful!", Toast.LENGTH_SHORT)
-                            .show()
-                    }
-                }
-
-            },
-            onCancel = {
-                // Invoke the onCancelUpdate callback to reset the values
-                onCancelUpdate()
-                changeAvailable = false
-            })
+        Button(
+            onClick = { onManageShopClicked() },
+            modifier = Modifier
+                .height(50.dp)
+                .fillMaxWidth(),
+            shape = RectangleShape,
+            colors = ButtonDefaults.buttonColors(Color.White),
+            border = BorderStroke(0.dp, Color.White)
+        ) {
+            Text(
+                text = "Manage Shop",
+                color = Color.Black
+            )
         }
+
+        HorizontalDivider(
+            modifier = Modifier
+                .fillMaxWidth(),
+            thickness = 2.dp,
+            color = colorResource(R.color.orange_500)
+        )
+
+        Button(
+            onClick = { onReportClicked() },
+            modifier = Modifier
+                .height(50.dp)
+                .fillMaxWidth(),
+            shape = RectangleShape,
+            colors = ButtonDefaults.buttonColors(Color.White),
+            border = BorderStroke(0.dp, Color.White)
+        ) {
+            Text(
+                text = "Shop Profit",
+                color = Color.Black
+            )
+        }
+
+        HorizontalDivider(
+            modifier = Modifier
+                .fillMaxWidth(),
+            thickness = 2.dp,
+            color = colorResource(R.color.orange_500)
+        )
+
+        Button(
+            onClick = { onHelpClicked() },
+            modifier = Modifier
+                .height(50.dp)
+                .fillMaxWidth(),
+            shape = RectangleShape,
+            colors = ButtonDefaults.buttonColors(Color.White),
+            border = BorderStroke(0.dp, Color.White)
+        ) {
+            Text(
+                text = "Help Center",
+                color = Color.Black
+            )
+        }
+
+        HorizontalDivider(
+            modifier = Modifier
+                .fillMaxWidth(),
+            thickness = 2.dp,
+            color = colorResource(R.color.orange_500)
+        )
+
+        Button(
+            onClick = {onLogOutClicked()},
+            modifier = Modifier
+                .padding(20.dp)
+                .height(50.dp)
+                .fillMaxWidth(),
+            shape = RectangleShape,
+            colors = ButtonDefaults.buttonColors(colorResource(R.color.orange_500)),
+            border = BorderStroke(3.dp, Color.Red)
+        ) {
+            Text(
+                text = "Log Out",
+                color = Color.Red
+            )
+        }
+
+        if (changeAvailable) {
+            EditDialog(
+                viewModel = viewModel,
+                userName = userName,
+                email = email,
+                phoneNumber = phoneNumber,
+                password = pw,
+                confirmPassword = confirmPw,
+                onConfirmPasswordChange = onConfirmPwChange,
+                onUserNameChange = onUserNameChange,
+                onEmailChange = onEmailChange,
+                onPhoneNumberChange = onPhoneNumberChange,
+                onPwChange = onPwChange,
+                onUpdate = {
+                    if (pw == confirmPw) {
+                        if (viewModel.register(userName, email, pw, phoneNumber)) {
+                            viewModel.updateUserDetail(userId, userName, pw, email, phoneNumber)
+                            onUpdate()
+                            changeAvailable = false
+                            Toast.makeText(context, "Detail Changed Successful!", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                    }
+
+                },
+                onCancel = {
+                    // Invoke the onCancelUpdate callback to reset the values
+                    onCancelUpdate()
+                    changeAvailable = false
+                })
+        }
+    }
 }
 
 

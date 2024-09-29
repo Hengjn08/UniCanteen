@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Application
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -72,6 +73,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.unicanteen.ChiaLiHock.AddOnViewModel
@@ -96,28 +98,32 @@ object AddFoodDestination : NavigationDestination {
 
 @Composable
 fun AddFoodScreen(
-    application: Application, // Pass application context
+    application: Application,
     sellerId: Int,
     navigateBack: () -> Unit,
     foodListRepository: FoodListRepository,
     addOnRepository: AddOnRepository,
     modifier: Modifier = Modifier
-){
-
+) {
+    // Initialize the ViewModels
     val addFoodViewModel: AddFoodViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(application = application,foodListRepository = foodListRepository)
+        factory = AppViewModelProvider.Factory(application = application, foodListRepository = foodListRepository)
     )
     val addOnViewModel: AddOnViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(application = application,addOnRepository = addOnRepository)
+        factory = AppViewModelProvider.Factory(application = application, addOnRepository = addOnRepository)
     )
-    var foodName by remember { mutableStateOf("")}
+
+    // Define mutable states for various fields
+    var foodName by remember { mutableStateOf("") }
     var foodDes by remember { mutableStateOf("") }
-    var selectedType by remember { mutableStateOf ("")}
+    var selectedType by remember { mutableStateOf("") }
     var foodPrice by remember { mutableStateOf("") }
-    var imageUri by remember { mutableStateOf<Uri?>(null)}
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
     var wordCount by remember { mutableStateOf(0) }
     var isDescriptionValid by remember { mutableStateOf(true) }
+    val descriptionWordLimit = 10  // Word limit for the description
 
+    // Get the current context and handle permissions
     val context = LocalContext.current
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -135,18 +141,25 @@ fun AddFoodScreen(
         }
     }
 
-    // Snackbar Host State
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+    // Manage permissions based on API level
+    fun requestStoragePermission() {
+        when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
+                // API 33+: Request READ_MEDIA_IMAGES for Android 13 and above
+                permissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES)
+            }
+            else -> {
+                // API 32 and below: Request READ_EXTERNAL_STORAGE
+                permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+            }
+        }
+    }
 
-    val descriptionWordLimit = 10  // Word limit for the description
-
+    // Define the scaffold and body layout
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = {
-            UniCanteenTopBar()
-        }
-    ){ innerPadding ->
+        topBar = { UniCanteenTopBar() }
+    ) { innerPadding ->
         AddFoodBody(
             modifier = modifier.padding(innerPadding),
             foodName = foodName,
@@ -157,30 +170,18 @@ fun AddFoodScreen(
             onFoodNameChange = { foodName = it },
             onFoodDescChange = {
                 foodDes = it
-
-                // Calculate the word count and update the state
                 wordCount = getWordCount(it)
                 isDescriptionValid = isValidDescription(it, descriptionWordLimit)
-
-                // Show a snackbar if the word limit is exceeded
-                if (!isDescriptionValid) {
-                    scope.launch {
-                        snackbarHostState.showSnackbar("You have reached the $descriptionWordLimit limit!")
-                    }
-                }
-           },
+            },
             onFoodPriceChange = { foodPrice = it },
-            onTypeSelected = { type -> selectedType = type  },
+            onTypeSelected = { type -> selectedType = type },
             onImageClick = {
                 when (PackageManager.PERMISSION_GRANTED) {
-                    ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.READ_EXTERNAL_STORAGE
-                    ) -> {
+                    ContextCompat.checkSelfPermission(context, getStoragePermission()) -> {
                         launchImagePicker(imagePickerLauncher)
                     }
                     else -> {
-                        permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+                        requestStoragePermission()
                     }
                 }
             },
@@ -222,18 +223,18 @@ fun AddFoodBody(
     descriptionWordLimit: Int,
     addFoodViewModel: AddFoodViewModel,
     addOnViewModel: AddOnViewModel
-){
+) {
     val formatter = SimpleDateFormat("yyyy-MM-dd")
     val date = formatter.format(java.util.Date())
 
     val addOnOptions = getAddOnOptions()
     val selectedAddOns = remember { mutableStateListOf<AddOnOption>() }
 
-    Column (
+    Column(
         modifier = modifier.verticalScroll(rememberScrollState()),
-    ){
+    ) {
         NavigateBackIconWithTitle(
-            title = AddFoodDestination.title ,
+            title = AddFoodDestination.title,
             navigateBack = navigateBack,
             modifier = Modifier.padding(top = 16.dp)
         )
@@ -241,13 +242,15 @@ fun AddFoodBody(
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-
+            // Image Upload Box
             ImageUploadBox(
                 imageUri = imageUri,
-                onImageClick = onImageClick,
+                onImageClick = onImageClick
             )
 
             Spacer(modifier = Modifier.height(16.dp))
+
+            // Food Name Input
             EditTextField(
                 value = foodName,
                 onValueChange = onFoodNameChange,
@@ -263,6 +266,8 @@ fun AddFoodBody(
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
             )
+
+            // Food Description Input
             EditTextField(
                 value = foodDes,
                 onValueChange = onFoodDescChange,
@@ -273,15 +278,17 @@ fun AddFoodBody(
                     imeAction = ImeAction.Next
                 ),
                 singleLine = false,
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 isError = !isDescriptionValid
             )
+
             Text(
                 text = "Words: $wordCount/$descriptionWordLimit",
                 color = if (isDescriptionValid) Color.Gray else Color.Red,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
+
+            // Food Price Input
             EditTextField(
                 value = foodPrice,
                 onValueChange = onFoodPriceChange,
@@ -297,21 +304,26 @@ fun AddFoodBody(
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
             )
+
+            // Food Type Dropdown
             FoodTypeDropdown(
                 selectedType = selectedType,
                 onTypeSelected = onTypeSelected
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-            // Add-On Options with Checkboxes
-            Text(text = "Add-Ons:")
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Add-ons Selection
+            Text(
+                text = "Add-Ons:",
+                color = Color.Blue,
+                fontSize = 16.sp
+            )
 
             addOnOptions.forEach { addOnOption ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Checkbox(
                         checked = selectedAddOns.contains(addOnOption),
@@ -327,8 +339,8 @@ fun AddFoodBody(
                     Text("${addOnOption.option} (RM ${addOnOption.price})")
                 }
             }
-
         }
+
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.Bottom,
@@ -336,13 +348,13 @@ fun AddFoodBody(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-
             OutlinedButton(
                 onClick = onCancelButtonClicked,
                 modifier = Modifier.weight(1f)
             ) {
                 Text(text = "Cancel")
             }
+
             Button(
                 onClick = {
                     val newFood = FoodList(
@@ -352,21 +364,18 @@ fun AddFoodBody(
                         price = foodPrice.toDouble(),
                         imageUrl = imageUri?.toString() ?: "",
                         type = selectedType,
-                        createDate = date,
+                        createDate = date
                     )
-                    // Use a coroutine to handle the asynchronous call and get the foodId after saving the new item
-                    addFoodViewModel.viewModelScope.launch {
-                        // Insert the new food item and get the generated foodId
-                        val foodId = addFoodViewModel.addFoodItem(newFood)
 
-                        // Now, save each selected add-on for this food item
+                    addFoodViewModel.viewModelScope.launch {
+                        val foodId = addFoodViewModel.addFoodItem(newFood)
                         selectedAddOns.forEach { addOn ->
                             val addOnRecord = AddOn(
                                 foodId = foodId.toInt(),
                                 description = addOn.option,
                                 price = addOn.price
                             )
-                            addOnViewModel.insertAddOns(addOnRecord)  // Insert add-on record
+                            addOnViewModel.insertAddOns(addOnRecord)
                         }
                         onSaveButtonClicked()
                     }
@@ -375,6 +384,64 @@ fun AddFoodBody(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(text = "Save")
+            }
+        }
+    }
+}
+
+
+// Helper function to launch image picker
+fun launchImagePicker(launcher: ActivityResultLauncher<String>) {
+    launcher.launch("image/*")
+}
+
+// Function to get the correct storage permission based on API level
+fun getStoragePermission(): String {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        Manifest.permission.READ_MEDIA_IMAGES
+    } else {
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    }
+}
+
+@Composable
+fun ImageUploadBox(
+    imageUri: Uri?,
+    onImageClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = Modifier
+            .height(200.dp)
+            .fillMaxWidth()
+            .background(Color.LightGray, RoundedCornerShape(8.dp))
+            .clickable(onClick = onImageClick),
+        contentAlignment = Alignment.Center
+    ) {
+        if (imageUri != null) {
+            AsyncImage(
+                model = imageUri,
+                contentDescription = "Selected food image",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.baseline_upload_24),
+                    contentDescription = "Upload icon",
+                    modifier = Modifier.size(50.dp),
+                    tint = Color.Gray
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Upload picture",
+                    color = Color.Gray
+                )
             }
         }
     }
@@ -458,58 +525,11 @@ fun EditTextField(
         onValueChange = onValueChange,
         label = {Text(label)},
         singleLine = singleLine,
-        placeholder = {Text(placeholder)},
+        placeholder = {Text(placeholder, color = Color.LightGray)},
         keyboardOptions = keyboardOptions,
         isError = isError,
         modifier = modifier
     )
-}
-
-fun launchImagePicker(launcher: ActivityResultLauncher<String>) {
-    launcher.launch("image/*")
-}
-
-@Composable
-fun ImageUploadBox(
-    imageUri: Uri?,
-    onImageClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = Modifier
-            .height(200.dp)
-            .fillMaxWidth()
-            .background(Color.LightGray, RoundedCornerShape(8.dp))
-            .clickable(onClick = onImageClick),
-        contentAlignment = Alignment.Center
-    ) {
-        if (imageUri != null) {
-            AsyncImage(
-                model = imageUri,
-                contentDescription = "Selected food image",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.baseline_upload_24),
-                    contentDescription = "Upload icon",
-                    modifier = Modifier.size(50.dp),
-                    tint = Color.Gray
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Upload picture",
-                    color = Color.Gray
-                )
-            }
-        }
-    }
 }
 
 // Validation function to check the word count of the description
