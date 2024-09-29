@@ -36,3 +36,7 @@ data class OrderList(
     @ColumnInfo(name = "createDate") val createDate: String, // Date the order was created (as a string)
     @ColumnInfo(name = "remark") val remark: String? = null // Optional remarks for the order") val status: String,
 )
+{
+    // No-argument constructor (can be an empty constructor)
+    constructor() : this(0, 0, 0, 0, 0, 0, 0.0, "", "", null)
+}

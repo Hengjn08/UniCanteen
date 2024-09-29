@@ -48,7 +48,7 @@ interface OrderDao {
 
     //Fetch order by user id and orderstauts
     @Query("SELECT * FROM orders WHERE userId = :userId AND status = :orderStatus")
-    fun getOrdersByUserIdAndStatus(userId: Int, orderStatus: String): List<Order>
+    suspend fun getOrdersByUserIdAndStatus(userId: Int, orderStatus: String): List<Order>
 
 
 

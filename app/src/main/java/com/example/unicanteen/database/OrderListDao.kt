@@ -17,7 +17,7 @@ interface OrderListDao {
 
     // Insert a new order list item
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrderList(orderList: OrderList)
+    suspend fun insertOrderList(orderList: OrderList): Long
 
     // Update an existing order list item
     @Update
@@ -35,7 +35,7 @@ interface OrderListDao {
 
     // Fetch an order list item by orderListId
     @Query("SELECT * FROM orderList WHERE orderListId = :orderListId")
-    fun getOrderListById(orderListId: Int): OrderList? // Use Long if it matches your schema
+    suspend fun getOrderListById(orderListId: Int): OrderList? // Use Long if it matches your schema
 
     // Fetch all order list items for a specific order by orderId
     @Query("SELECT * FROM orderList WHERE orderId = :orderId")
