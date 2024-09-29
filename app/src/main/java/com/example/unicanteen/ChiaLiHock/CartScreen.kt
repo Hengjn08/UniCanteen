@@ -48,6 +48,7 @@ import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppShapes
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 import com.example.unicanteen.ui.theme.UniCanteenTheme
+import kotlinx.coroutines.delay
 
 object CartDestination : NavigationDestination {
     override val route = "Cart"
@@ -67,28 +68,37 @@ fun CartScreen(
     val cartViewModel: CartViewModel = viewModel(
         factory = AppViewModelProvider.Factory(application = application, orderRepository = orderRepository, orderListRepository = orderListRepository)
     )
+
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
     var totalPrice by remember { mutableStateOf(0.0) }
     val cartItems by cartViewModel.cartItems.observeAsState(emptyList<CartItem>())
     var showEmptyCartDialog by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(true) }
 
     // Fetch cart items based on userId when the screen is launched
     LaunchedEffect(userId) {
         cartViewModel.getCartItems(userId)
+        // Introduce a delay after loading the cart items
+
+        isLoading = false // Mark loading as complete after fetching
     }
 
     // Recalculate the total price whenever cartItems or quantity changes
     LaunchedEffect(cartItems) {
         totalPrice = cartItems.sumOf { it.price }
-        if (cartItems.isEmpty()) {
+
+        // Check if the cart is empty only after loading is complete
+        if (!isLoading && totalPrice == 0.0) {
+            delay(500) // 0.5 second delay
             showEmptyCartDialog = true // Show dialog if cart is empty
         }
     }
 
     // Handle the empty cart dialog
     if (showEmptyCartDialog) {
+
         AlertDialog(
             onDismissRequest = { showEmptyCartDialog = false },
             title = { Text("Empty Cart") },
@@ -118,7 +128,7 @@ fun CartScreen(
                         .fillMaxWidth()
                 ) {
                     if (cartItems.isEmpty()) {
-                        // Notify user the cart is empty (handled by dialog above)
+                        // Optionally, you can also show a message in the UI
                     } else {
                         CartList(
                             cartItems = cartItems.toMutableList(),
@@ -156,7 +166,7 @@ fun CartScreen(
                         .padding(end = 8.dp)
                 ) {
                     if (cartItems.isEmpty()) {
-                        // Notify user the cart is empty (handled by dialog above)
+                        // Optionally, you can also show a message in the UI
                     } else {
                         CartList(
                             cartItems = cartItems.toMutableList(),
@@ -209,6 +219,7 @@ fun CartScreen(
         }
     }
 }
+
 
 
 
@@ -303,10 +314,10 @@ fun CartCard(
                     )
                     Text(
                         text = item.description.dropLast(
-                            if (item.description.length > 10) {
-                                35
+                            if (item.description.length > 20) {
+                                15
                             } else {
-                                0
+                                15
                             }
                         ).plus("..."),
                         fontSize = 16.sp,
@@ -390,12 +401,17 @@ fun FoodDetailsDialog(
     onDismiss: () -> Unit,
     cartViewModel: CartViewModel
 ) {
+    // Get the current configuration to determine orientation
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+
     Dialog(onDismissRequest = { onDismiss() }) {
         Card(
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
+                .then(if (isPortrait) Modifier.height(500.dp) else Modifier.height(300.dp)) // Adjust height based on orientation
         ) {
             Column(
                 modifier = Modifier
@@ -408,7 +424,7 @@ fun FoodDetailsDialog(
                     viewModel = cartViewModel,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp)
+                        .height(if (isPortrait) 200.dp else 150.dp) // Adjust image height based on orientation
                         .clip(RoundedCornerShape(16.dp))
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -455,6 +471,7 @@ fun FoodDetailsDialog(
         }
     }
 }
+
 
 @Composable
 fun EnhancedQuantityDropdown(
@@ -543,7 +560,7 @@ fun CheckOutButton(totalPrice: Double, orderId: Int, cartViewModel: CartViewMode
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
+            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
 
@@ -551,19 +568,8 @@ fun CheckOutButton(totalPrice: Double, orderId: Int, cartViewModel: CartViewMode
                 text = "Checkout",
                 color = Color.White,
                 fontSize = 18.sp,
-                textAlign = TextAlign.End,
+                textAlign = TextAlign.Center,
                 modifier = Modifier.weight(1.8f)
-            )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Text(
-                text = "RM ${"%.2f".format(totalPrice)}",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.End,
-                modifier = Modifier.weight(1f)
             )
         }
     }
