@@ -60,7 +60,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context,
                     AppDatabase::class.java,
-                    "test1012_database"
+                    "test1022_database"
                 )
                     .createFromAsset("Database/uniDatabase.db") // Load from assets
 

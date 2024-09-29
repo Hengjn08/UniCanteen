@@ -44,6 +44,7 @@ import com.example.unicanteen.LimSiangShin.SellerProdileDestination
 import com.example.unicanteen.LimSiangShin.SellerProfileScreen
 import com.example.unicanteen.OrderHistoryDestination
 import com.example.unicanteen.OrderHistoryScreen
+import com.example.unicanteen.Pierre.DailySalesDetailScreen
 //import com.example.unicanteen.OrderHistoryDestination
 //import com.example.unicanteen.OrderHistoryScreen
 import com.example.unicanteen.Pierre.FoodSalesDetailDestination
@@ -56,6 +57,7 @@ import com.example.unicanteen.Pierre.PickupOrDeliveryScreen
 import com.example.unicanteen.Pierre.SaleMonthlyScreen
 import com.example.unicanteen.Pierre.TableNoScreen
 import com.example.unicanteen.Pierre.choosePayment
+import com.example.unicanteen.Pierre.dailyOrderSaleDestination
 import com.example.unicanteen.Pierre.paymentReceiptDestination
 import com.example.unicanteen.Pierre.paymentReceiptScreen
 import com.example.unicanteen.Pierre.pickUpChoose
@@ -487,7 +489,7 @@ fun UniCanteenNavHost(
         composable(
             route = reportSaleCheck.route,
         ) { backStackEntry ->
-            val sellerId = 1 // Use a constant or retrieve from ViewModel as needed
+            val sellerId = GlobalVariables.sellerId // Use a constant or retrieve from ViewModel as needed
 
             // Call your SaleMonthlyScreen composable
             SaleMonthlyScreen(
@@ -518,7 +520,29 @@ fun UniCanteenNavHost(
                 foodType = foodType,
 //                foodType = "Beverage",
                 sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
-                sellerId = 1,
+                sellerId = GlobalVariables.sellerId,
+                month = month
+            )
+        }
+        //dailysale
+        composable(
+            route = dailyOrderSaleDestination.route,
+            arguments = listOf(
+                navArgument("sellerId") { type = NavType.IntType },
+                navArgument("month") { type = NavType.StringType } // Add month as a string argument
+            )
+        ) { backStackEntry ->
+            val sellerId = GlobalVariables.sellerId
+            val month = backStackEntry.arguments?.getString("month")
+
+            // Call the FoodSalesDetailScreen
+            DailySalesDetailScreen(
+                application = application,
+                navController = navController,
+                currentDestination = navController.currentDestination,
+//                foodType = "Beverage",
+                sellerAdminRepository = PierreAdminRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
+                sellerId = sellerId,
                 month = month
             )
         }

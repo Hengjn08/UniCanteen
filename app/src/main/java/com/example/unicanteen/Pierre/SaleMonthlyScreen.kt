@@ -131,7 +131,13 @@ fun SaleMonthlyScreen(
             )
             // Display the pie chart if there are sales data
             if (salesData.isNotEmpty()) {
-                MonthlySalesPieChart(salesData = salesData)
+                MonthlySalesPieChart(
+                    salesData = salesData,
+                    onChartClick = {
+                        // Navigate to the desired path with sellerId and selectedMonth
+                        navController.navigate(dailyOrderSaleDestination.routeWithArgs(sellerId, selectedMonth))
+                    }
+                )
             } else {
                 Text("No sales data available for this month.", modifier = Modifier.padding(16.dp))
             }
@@ -255,7 +261,8 @@ fun SalesItemRow(foodType: String, totalQuantity: Double, color: Color, percenta
 }
 
 @Composable
-fun MonthlySalesPieChart(salesData: List<OrderListDao.FoodTypeSalesData>) {
+fun MonthlySalesPieChart(salesData: List<OrderListDao.FoodTypeSalesData>,
+                         onChartClick: () -> Unit) {
     // Calculate total sales
     val totalSales = salesData.sumOf { it.totalQuantity }
     val pieSlices = salesData.map { data ->
@@ -270,6 +277,7 @@ fun MonthlySalesPieChart(salesData: List<OrderListDao.FoodTypeSalesData>) {
             .fillMaxWidth()
             .height(180.dp) // Adjust height as needed
             .padding(11.dp)
+            .clickable { onChartClick() }
     ) {
         // Draw the pie chart
         PieChart(

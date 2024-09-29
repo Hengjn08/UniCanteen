@@ -147,7 +147,8 @@ interface OrderListDao {
         val saleDate: Date // Format: YYYY-MM-DD
     )
 
-    // Fetch monthly sales growth for each seller
+
+    //daily sale
     @Query("""
         SELECT sellerId, strftime('%Y-%m', createDate) AS month, SUM(totalPrice) AS totalSales
         FROM orderList
@@ -186,6 +187,32 @@ interface OrderListDao {
     data class FoodTypeSalesData(
         val foodType: String,
         val month: String,
+        val totalQuantity: Double,
+        val percentage: Double  // New field for percentage
+    )
+
+    @Query("""
+    WITH TotalSales AS (
+        SELECT SUM(o.totalPrice) AS totalSales
+        FROM orderList o
+        WHERE strftime('%Y-%m', o.createDate) = :month
+        AND o.sellerId = :sellerId
+    )
+    SELECT 
+           strftime('%Y-%m-%d', o.createDate) AS day, 
+           SUM(o.totalPrice) AS totalQuantity,
+           (SUM(o.totalPrice) * 100.0 / (SELECT totalSales FROM TotalSales)) AS percentage
+    FROM orderList o
+    JOIN foodList f ON o.foodId = f.foodId
+    WHERE strftime('%Y-%m', o.createDate) = :month
+    AND o.sellerId = :sellerId  -- Filter by seller ID
+    GROUP BY day
+    ORDER BY day
+""")
+    fun getDailySalesBySeller(month: String, sellerId: Int): LiveData<List<DailySalesDataBySeller>>
+
+    data class DailySalesDataBySeller(
+        val day: String,
         val totalQuantity: Double,
         val percentage: Double  // New field for percentage
     )

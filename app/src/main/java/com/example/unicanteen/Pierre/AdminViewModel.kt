@@ -43,6 +43,9 @@ class AdminViewModel(
     val monthlySalesData: StateFlow<List<OrderListDao.FoodTypeSalesData>> = _monthlySalesData
     private val _foodSalesData = MutableStateFlow<List<OrderListDao.FoodSalesData>>(emptyList())  // New state flow for food sales data
     val foodSalesData: StateFlow<List<OrderListDao.FoodSalesData>> = _foodSalesData  // Expose the food sales data
+    //dailysale
+    private val _dailySaleData = MutableStateFlow<List<OrderListDao.DailySalesDataBySeller>>(emptyList())  // New state flow for food sales data
+    val dailySaleData: StateFlow<List<OrderListDao.DailySalesDataBySeller>> = _dailySaleData
     // New state flow for order details
     private val _orderDetailsData = MutableStateFlow<List<OrderListDao.OrderDetailsData>>(emptyList())
     val orderDetailsData: StateFlow<List<OrderListDao.OrderDetailsData>> = _orderDetailsData  // Expose order details data
@@ -82,6 +85,14 @@ class AdminViewModel(
             // Fetch sales data using the repository method that includes sellerId, foodType, and month
             pierreAdminRepository.getSalesByFoodType(foodType, sellerId, month).observeForever { salesData ->
                 _foodSalesData.value = salesData  // Update the food sales data
+            }
+        }
+    }
+    fun loadSalesByDaily(sellerId: Int, month: String) {
+        viewModelScope.launch {
+            // Fetch sales data using the repository method that includes sellerId, foodType, and month
+            pierreAdminRepository.getDailySalesBySeller(  month,sellerId).observeForever { dailyData ->
+                _dailySaleData.value = dailyData  // Update the food sales data
             }
         }
     }
