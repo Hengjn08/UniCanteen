@@ -1,6 +1,7 @@
 package com.example.unicanteen.LimSiangShin
 
 import android.app.Application
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -102,7 +103,6 @@ fun ChangePasswordScreen(
     var isEmailVerified by remember { mutableStateOf(false) }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var showPasswordFields by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
 
@@ -113,6 +113,8 @@ fun ChangePasswordScreen(
         }
     ) { innerPadding ->
         var confirm by remember { mutableStateOf(false) }
+        var showPasswordFields by remember { mutableStateOf(false) }
+        var isEmailVerified by remember { mutableStateOf(false) }
 
         Column(
             modifier = modifier
@@ -143,15 +145,15 @@ fun ChangePasswordScreen(
                         imeAction = ImeAction.Done
                     )
                 )
-                    Text(
-                        text = "Enter Your Email To verify your Account",
-                        fontSize = 12.sp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 12.dp)
-                            .wrapContentWidth(Alignment.Start)
-                        )
-                }
+                Text(
+                    text = "Enter Your Email To verify your Account",
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 12.dp)
+                        .wrapContentWidth(Alignment.Start)
+                )
+
 
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -160,13 +162,15 @@ fun ChangePasswordScreen(
                 Button(
                     onClick = {
                         if (userViewModel.validateEmail(email)) { // Basic email validation
-                            if(userViewModel.checkEmailExist(email)){
+//                            if (userViewModel.checkEmailExist(email)) {
                                 isEmailVerified = true
                                 showPasswordFields = true
-                                Toast.makeText(context, "$email is verified!", Toast.LENGTH_SHORT).show()
-                            }else {
-                                Toast.makeText(context, "Email Not Exist", Toast.LENGTH_SHORT).show()
-                            }
+                                Toast.makeText(context, "$email is verified!", Toast.LENGTH_SHORT)
+                                    .show()
+//                            } else {
+//                                Toast.makeText(context, "Email Not Exist", Toast.LENGTH_SHORT)
+//                                    .show()
+//                            }
                         } else {
                             Toast.makeText(context, "Invalid Email", Toast.LENGTH_SHORT).show()
                         }
@@ -175,6 +179,7 @@ fun ChangePasswordScreen(
                     Text(text = "Verify Email")
                 }
             }
+
 
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -216,19 +221,28 @@ fun ChangePasswordScreen(
                 if (confirm) {
                     ConfirmDialog(
                         onConfirm = {
-                            if(password == confirmPassword){
+                            if (password == confirmPassword) {
                                 if (userViewModel.validatePassword(password)) {
-                                    if(userViewModel.updateNewPassword(email,password)){
-                                        Toast.makeText(context, "Password changed successfully!!", Toast.LENGTH_SHORT).show()
+                                    userViewModel.updateNewPassword(email, password)
+                                        Toast.makeText(
+                                            context,
+                                            "Password changed successfully!!",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                         navController.navigate(LoginDestination.route)
-                                    } else {
-                                        Toast.makeText(context, "Password changed fail.", Toast.LENGTH_SHORT).show()
-                                    }
-                                }else{
-                                    Toast.makeText(context, "Invalid password format.", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Toast.makeText(
+                                        context,
+                                        "Invalid password format.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
-                            }else{
-                                Toast.makeText(context, "Passwords do not match.", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Passwords do not match.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                             confirm = false
                         },
@@ -242,6 +256,7 @@ fun ChangePasswordScreen(
                 }
 
             }
+        }
         }
     }
 

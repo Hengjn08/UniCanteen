@@ -42,8 +42,8 @@ import com.example.unicanteen.LimSiangShin.LoginScreen
 import com.example.unicanteen.LimSiangShin.RegistrationScreen
 import com.example.unicanteen.LimSiangShin.SellerProdileDestination
 import com.example.unicanteen.LimSiangShin.SellerProfileScreen
-import com.example.unicanteen.OrderHistoryDestination
-import com.example.unicanteen.OrderHistoryScreen
+//import com.example.unicanteen.OrderHistoryDestination
+//import com.example.unicanteen.OrderHistoryScreen
 import com.example.unicanteen.Pierre.FoodSalesDetailDestination
 import com.example.unicanteen.Pierre.FoodSalesDetailScreen
 import com.example.unicanteen.Pierre.InputTableNoDestination
@@ -178,7 +178,8 @@ fun UniCanteenNavHost(
                 application = application,
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
-                onHelpClicked = {navController.navigate(HelpDestination.route)}
+                onHelpClicked = {navController.navigate(HelpDestination.route)},
+                onCancelClicked = {navController.navigate(LoginDestination.route)}
             )
         }
 
@@ -193,7 +194,9 @@ fun UniCanteenNavHost(
                 navController = navController,
                 currentDestination = currentDestination,
                 onHelpClicked = {navController.navigate(HelpDestination.route)},
-                onOrderHistoryClicked = {navController.navigate(OrderHistoryDestination.route)},
+                onOrderHistoryClicked = {
+//                    navController.navigate(OrderHistoryDestination.route)
+                                        },
                 userId = userId,
                 onLogOutClicked = {navController.navigate(LoginDestination.route)}
             )
@@ -218,7 +221,7 @@ fun UniCanteenNavHost(
         }
 
         composable(route = HelpDestination.route){
-            HelpScreen()
+            HelpScreen(navigateBack = {navController.navigateUp()})
         }
 
         composable(route = ForgotPasswordDestination.route){
@@ -230,7 +233,7 @@ fun UniCanteenNavHost(
             )
         }
 
-        composable(route = OrderHistoryDestination.route){
+/*        composable(route = OrderHistoryDestination.route){
             OrderHistoryScreen(
                 application = application,
                 userId = 1,
@@ -240,7 +243,7 @@ fun UniCanteenNavHost(
                 orderRepository = OrderRepositoryImpl(AppDatabase.getDatabase(navController.context).orderDao()),
                 sellerRepository = SellerRepositoryImpl(AppDatabase.getDatabase(navController.context).sellerDao()),
                 )
-        }
+        }*/
 
         //Customer module route
         //select restaurant screen

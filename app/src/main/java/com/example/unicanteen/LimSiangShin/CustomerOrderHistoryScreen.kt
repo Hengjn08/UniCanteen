@@ -1,3 +1,4 @@
+/*
 package com.example.unicanteen
 import android.app.Application
 import android.content.res.Configuration
@@ -47,7 +48,10 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.lazy.LazyRow
 import com.example.unicanteen.LimSiangShin.OrderHistoryViewModel
+import com.example.unicanteen.LimSiangShin.UserViewModel
 import com.example.unicanteen.database.OrderList
+import com.example.unicanteen.database.UserDao
+import com.example.unicanteen.database.UserRepository
 
 object OrderHistoryDestination : NavigationDestination {
     override val route = "order_history?userId={userId}"
@@ -63,21 +67,18 @@ fun OrderHistoryScreen(
     userId: Int,
     navController: NavController,
     currentDestination: NavDestination?,
-    sellerRepository: SellerRepository,
-    orderRepository: OrderRepository,
-    orderListRepository: OrderListRepository
+    userRepository: UserRepository
 ) {
-    val orderHistoryViewModel: OrderHistoryViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(application = application,sellerRepository = sellerRepository, orderListRepository = orderListRepository)
+    val viewModel: UserViewModel = viewModel(
+        factory = AppViewModelProvider.Factory(application = application, userRepository = userRepository)
     )
 
-    val orderList by orderHistoryViewModel.orderList.collectAsState()
+    val orderDetail by viewModel.orderDetail.collectAsState()
 
-
-    // Fetch cart item count when userId changes
     LaunchedEffect(userId) {
-        orderHistoryViewModel.loadOrderList(userId)
+        viewModel.getUserOrderHistory(userId)
     }
+
 
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
@@ -85,12 +86,7 @@ fun OrderHistoryScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         if (isPortrait) {
             UniCanteenTopBar()
-        }
-//        SearchAndCartBar(
-//            onSearch = { query -> viewModel.searchSellersByName(query) },
-//            onCartClick = { navController.navigate("${CartDestination.route}") },
-//            cartItemCount
-//        )
+
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -98,9 +94,9 @@ fun OrderHistoryScreen(
         ) {
             // Use LazyColumn for portrait mode and LazyRow for landscape mode
             if (isPortrait) {
-                OrderListColumn(orderList = orderList, navController = navController)
+                OrderListColumn(orderDetail = orderDetail, navController = navController)
             } else {
-                OrderListRow(orderList = orderList, navController = navController)
+                OrderListRow(orderDetail = orderDetail, navController = navController)
             }
         }
         BottomNavigationBar(navController = navController, currentDestination = currentDestination, isSeller = false)
@@ -108,12 +104,12 @@ fun OrderHistoryScreen(
 }
 
 @Composable
-fun OrderListColumn(orderList: List<OrderList>, navController: NavController) {
+fun OrderListColumn(orderDetail: UserDao.OrderDetails, navController: NavController) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(vertical = 8.dp) // Padding for the list
     ) {
-        items(orderList) { orderList ->
+        items(orderDetail) { orderList ->
             OrderCard(
                 orderList = orderList,
                 onClick = {
@@ -125,14 +121,14 @@ fun OrderListColumn(orderList: List<OrderList>, navController: NavController) {
 }
 
 @Composable
-fun OrderListRow(orderList: List<OrderList>, navController: NavController) {
+fun OrderListRow(orderDetail: UserDao.OrderDetails, navController: NavController) {
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp), // Padding for the row
         contentPadding = PaddingValues(horizontal = 8.dp) // Horizontal padding for the list
     ) {
-        items(orderList) { orderList ->
+        items(orderDetail) { orderList ->
             OrderCard(
                 orderList = orderList,
                 onClick = {
@@ -146,7 +142,7 @@ fun OrderListRow(orderList: List<OrderList>, navController: NavController) {
 
 
 @Composable
-fun OrderCard(orderList: OrderList, onClick: () -> Unit) {
+fun OrderCard(orderDetail: UserDao.OrderDetails, onClick: () -> Unit) {
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
@@ -175,13 +171,13 @@ fun OrderCard(orderList: OrderList, onClick: () -> Unit) {
                         .weight(1f)
                 ) {
                     Text(
-                        text = orderList.createDate,
+                        text = orderDetail.createDate,
                         style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier.padding(bottom = 4.dp),
                         color = MaterialTheme.colorScheme.onSecondary
                     )
                     Text(
-                        text = orderList.totalPrice.toString(),
+                        text = orderDetail.totalPrice.toString(),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -219,7 +215,7 @@ fun OrderCard(orderList: OrderList, onClick: () -> Unit) {
                         .weight(1f)
                 ) {
                     Text(
-                        text = orderList.createDate,
+                        text = orderDetail.createDate,
                         style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier.padding(bottom = 4.dp),
                         color = MaterialTheme.colorScheme.onSecondary
@@ -308,3 +304,4 @@ fun OrderCard(orderList: OrderList, onClick: () -> Unit) {
 //    }
 //}
 
+*/

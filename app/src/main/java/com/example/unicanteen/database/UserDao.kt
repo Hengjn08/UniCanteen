@@ -1,5 +1,6 @@
 package com.example.unicanteen.database
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -65,6 +66,29 @@ interface UserDao {
 
         @Query("SELECT password FROM user WHERE userId =:userId")
         suspend fun getPassword(userId: Int?): String
+
+        @Query("SELECT userId FROM user WHERE email =:email" )
+        suspend fun checkUserEmail (email:String):Int
+
+        @Query("""
+    SELECT  u.userId AS userId,
+            o.orderId AS orderId,
+            o.createDate AS createDate,
+            o.totalPrice AS totalAmount
+    FROM orders o JOIN user u 
+    WHERE u.userId = :userId
+    ORDER BY o.createDate DESC
+""")
+        suspend fun getOrderDetailsByUserId(userId: Int): List<OrderDetails>
+
+        data class OrderDetails(
+                val userId: Int,
+                val orderId: Int,
+                val createDate: String,
+                val totalAmount: Double
+        )
+
+
 }
 
 

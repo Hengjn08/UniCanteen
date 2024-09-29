@@ -36,6 +36,7 @@ class AdminViewModel(
     private val databaseReference: DatabaseReference = FirebaseDatabase
         .getInstance("https://unicanteen12-default-rtdb.asia-southeast1.firebasedatabase.app/")
         .getReference() // Firebase Database reference
+
     private val _monthlySalesData = MutableStateFlow<List<OrderListDao.FoodTypeSalesData>>(emptyList())
     val monthlySalesData: StateFlow<List<OrderListDao.FoodTypeSalesData>> = _monthlySalesData
     private val _foodSalesData = MutableStateFlow<List<OrderListDao.FoodSalesData>>(emptyList())  // New state flow for food sales data
