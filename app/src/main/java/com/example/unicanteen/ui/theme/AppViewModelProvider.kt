@@ -13,6 +13,8 @@ import com.example.unicanteen.HengJunEn.EditFoodViewModel
 import com.example.unicanteen.HengJunEn.SellerFoodDetailsViewModel
 import com.example.unicanteen.HengJunEn.SellerHomeViewModel
 import com.example.unicanteen.HengJunEn.SellerOrderListViewModel
+import com.example.unicanteen.LimSiangShin.OrderHistoryViewModel
+import com.example.unicanteen.LimSiangShin.ProfileViewModel
 import com.example.unicanteen.LimSiangShin.UserViewModel
 import com.example.unicanteen.Pierre.AdminViewModel
 import com.example.unicanteen.SelectRestaurantViewModel
@@ -81,6 +83,12 @@ object AppViewModelProvider {
                 }
                 (modelClass.isAssignableFrom(EditFoodViewModel::class.java)) -> {
                     foodListRepository?.let { EditFoodViewModel(it) } as T
+                }
+                modelClass.isAssignableFrom(ProfileViewModel::class.java) -> {
+                    userRepository?.let { ProfileViewModel(it) } as T
+                }
+                modelClass.isAssignableFrom(OrderHistoryViewModel::class.java) -> {
+                    orderListRepository?.let { OrderHistoryViewModel(it) } as T
                 }
 
                 else -> throw IllegalArgumentException("Unknown ViewModel class")

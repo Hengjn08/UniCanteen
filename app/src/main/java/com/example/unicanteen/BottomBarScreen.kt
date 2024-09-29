@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.unicanteen.ChiaLiHock.SellerDetailsDestination
 import com.example.unicanteen.HengJunEn.SellerHomeDestination
 import com.example.unicanteen.HengJunEn.SellerOrderListDestination
 import com.example.unicanteen.LimSiangShin.CustomerProfileDestination
@@ -35,7 +36,7 @@ sealed class BottomBarScreen(
         icon = Icons.Filled.Info
     )
     object SellerProfile: BottomBarScreen(
-        route = SellerProdileDestination.route,
+        route = SellerDetailsDestination.route,
         title = "Profile",
         icon = Icons.Filled.Person
     )

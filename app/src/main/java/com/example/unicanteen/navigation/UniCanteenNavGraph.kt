@@ -42,7 +42,9 @@ import com.example.unicanteen.LimSiangShin.LoginDestination
 import com.example.unicanteen.LimSiangShin.LoginScreen
 import com.example.unicanteen.LimSiangShin.RegistrationScreen
 import com.example.unicanteen.LimSiangShin.SellerProdileDestination
-import com.example.unicanteen.LimSiangShin.SellerProfileScreen1
+import com.example.unicanteen.LimSiangShin.SellerProfileScreen
+import com.example.unicanteen.OrderHistoryDestination
+import com.example.unicanteen.OrderHistoryScreen
 import com.example.unicanteen.Pierre.FoodSalesDetailDestination
 import com.example.unicanteen.Pierre.FoodSalesDetailScreen
 import com.example.unicanteen.Pierre.InputTableNoDestination
@@ -76,6 +78,7 @@ import com.example.unicanteen.database.UserRepositoryImpl
 
 object GlobalVariables {
     var userId: Int? = 1
+    var sellerId: Int = 1
 }
 @Composable
 fun UniCanteenNavHost(
@@ -89,7 +92,7 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = SelectRestaurantDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = LoginDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
 
@@ -97,10 +100,10 @@ fun UniCanteenNavHost(
         composable(
             route = SellerHomeDestination.route,
             arguments = listOf(navArgument("sellerId") { type = NavType.IntType
-                defaultValue =1})
+                defaultValue =GlobalVariables.sellerId})
         ) {
             backStackEntry ->
-            val sellerId = backStackEntry.arguments?.getInt("sellerId") ?: 0
+            val sellerId = GlobalVariables.sellerId?:0
             SellerHomeScreen(
                 application = application,
                 navController = navController,
@@ -113,10 +116,10 @@ fun UniCanteenNavHost(
 
         composable(route = SellerOrderListDestination.route,
                 arguments = listOf(navArgument("sellerId") { type = NavType.IntType
-            defaultValue =1})
+            defaultValue =GlobalVariables.sellerId})
         ) {
             backStackEntry ->
-            val sellerId = backStackEntry.arguments?.getInt("sellerId") ?: 0
+            val sellerId = GlobalVariables.sellerId?:0
             OrderListScreen(
                 application = application,
                 navController = navController,
@@ -176,6 +179,7 @@ fun UniCanteenNavHost(
                 application = application,
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
+                onHelpClicked = {navController.navigate(HelpDestination.route)}
             )
         }
 
@@ -189,7 +193,28 @@ fun UniCanteenNavHost(
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
                 currentDestination = currentDestination,
-                userId = userId
+                onHelpClicked = {navController.navigate(HelpDestination.route)},
+                onOrderHistoryClicked = {navController.navigate(OrderHistoryDestination.route)},
+                userId = userId,
+                onLogOutClicked = {navController.navigate(LoginDestination.route)}
+            )
+        }
+
+        composable(route = SellerDetailsDestination.route,
+            arguments = listOf(navArgument("userId") { type = NavType.IntType
+                defaultValue =GlobalVariables.userId})){
+                backStackEntry ->
+            val userId = GlobalVariables.userId?: 0
+            SellerProfileScreen(
+                application = application,
+                userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
+                navController = navController,
+                currentDestination = currentDestination,
+                onHelpClicked = {navController.navigate(HelpDestination.route)},
+                userId = userId,
+                onReportClicked = {navController.navigate(reportSaleCheck.route)},
+                onManageShopClicked = {},
+                onLogOutClicked = {navController.navigate(LoginDestination.route)}
             )
         }
 
@@ -206,8 +231,16 @@ fun UniCanteenNavHost(
             )
         }
 
-        composable(route = HelpDestination.route){
-            HelpScreen()
+        composable(route = OrderHistoryDestination.route){
+            OrderHistoryScreen(
+                application = application,
+                userId = 1,
+                currentDestination = currentDestination,
+                navController = navController,
+                orderListRepository = OrderListRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
+                orderRepository = OrderRepositoryImpl(AppDatabase.getDatabase(navController.context).orderDao()),
+                sellerRepository = SellerRepositoryImpl(AppDatabase.getDatabase(navController.context).sellerDao()),
+                )
         }
 
         //Customer module route
@@ -251,7 +284,7 @@ fun UniCanteenNavHost(
                 ) // Ensure argument type matches
         ) { backStackEntry ->
             val sellerId = backStackEntry.arguments?.getInt(SelectFoodDestination.sellerIdArg)
-            val userId=GlobalVariables.userId?:0
+            val userId=1
             // Set up the SelectFoodScreen here, using the sellerId to fetch the relevant foods
             SelectFoodScreen(
                 application = application,

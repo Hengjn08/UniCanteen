@@ -14,4 +14,5 @@ interface OrderListRepository {
     suspend fun updateOrderListItem(orderListId: Int, newQuantity: Int, newTotalPrice: Double)
     suspend fun deleteOrderListById(orderListId: Int)
     suspend fun getOrderListByOrderListId(orderListId: Int): OrderList?
+    suspend fun  getOrderListByUserId(userId:Int): List<OrderList>
 }

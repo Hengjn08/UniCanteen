@@ -343,6 +343,4 @@ interface OrderListDao {
     @Query("SELECT orderId FROM orders WHERE userId = :userId ORDER BY orderId DESC LIMIT 1")
     suspend fun getLatestOrderId(userId: Int): Int
     // Data class to represent the order details
-
-
 }

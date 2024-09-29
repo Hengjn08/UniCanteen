@@ -38,4 +38,8 @@ class OrderListRepositoryImpl( private val orderListDao: OrderListDao): OrderLis
     }
 
 
+    override suspend fun getOrderListByUserId(userId: Int): List<OrderList> {
+        return orderListDao.getOrderListByUserId(userId)
+    }
+
 }
