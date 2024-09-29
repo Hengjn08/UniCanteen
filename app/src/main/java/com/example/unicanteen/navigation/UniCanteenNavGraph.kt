@@ -283,7 +283,7 @@ fun UniCanteenNavHost(
                 ) // Ensure argument type matches
         ) { backStackEntry ->
             val sellerId = backStackEntry.arguments?.getInt(SelectFoodDestination.sellerIdArg)
-            val userId=1
+            val userId= GlobalVariables.userId?:0
             // Set up the SelectFoodScreen here, using the sellerId to fetch the relevant foods
             SelectFoodScreen(
                 application = application,
