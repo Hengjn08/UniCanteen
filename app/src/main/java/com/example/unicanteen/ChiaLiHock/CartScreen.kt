@@ -53,8 +53,8 @@ object CartDestination : NavigationDestination {
 
 @Composable
 fun CartScreen(
-    application: Application, // Pass application context
-    userId: Int, // Pass orderId as a parameter
+    application: Application,
+    userId: Int,
     orderRepository: OrderRepository,
     orderListRepository: OrderListRepository,
     navController: NavController
@@ -68,7 +68,7 @@ fun CartScreen(
     var totalPrice by remember { mutableStateOf(0.0) }
     val cartItems by cartViewModel.cartItems.observeAsState(emptyList<CartItem>())
 
-    // Fetch cart items based on orderId when the screen is launched
+    // Fetch cart items based on userId when the screen is launched
     LaunchedEffect(userId) {
         cartViewModel.getCartItems(userId)
     }
@@ -78,45 +78,40 @@ fun CartScreen(
         totalPrice = cartItems.sumOf { it.price }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-
-    ) {
-        if(isPortrait){
+    if (isPortrait) {
+        // Portrait mode layout
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
             UniCanteenTopBar(title = "Cart")
             Spacer(modifier = Modifier.height(16.dp))
-        }
 
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-        ) {
-            if (cartItems.isEmpty()) {
-                Text(
-                    text = "Your cart is empty.",
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    fontSize = 18.sp,
-                    color = Color.Gray
-                )
-            } else {
-                CartList(
-                    cartItems = cartItems.toMutableList(),
-                    onCartItemsChanged = { updatedItems ->
-                        totalPrice = updatedItems.sumOf { it.price }
-                    },
-                    cartViewModel = cartViewModel,
-                    userId = userId
-                )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                if (cartItems.isEmpty()) {
+                    Text(
+                        text = "Your cart is empty.",
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        fontSize = 18.sp,
+                        color = Color.Gray
+                    )
+                } else {
+                    CartList(
+                        cartItems = cartItems.toMutableList(),
+                        onCartItemsChanged = { updatedItems ->
+                            totalPrice = updatedItems.sumOf { it.price }
+                        },
+                        cartViewModel = cartViewModel,
+                        userId = userId
+                    )
+                }
             }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentSize(align = Alignment.BottomEnd)
-        ) {
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             CheckOutButton(
                 totalPrice = totalPrice,
                 orderId = cartItems.firstOrNull()?.orderId ?: 0,
@@ -124,6 +119,76 @@ fun CartScreen(
                 navController = navController,
                 userId = userId
             )
+        }
+    } else {
+        // Landscape mode layout
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            // Cart items list
+            Box(
+                modifier = Modifier
+                    .weight(2f)
+                    .fillMaxHeight()
+                    .padding(end = 8.dp)
+            ) {
+                if (cartItems.isEmpty()) {
+                    Text(
+                        text = "Your cart is empty.",
+                        modifier = Modifier.align(Alignment.Center),
+                        fontSize = 18.sp,
+                        color = Color.Gray
+                    )
+                } else {
+                    CartList(
+                        cartItems = cartItems.toMutableList(),
+                        onCartItemsChanged = { updatedItems ->
+                            totalPrice = updatedItems.sumOf { it.price }
+                        },
+                        cartViewModel = cartViewModel,
+                        userId = userId
+                    )
+                }
+            }
+
+            // Total price and checkout section
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .padding(start = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Total Price:",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "RM ${"%.2f".format(totalPrice)}",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    CheckOutButton(
+                        totalPrice = totalPrice,
+                        orderId = cartItems.firstOrNull()?.orderId ?: 0,
+                        cartViewModel = cartViewModel,
+                        navController = navController,
+                        userId = userId
+                    )
+                }
+            }
         }
     }
 }
@@ -344,73 +409,48 @@ fun checkAbility(totalPrice: Double):Boolean{
     return totalPrice > 0
 }
 @Composable
-fun CheckOutButton(totalPrice: Double,orderId:Int, cartViewModel: CartViewModel,navController: NavController, userId: Int) {
+fun CheckOutButton(totalPrice: Double, orderId: Int, cartViewModel: CartViewModel, navController: NavController, userId: Int) {
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-    if(isPortrait){
-        Button(
-            onClick = {
-                cartViewModel.updateOrderPrice(orderId,totalPrice)
-                navController.navigate("pickUp/$userId/$orderId")
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(65.dp).wrapContentSize(align = Alignment.BottomCenter),
-            enabled = checkAbility(totalPrice),
-            shape = AppShapes.large
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp), // Add padding around the row
-                verticalAlignment = Alignment.CenterVertically, // Align items vertically
-                horizontalArrangement = Arrangement.SpaceBetween // Space items evenly
-            ) {
-                Text(
-                    text = "CheckOut",
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.weight(1f)
-                )
-                Spacer(modifier = Modifier.width(55.dp))
-                Text(
-                    text = "RM ${"%.2f".format(totalPrice)}",
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-        }
-    }
-    else{
-        Button(
-            onClick = {
-                cartViewModel.updateOrderPrice(orderId,totalPrice)
-                navController.navigate("pickUp/$userId/$orderId")
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
-            modifier = Modifier.width(150.dp)
-                .height(80.dp).wrapContentSize(align = Alignment.BottomEnd),
-            enabled = checkAbility(totalPrice),
-            shape = AppShapes.medium
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                     .padding(top = 16.dp, bottom = 16.dp, start = 0.dp, end = 0.dp), // Add padding around the row
-                verticalAlignment = Alignment.CenterVertically, // Align items vertically
-                horizontalArrangement = Arrangement.SpaceBetween // Space items evenly
-            ) {
 
-                Text(
-                    text = "RM ${"%.2f".format(totalPrice)}",
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
+    Button(
+        onClick = {
+            cartViewModel.updateOrderPrice(orderId, totalPrice)
+            navController.navigate("pickUp/$userId/$orderId")
+        },
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
+        modifier = if (isPortrait) {
+            Modifier
+                .fillMaxWidth()
+                .height(65.dp)
+        } else {
+            Modifier
+                .width(200.dp) // Make button wider in landscape
+                .height(80.dp)
+        },
+        enabled = checkAbility(totalPrice),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Checkout",
+                color = Color.White,
+                fontSize = 18.sp,
+                textAlign = TextAlign.Center,
+            )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Text(
+                text = "RM ${"%.2f".format(totalPrice)}",
+                color = Color.White,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+            )
         }
     }
 }

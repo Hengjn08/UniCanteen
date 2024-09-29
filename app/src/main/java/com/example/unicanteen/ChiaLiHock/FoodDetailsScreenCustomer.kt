@@ -63,10 +63,10 @@ fun FoodDetailsScreenCustomer(
     navController: NavController
 ) {
     val foodDetailViewModel: FoodDetailViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(application = application,foodListRepository = foodListRepository)
+        factory = AppViewModelProvider.Factory(application = application, foodListRepository = foodListRepository)
     )
     val addOnViewModel: AddOnViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(application = application,addOnRepository = addOnRepository)
+        factory = AppViewModelProvider.Factory(application = application, addOnRepository = addOnRepository)
     )
     val orderListViewModel: OrderListViewModel = viewModel(
         factory = AppViewModelProvider.Factory(
@@ -89,46 +89,82 @@ fun FoodDetailsScreenCustomer(
         var totalAddOnPrice by remember { mutableStateOf(0.0) }
         var remarks = ""
 
-        // Use a Box to layer the content and button
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-               // .navigationBarsPadding() // Adjusts for navigation bar space
-        ) {
-            // Scrollable content
-            Column(
+        val configuration = LocalConfiguration.current
+        val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+
+        if (isPortrait) {
+            // Portrait layout
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState()), // Make content scrollable
-                verticalArrangement = Arrangement.spacedBy(20.dp) // Space between elements
             ) {
-                // Display the food details card
-                FoodDetailsCard(food = food)
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    FoodDetailsCard(food = food)
+                    totalAddOnPrice = AddOnSection(addOns = addOns, onPriceChange = { price ->
+                        totalAddOnPrice = price
+                    })
+                    remarks = RemarksSection()
+                }
 
-                // Display add-ons with a price update handler
-                totalAddOnPrice = AddOnSection(addOns = addOns, onPriceChange = { price ->
-                    totalAddOnPrice = price
-                })
-
-                // Display the remarks section
-                remarks = RemarksSection()
+                AddToCartButton(
+                    modifier = Modifier.align(Alignment.BottomEnd),
+                    totalPrice = food.price + totalAddOnPrice,
+                    remarks = remarks,
+                    food = food,
+                    orderListViewModel = orderListViewModel,
+                    userId = userId,
+                    navController = navController
+                )
             }
-
-            // Add to cart button fixed at the bottom
-            AddToCartButton(
+        } else {
+            // Landscape layout
+            Row(
                 modifier = Modifier
-                   .align(Alignment.BottomEnd) // Align button to the bottom center
-                    , // Add padding around the button
-                totalPrice = food.price + totalAddOnPrice,
-                remarks = remarks,
-                food = food,
-                orderListViewModel = orderListViewModel,
-                userId = userId,
-                navController = navController
-            )
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                // Left side (food details and add-ons)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    FoodDetailsCard(food = food)
+                    totalAddOnPrice = AddOnSection(addOns = addOns, onPriceChange = { price ->
+                        totalAddOnPrice = price
+                    })
+                }
+
+                // Right side (remarks and add-to-cart button)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    remarks = RemarksSection()
+
+                    AddToCartButton(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally),
+                        totalPrice = food.price + totalAddOnPrice,
+                        remarks = remarks,
+                        food = food,
+                        orderListViewModel = orderListViewModel,
+                        userId = userId,
+                        navController = navController
+                    )
+                }
+            }
         }
     } ?: run {
-        // Show loading state if data is not yet available
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize()
@@ -137,6 +173,7 @@ fun FoodDetailsScreenCustomer(
         }
     }
 }
+
 
 
 

@@ -35,7 +35,7 @@ class SelectFoodViewModel(
     // Load foods by seller ID
     fun loadFoodsBySellerId(sellerId: Int) {
         viewModelScope.launch {
-            val foodList = foodListRepository.getFoodsBySellerId(sellerId)
+            val foodList = foodListRepository.getFoodsBySellerIdAndStatus(sellerId,"Available")
             _foods.value = foodList
             _filteredFoods.value = foodList // Initially show all foods
         }
