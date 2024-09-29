@@ -230,16 +230,20 @@ fun UniCanteenNavHost(
             )
         }
 
-        composable(route = OrderHistoryDestination.route){
+
+
+        composable(route = OrderHistoryDestination.route,
+            arguments = listOf(navArgument("userId") { type = NavType.IntType
+                defaultValue =GlobalVariables.userId})){
+                backStackEntry ->
+            val userId =backStackEntry.arguments?.getInt("userId") ?: 0
             OrderHistoryScreen(
                 application = application,
-                userId = 1,
-                currentDestination = currentDestination,
+                userId = userId,
                 navController = navController,
-                orderListRepository = OrderListRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
-                orderRepository = OrderRepositoryImpl(AppDatabase.getDatabase(navController.context).orderDao()),
-                sellerRepository = SellerRepositoryImpl(AppDatabase.getDatabase(navController.context).sellerDao()),
-                )
+                currentDestination = currentDestination,
+                userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao())
+            )
         }
 
         //Customer module route

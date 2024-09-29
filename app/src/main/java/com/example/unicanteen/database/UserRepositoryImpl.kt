@@ -87,4 +87,7 @@ class UserRepositoryImpl(private val userDao: UserDao): UserRepository {
     override suspend fun getPassword(userId: Int?): String {
         return userDao.getPassword(userId)
     }
+    override suspend fun getOrderDetailsByOrderId(userId: Int): LiveData<List<UserDao.OrderDetails>> {
+        return userDao.getOrderDetailsByOrderId(userId)
+    }
 }

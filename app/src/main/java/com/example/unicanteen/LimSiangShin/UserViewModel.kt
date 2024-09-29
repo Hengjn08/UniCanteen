@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.unicanteen.database.SellerRepository
 import com.example.unicanteen.database.User
+import com.example.unicanteen.database.UserDao
 import com.example.unicanteen.database.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +22,7 @@ class UserViewModel(
     private val userRepository: UserRepository,
 //    private val sellerRepository: SellerRepository
 ): ViewModel(){
+
 
     var userValue by mutableStateOf("")
     var emailValue by mutableStateOf("")
@@ -76,6 +78,20 @@ class UserViewModel(
     var emailError by mutableStateOf("")
     var passwordError by mutableStateOf("")
     var phoneNumberError by mutableStateOf("")
+
+    // Order Details LiveData
+    private val _orderDetails = MutableStateFlow<List<UserDao.OrderDetails>>(emptyList())
+    val historyorderDetails: MutableStateFlow<List<UserDao.OrderDetails>> = _orderDetails
+
+    // Function to retrieve order details based on the userId
+    fun fetchOrderDetails(userId: Int) {
+        viewModelScope.launch {
+            userRepository.getOrderDetailsByOrderId(userId).observeForever {
+                horderDetails ->
+                _orderDetails.value = horderDetails
+            }
+        }
+    }
 
 
     fun login(userName: String, password: String){
