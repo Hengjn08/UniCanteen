@@ -109,38 +109,38 @@ fun CustomerProfileScreen(
         factory = AppViewModelProvider.Factory(application = application, userRepository = userRepository)
     )
 
-    val profileViewModel:ProfileViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(application = application, userRepository = userRepository)
-    )
-
-    // Keep a copy of the original values
-    var originalUserName by remember { mutableStateOf("") }
-    var originalEmail by remember { mutableStateOf("") }
-    var originalPhoneNumber by remember { mutableStateOf("") }
-    var originalPassword by remember { mutableStateOf("") }
-
-    var userName by remember { mutableStateOf("")}
-    var email by remember { mutableStateOf("") }
-    var pw by remember { mutableStateOf("") }
-    var confirmPw by remember { mutableStateOf("") }
-    var phoneNumber by remember { mutableStateOf("") }
-    var userId by remember { mutableStateOf(userId) }
-
-    val context = LocalContext.current
-
     LaunchedEffect(userId) {
-        userName = profileViewModel.getUserName(userId)
-        email = profileViewModel.getEmail(userId)
-        phoneNumber = profileViewModel.getPhoneNumber(userId)
-        pw = profileViewModel.getPassword(userId)
+        userViewModel.updateCurrentUserDetail(userId)
+    }
+    val currentUserName by userViewModel.userName.collectAsState()
+    val currentEmail by userViewModel.email.collectAsState()
+    val currentPhoneNumber by userViewModel.phoneNumber.collectAsState()
+    val currentPassword by userViewModel.password.collectAsState()
+
+    var userName by remember { mutableStateOf(currentUserName)}
+    var email by remember { mutableStateOf(currentEmail) }
+    var pw by remember { mutableStateOf(currentPassword) }
+    var confirmPw by remember { mutableStateOf("") }
+    var phoneNumber by remember { mutableStateOf(currentPhoneNumber) }
+
+    var originalUserName by remember { mutableStateOf(userName) }
+    var originalEmail by remember { mutableStateOf(email) }
+    var originalPhoneNumber by remember { mutableStateOf(phoneNumber) }
+    var originalPassword by remember { mutableStateOf(pw) }
+
+    LaunchedEffect(currentUserName) {
+        userName = currentUserName
+        email = currentEmail
+        phoneNumber = currentPhoneNumber
+        pw = currentPassword
 
         originalUserName = userName
         originalEmail = email
         originalPhoneNumber = phoneNumber
         originalPassword = pw
-        Log.d("Login", "Login page User logged in with ID: $userId, Global: ${GlobalVariables.userId}, currId: $userId")
-
     }
+
+    val context = LocalContext.current
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -559,8 +559,8 @@ fun EditDialog(
                     onValueChange = onConfirmPasswordChange,
                     modifier = Modifier.padding(top = 8.dp),
                     label = "Confirm Password",
-                    isError = viewModel.passwordError.isNotEmpty(),
-                    errorMessage = viewModel.passwordError
+                    isError = viewModel.confirmPasswordError.isNotEmpty(),
+                    errorMessage = viewModel.confirmPasswordError
                 )
             }
         },
