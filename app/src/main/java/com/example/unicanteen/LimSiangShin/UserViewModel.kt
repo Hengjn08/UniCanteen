@@ -32,26 +32,27 @@ class UserViewModel(
         .getInstance("https://unicanteen12-default-rtdb.asia-southeast1.firebasedatabase.app/")
         .getReference() // Firebase Database reference
 
-    var userValue by mutableStateOf("")
-    var emailValue by mutableStateOf("")
-    var phoneNumberValue by mutableStateOf("")
-    var passwordValue by mutableStateOf("")
+//    var userValue by mutableStateOf("")
+//    var emailValue by mutableStateOf("")
+//    var phoneNumberValue by mutableStateOf("")
+//    var passwordValue by mutableStateOf("")
+//
+//    fun setUserName(value: String){
+//        userValue = value
+//    }
+//
+//    fun setEmail(value: String){
+//        emailValue = value
+//    }
+//
+//    fun setPhoneNumber(value: String){
+//        phoneNumberValue = value
+//    }
+//
+//    fun setPassword(value: String){
+//        passwordValue = value
+//    }
 
-    fun setUserName(value: String){
-        userValue = value
-    }
-
-    fun setEmail(value: String){
-        emailValue = value
-    }
-
-    fun setPhoneNumber(value: String){
-        phoneNumberValue = value
-    }
-
-    fun setPassword(value: String){
-        passwordValue = value
-    }
 
     private var _loginResult = MutableStateFlow<Boolean>(false)  // For login success/failure
     val loginResult: StateFlow<Boolean> = _loginResult  // Expose login result to UI
@@ -89,6 +90,7 @@ class UserViewModel(
     var passwordError by mutableStateOf("")
     var phoneNumberError by mutableStateOf("")
     var confirmPasswordError by mutableStateOf("")
+
 
 
     // Order Details LiveData
@@ -169,7 +171,7 @@ class UserViewModel(
         return correct
     }
 
-    // Function to upload payment details to Firebase
+    // Function to upload new user details to Firebase
     private fun uploadNewUserToFirebase(userId:Int, user: User?): Task<Void> {
 
         // Create a path for the payment receipt data in Firebase
@@ -192,10 +194,38 @@ class UserViewModel(
 
     fun updateUserDetail (userId: Int,userName: String,password: String, email: String, phoneNumber: String) {
         viewModelScope.launch() {
-                val user = User(userId, userName, password, userName.uppercase(), email, phoneNumber)
-                userRepository.updateUser(user)
+            val user = User(userId, userName, password, userName.uppercase(), email, phoneNumber)
+            userRepository.updateUser(user)
+            uploadNewUserToFirebase(user.userId, user).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // Load the payment receipt after uploading to Firebase
+                    Log.e("CreatePayment", "upload  to Firebase")
+                } else {
+                    Log.e("CreatePayment", "Failed to upload  to Firebase")
+                }
+            }
         }
     }
+
+//    // Function to update user details to Firebase
+//    private fun UpdateUserDetailToFirebase(userId:Int, user: User?): Task<Void> {
+//
+//        // Create a path for the payment receipt data in Firebase
+//        val userPath = "users/$userId/details"
+//        Log.d("FirebaseUpload", "user Id: $userId")
+//
+//        // Specify the correct path for the payment data
+//        val userRef = databaseReference.child(userPath)
+//
+//        // Uploading data to Firebase
+//        return userRef.setValue(user).addOnCompleteListener { task ->
+//            if (task.isSuccessful) {
+//                Log.d("FirebaseUpload", "Payment receipt uploaded successfully at path: details")
+//            } else {
+//                Log.e("FirebaseUpload", "Failed to upload payment receipt", task.exception)
+//            }
+//        }
+//    }
 
      fun updateCurrentUserDetail(userId: Int){
         viewModelScope.launch {
@@ -294,26 +324,30 @@ class UserViewModel(
         return correct
     }
 
-    fun checkEmailExist(email:String):Boolean{
-        var correct = false
+//    fun checkEmailExist(email:String):Boolean{
+//        var correct = false
+//        viewModelScope.launch {
+//            val checkUser = userRepository.checkUserEmail(email)
+//            if(checkUser != null){
+//                correct = true
+//            }
+//        }
+//        return correct
+//    }
+
+    fun updateNewPassword(email:String, password: String){
         viewModelScope.launch {
-            val checkUser = userRepository.getUserByEmail(email)
+            val checkUser = userRepository.checkUserEmail(email)
             if(checkUser != null){
-                correct = true
+                userRepository.updateUserPassword(password,checkUser)
             }
         }
-        return correct
     }
 
-    fun updateNewPassword(email:String, password: String):Boolean{
-        var correct = false
+    fun getUserOrderHistory(userId: Int){
         viewModelScope.launch {
-            val checkUser = userRepository.getUserByEmail(email)
-            if(checkUser != null){
-                userRepository.updateUserPassword(password,checkUser.userId)
-                correct = true
-            }
+            val orderList = userRepository.getOrderDetailsByUserId(userId)
+            _orderDetail.value = orderList
         }
-        return correct
     }
 }

@@ -2,8 +2,6 @@ package com.example.unicanteen.HengJunEn
 
 import android.app.Application
 import android.content.res.Configuration
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,16 +15,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -35,7 +30,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -49,8 +43,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,19 +51,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
-import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.unicanteen.BottomNavigationBar
-import com.example.unicanteen.ChiaLiHock.SelectFoodViewModel
 import com.example.unicanteen.R
 import com.example.unicanteen.UniCanteenTopBar
-import com.example.unicanteen.data.Datasource
-import com.example.unicanteen.database.AppDatabase
 import com.example.unicanteen.database.FoodList
 import com.example.unicanteen.database.FoodListRepository
-import com.example.unicanteen.database.FoodListRepositoryImpl
-import com.example.unicanteen.database.Seller
-import com.example.unicanteen.model.Food
 import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppShapes
 import com.example.unicanteen.ui.theme.AppViewModelProvider
@@ -133,7 +118,8 @@ fun SellerHomeScreen(
             FloatingActionButton(
                 onClick = {navController.navigate(AddFoodDestination.route)},
                 shape = MaterialTheme.shapes.medium,
-                modifier = Modifier.padding(20.dp)
+                modifier = Modifier
+                    .padding(20.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -296,6 +282,7 @@ fun FoodCard(
         Card(
             modifier = modifier
                 .padding(8.dp)
+                .height(140.dp)
                 .fillMaxWidth()  // Full width but structured as a horizontal row
         ) {
             Row(
@@ -314,7 +301,6 @@ fun FoodCard(
                         .weight(1f)
                 )
 
-
                 Column(
                     modifier = Modifier
                         .weight(2f)  // Take more space for the text and switch
@@ -324,7 +310,7 @@ fun FoodCard(
                     Text(
                         text = food.foodName,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
+                        fontSize = 28.sp,
                         color = Color.Black,
                         modifier = Modifier.padding(bottom = 4.dp)
                     )
@@ -333,7 +319,7 @@ fun FoodCard(
                     food.description?.let {
                         Text(
                             text = it,
-                            fontSize = 14.sp,
+                            fontSize = 16.sp,
                             color = Color.Gray,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
@@ -349,7 +335,7 @@ fun FoodCard(
                         // Price at the bottom-left
                         Text(
                             text = stringResource(R.string.rm, food.price),
-                            fontSize = 16.sp,
+                            fontSize = 20.sp,
                             color = Color.Black
                         )
 

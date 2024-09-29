@@ -198,7 +198,9 @@ fun UniCanteenNavHost(
                 navController = navController,
                 currentDestination = currentDestination,
                 onHelpClicked = {navController.navigate(HelpDestination.route)},
-                onOrderHistoryClicked = {navController.navigate(OrderHistoryDestination.route)},
+                onOrderHistoryClicked = {
+//                    navController.navigate(OrderHistoryDestination.route)
+                                        },
                 userId = userId,
                 onLogOutClicked = {navController.navigate(LoginDestination.route)}
             )
@@ -222,9 +224,9 @@ fun UniCanteenNavHost(
             )
         }
 
-//        composable(route = HelpDestination.route){
-//            HelpScreen(navigateBack = {navController.navigateUp()})
-//        }
+        composable(route = HelpDestination.route){
+            HelpScreen(navigateBack = {navController.navigateUp()})
+        }
 
         composable(route = ForgotPasswordDestination.route){
             ChangePasswordScreen(
@@ -234,6 +236,7 @@ fun UniCanteenNavHost(
 
             )
         }
+
 
 
 
