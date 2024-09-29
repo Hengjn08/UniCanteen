@@ -344,10 +344,5 @@ class UserViewModel(
         }
     }
 
-    fun getUserOrderHistory(userId: Int){
-        viewModelScope.launch {
-            val orderList = userRepository.getOrderDetailsByUserId(userId)
-            _orderDetail.value = orderList
-        }
-    }
+
 }

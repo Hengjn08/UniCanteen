@@ -70,7 +70,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.unicanteen.BottomNavigationBar
-import com.example.unicanteen.OrderHistoryDestination
 import com.example.unicanteen.UniCanteenTopBar
 import com.example.unicanteen.database.AppDatabase
 import com.example.unicanteen.database.SellerRepository

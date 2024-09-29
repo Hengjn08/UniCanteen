@@ -92,4 +92,7 @@ class UserRepositoryImpl(private val userDao: UserDao): UserRepository {
     override suspend fun getOrderDetailsByOrderId(userId: Int): LiveData<List<UserDao.OrderDetails>> {
         return userDao.getOrderDetailsByOrderId(userId)
     }
+    override suspend fun checkUserEmail(email: String): Int {
+        return userDao.checkUserEmail (email)
+    }
 }

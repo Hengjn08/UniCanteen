@@ -1,4 +1,4 @@
-/*
+
 package com.example.unicanteen
 import android.app.Application
 import android.content.res.Configuration
@@ -150,7 +150,7 @@ fun OrderListColumn(orderList: List<UserDao.OrderDetails>, navController: NavCon
 @Composable
 
 fun OrderListRow(orderList: List<UserDao.OrderDetails>, navController: NavController, userId: Int) {
- 
+
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
@@ -200,7 +200,7 @@ fun OrderCard(orderList: UserDao.OrderDetails, onClick: () -> Unit) {
                         .weight(1f)
                 ) {
                     Text(
-                        text = orderDetail.createDate,
+                        text = orderList.createDate,
                         style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier.padding(bottom = 4.dp),
                         color = MaterialTheme.colorScheme.onSecondary
@@ -226,7 +226,7 @@ fun OrderCard(orderList: UserDao.OrderDetails, onClick: () -> Unit) {
                         .weight(1f)
                 ) {
                     Text(
-                        text = orderDetail.createDate,
+                        text = orderList.createDate,
                         style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier.padding(bottom = 4.dp),
                         color = MaterialTheme.colorScheme.onSecondary
@@ -243,5 +243,3 @@ fun OrderCard(orderList: UserDao.OrderDetails, onClick: () -> Unit) {
 
 
 
-
-*/

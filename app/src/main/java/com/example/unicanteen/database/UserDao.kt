@@ -82,6 +82,8 @@ interface UserDao {
                 val createDate: String,
                 val totalAmount: Double
         )
+        @Query("SELECT userId FROM user WHERE email =:email" )
+        suspend fun checkUserEmail (email:String):Int
 
 }
 
