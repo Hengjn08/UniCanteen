@@ -66,7 +66,7 @@ interface FoodListDao {
         val type: String,
         val foodDescription: String,
         val price: Double,
-        val imageUrl: String,
+        var imageUrl: String,
         val addOnDescription: String?
     )
 
@@ -79,7 +79,7 @@ interface FoodListDao {
         WHERE f.foodId = :foodId
         GROUP BY f.foodId
     """)
-    suspend fun getFoodDetailsWithAddOns(foodId: Int): List<FoodDetailsWithAddOns>
+    suspend fun getFoodDetailsWithAddOns(foodId: Int): FoodDetailsWithAddOns
 
     data class UpdatedFoodDetails(
         val foodId: Int,

@@ -1,6 +1,8 @@
 package com.example.unicanteen.HengJunEn
 
 import android.app.Application
+import android.widget.Toast
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -147,6 +150,7 @@ fun EditFoodBody(
 
     // For image selection
     var imageUri by remember { mutableStateOf(foodDetailsWithAddOns.imageUrl) }
+    var showDialog by remember { mutableStateOf(false) }
 
     // List of available add-on options (same as in AddFoodScreen)
     val availableAddOnOptions = getAddOnOptions()
@@ -155,6 +159,8 @@ fun EditFoodBody(
     val descriptionWordLimit = 10
     val wordCount = foodDes.split(" ").size
     val isDescriptionValid = wordCount <= descriptionWordLimit
+
+    val context = LocalContext.current
 
     Column(
         modifier = modifier.verticalScroll(rememberScrollState())
@@ -177,7 +183,11 @@ fun EditFoodBody(
                     .clickable {
                         // Handle image selection when clicked
                     }
-                    .clip(AppShapes.medium),
+                    .clip(AppShapes.medium)
+                    .border(
+                        width = 2.dp,
+                        color = Color.Black,
+                    ),
                 contentScale = ContentScale.Crop
             )
 
@@ -281,23 +291,16 @@ fun EditFoodBody(
                 .padding(16.dp)
         ) {
             OutlinedButton(
-                onClick = onCancelButtonClicked,
+                onClick = {
+                    onCancelButtonClicked
+                    showDialog = true
+                },
                 modifier = Modifier.weight(1f)
             ) {
                 Text(text = "Cancel")
             }
             Button(
                 onClick = {
-                    // Prepare the updated food item
-//                    val updatedFood = FoodList(
-//                        foodId = foodDetailsWithAddOns.foodId, // Pass foodId to maintain the correct ID
-//                        foodName = foodName,
-//                        description = foodDes,
-//                        price = foodPrice.toDouble(),
-//                        imageUrl = imageUri, // Use updated or existing URL
-//                        type = selectedType,
-//                        createDate =
-//                    )
                     // Update food item
                         editFoodViewModel.updateFoodDetails(
                             foodId = foodId,
@@ -307,47 +310,38 @@ fun EditFoodBody(
                             type = selectedType,
                             imageUrl = imageUri
                         )
-
-
-                    // Prepare the list of updated add-ons
                     val updatedAddOns = selectedAddOns.map { addOnDesc ->
+                        val matchingAddOnOption = availableAddOnOptions.firstOrNull { it.option == addOnDesc}
                         AddOn(
-                            foodId = foodId, // Ensure foodId is passed correctly
+                            foodId = foodId,
                             description = addOnDesc,
-                            price = 0.0 // Set the appropriate price or modify this as needed
+                            price = matchingAddOnOption?.price ?: 0.0
                         )
                     }
-
-                    // Call the save function with the updated food item and add-ons
                     onSaveButtonClicked(updatedAddOns)
+                    Toast.makeText(context, "Food details updated successfully!", Toast.LENGTH_SHORT).show()
                 },
-                enabled = selectedType.isNotEmpty() && foodName.isNotEmpty() && foodDes.isNotEmpty() && foodPrice.isNotEmpty() && isDescriptionValid,
+                enabled = imageUri.isNotEmpty() && foodName.isNotEmpty() && foodDes.isNotEmpty() && foodPrice.isNotEmpty() && isDescriptionValid,
                 modifier = Modifier.weight(1f)
             ) {
                 Text(text = "Save")
             }
         }
+        if (showDialog) {
+            ConfirmationDialog(
+                onConfirm = {
+                    onCancelButtonClicked() // Call the cancel function
+                    showDialog = false // Close the dialog
+                },
+                onCancel = {
+                    showDialog = false // Close the dialog
+                },
+                title = "Cancel Editing",
+                message = "Are you sure you want to cancel editing the food details?"
+            )
+        }
     }
 }
-
-
-
-//fun hasChanges(
-//    foodName: String,
-//    foodDes: String,
-//    foodPrice: String,
-//    selectedType: String,
-//    foodDetailsWithAddOns: FoodListDao.FoodDetailsWithAddOns,
-//    selectedAddOns: List<String>
-//): Boolean {
-//    val currentFood = foodDetailsWithAddOns
-//    return foodName != currentFood.foodName ||
-//            foodDes != currentFood.foodDescription ||
-//            foodPrice.toDoubleOrNull() != currentFood.price ||
-//            selectedType != currentFood.type ||
-//            selectedAddOns != currentFood.addOnDescription?.split(", ")?.map { it.trim() }
-//}
-
 
 //fun selectImage(onImageSelected: (String?) -> Unit) {
 //    val imagePickerLauncher = rememberLauncherForActivityResult(

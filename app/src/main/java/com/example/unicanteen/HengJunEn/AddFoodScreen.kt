@@ -155,7 +155,6 @@ fun AddFoodScreen(
         }
     }
 
-    // Define the scaffold and body layout
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = { UniCanteenTopBar() }
@@ -185,7 +184,6 @@ fun AddFoodScreen(
                     }
                 }
             },
-            onCancelButtonClicked = { navigateBack() },
             onSaveButtonClicked = {
                 Toast.makeText(context, "Food item saved successfully!", Toast.LENGTH_SHORT).show()
                 navigateBack()
@@ -196,7 +194,7 @@ fun AddFoodScreen(
             wordCount = wordCount,
             descriptionWordLimit = descriptionWordLimit,
             addFoodViewModel = addFoodViewModel,
-            addOnViewModel = addOnViewModel
+            addOnViewModel = addOnViewModel,
         )
     }
 }
@@ -214,7 +212,6 @@ fun AddFoodBody(
     onFoodPriceChange: (String) -> Unit,
     onTypeSelected: (String) -> Unit,
     onImageClick: () -> Unit,
-    onCancelButtonClicked: () -> Unit,
     onSaveButtonClicked: () -> Unit,
     navigateBack: () -> Unit,
     sellerId: Int,
@@ -222,13 +219,15 @@ fun AddFoodBody(
     wordCount: Int,
     descriptionWordLimit: Int,
     addFoodViewModel: AddFoodViewModel,
-    addOnViewModel: AddOnViewModel
+    addOnViewModel: AddOnViewModel,
 ) {
     val formatter = SimpleDateFormat("yyyy-MM-dd")
     val date = formatter.format(java.util.Date())
 
     val addOnOptions = getAddOnOptions()
     val selectedAddOns = remember { mutableStateListOf<AddOnOption>() }
+    val context = LocalContext.current
+    var showCancelDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier.verticalScroll(rememberScrollState()),
@@ -341,6 +340,7 @@ fun AddFoodBody(
             }
         }
 
+        // Save and Cancel buttons
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.Bottom,
@@ -349,7 +349,9 @@ fun AddFoodBody(
                 .padding(16.dp)
         ) {
             OutlinedButton(
-                onClick = onCancelButtonClicked,
+                onClick = {
+                    showCancelDialog = true
+                },
                 modifier = Modifier.weight(1f)
             ) {
                 Text(text = "Cancel")
@@ -357,34 +359,64 @@ fun AddFoodBody(
 
             Button(
                 onClick = {
+                    // Prepare the food item data
                     val newFood = FoodList(
                         sellerId = sellerId,
                         foodName = foodName,
                         description = foodDes,
                         price = foodPrice.toDouble(),
-                        imageUrl = imageUri?.toString() ?: "",
+                        imageUrl = "", // Image URL will be updated after upload
                         type = selectedType,
                         createDate = date
                     )
 
-                    addFoodViewModel.viewModelScope.launch {
-                        val foodId = addFoodViewModel.addFoodItem(newFood)
-                        selectedAddOns.forEach { addOn ->
-                            val addOnRecord = AddOn(
-                                foodId = foodId.toInt(),
-                                description = addOn.option,
-                                price = addOn.price
-                            )
-                            addOnViewModel.insertAddOns(addOnRecord)
-                        }
-                        onSaveButtonClicked()
-                    }
+                    // Call ViewModel to upload the image and save the food
+                    addFoodViewModel.uploadImageAndSaveFood(
+                        imageUri = imageUri,
+                        food = newFood,
+                        onSuccess = { imageUrl ->
+                            // After successfully uploading the image, insert the food into the database
+                            addFoodViewModel.viewModelScope.launch {
+                                val foodId = addFoodViewModel.addFoodItem(newFood.apply {
+                                    this.imageUrl = imageUrl // Set the image URL
+                                })
+
+                                // Add associated add-ons
+                                selectedAddOns.forEach { addOn ->
+                                    val addOnRecord = AddOn(
+                                        foodId = foodId.toInt(),
+                                        description = addOn.option,
+                                        price = addOn.price
+                                    )
+                                    addOnViewModel.insertAddOns(addOnRecord)
+                                }
+
+                                // Show a success message and navigate back
+                                Toast.makeText(context, "Food item saved successfully!", Toast.LENGTH_SHORT).show()
+                                onSaveButtonClicked()
+                            }
+                        },
+
+                    )
                 },
                 enabled = selectedType.isNotEmpty() && foodName.isNotEmpty() && foodDes.isNotEmpty() && foodPrice.isNotEmpty() && isDescriptionValid,
                 modifier = Modifier.weight(1f)
             ) {
                 Text(text = "Save")
             }
+        }
+        if (showCancelDialog) {
+            ConfirmationDialog(
+                onConfirm = {
+                    showCancelDialog = false // Dismiss dialog
+                    navigateBack() // Navigate back on confirmation
+                },
+                onCancel = {
+                    showCancelDialog = false // Dismiss dialog
+                },
+                title = "Cancel Confirmation",
+                message = "Are you sure you want to cancel adding this food item?"
+            )
         }
     }
 }

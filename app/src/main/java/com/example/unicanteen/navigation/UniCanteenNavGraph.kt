@@ -87,7 +87,7 @@ fun UniCanteenNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = SelectRestaurantDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
+        startDestination = SellerHomeDestination.route,      //应该最后要用login的,因为从那里开始,要test先放你们的第一页
         modifier = modifier
     ) {
         Log.d("AppViewModelProvider", "Application context: $application")
@@ -334,7 +334,7 @@ fun UniCanteenNavHost(
                 application = application,
                 foodId = foodId ?: return@composable,
                 foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
-                onEditClick = {navController.navigate(EditFoodDestination.route)},
+                onEditClick = {navController.navigate("${EditFoodDestination.route}/$foodId")},
                 navigateBack = {navController.navigateUp()},
             )
         }

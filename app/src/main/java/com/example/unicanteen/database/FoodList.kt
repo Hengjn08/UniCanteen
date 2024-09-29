@@ -32,7 +32,7 @@ data class FoodList(
 
     // Additional recommended fields
     @ColumnInfo(name = "description") val description: String? = null, // Description of the food item
-    @ColumnInfo(name = "imageUrl") val imageUrl: String, // URL for the food item's image
+    @ColumnInfo(name = "imageUrl") var imageUrl: String, // URL for the food item's image
     @ColumnInfo(name = "rating") val rating: Double = 0.0, // Average rating for the food item
     @ColumnInfo(name = "calories") val calories: Int? = null // Optional field for calorie count
 )
