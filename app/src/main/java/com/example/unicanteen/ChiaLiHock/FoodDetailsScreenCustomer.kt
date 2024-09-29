@@ -173,7 +173,11 @@ fun FoodDetailsScreenCustomer(
                             shape = AppShapes.medium
                             ,
                         ){
-                            Text(text = "Back"
+                            Text(text = "Back",
+                                color = Color.White,
+                                fontSize = 18.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.weight(1f)
                             )
                         }
                     }
