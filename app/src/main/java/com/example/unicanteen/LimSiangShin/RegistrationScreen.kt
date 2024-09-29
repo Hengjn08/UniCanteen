@@ -4,6 +4,7 @@ import android.app.Application
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,10 +36,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.unicanteen.R
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.IconButton
@@ -71,6 +75,8 @@ fun RegistrationScreen(
     application: Application, // Pass application context
     userRepository: UserRepository,
     navController: NavController,
+    onHelpClicked: () -> Unit,
+    onCancelClicked: () -> Unit,
     modifier: Modifier = Modifier
 ){
     val viewModel: UserViewModel = viewModel(
@@ -81,6 +87,7 @@ fun RegistrationScreen(
     var pw by remember { mutableStateOf("") }
     var confirmPw by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
+    var confirm by remember{ mutableStateOf(false) }
 
     val context = LocalContext.current
 
@@ -101,27 +108,41 @@ fun RegistrationScreen(
             onPwChange = { pw = it },
             onConfirmPwChange = { confirmPw = it },
             onPhoneNumberChange = { phoneNumber = it},
+            onHelpClicked = {onHelpClicked()},
+            onCancelClicked = {onCancelClicked()},
             onRegisterButtonClicked = {
                 if(viewModel.validateRegistrationForm(userName,email,phoneNumber,pw)){
                     if (pw == confirmPw) {
-                            if (viewModel.register(userName, email, pw, phoneNumber)) {
-                                Toast.makeText(context, "Register successfully!", Toast.LENGTH_SHORT).show()
-                                // Registration successful, navigate to next screen
-                                navController.navigate(LoginDestination.route)
-                            } else {
-                                // Show error message to the user
-                                    Toast.makeText(context, "Email exist.", Toast.LENGTH_SHORT).show()
-                                }
+                        confirm = true
                     }else{
                         pw = ""
                         confirmPw = ""
                         Toast.makeText(context, "Password is Wrong", Toast.LENGTH_SHORT).show()
                     }
-                }else{
-
                 }
             }
         )
+
+        if(confirm){
+            RegistrationAlertDialog(
+                onConfirm = {
+                    confirm = false
+
+                    if (viewModel.register(userName, email, pw, phoneNumber)) {
+                        Toast.makeText(context, "Register successfully!", Toast.LENGTH_SHORT).show()
+                        // Registration successful, navigate to next screen
+                        navController.navigate(LoginDestination.route)
+                    } else {
+                        // Show error message to the user
+                        Toast.makeText(context, "Email exist.", Toast.LENGTH_SHORT).show()
+                    }
+
+                },
+                onCancel = {
+                    confirm = false
+                }
+            )
+        }
     }
 }
 
@@ -140,6 +161,8 @@ fun AddUserDetailBody(
     onConfirmPwChange: (String) -> Unit,
     onPhoneNumberChange: (String) -> Unit,
     onRegisterButtonClicked: () -> Unit,
+    onCancelClicked:()-> Unit,
+    onHelpClicked: () -> Unit
 ) {
     Column (
         modifier = Modifier.fillMaxSize(),
@@ -152,7 +175,9 @@ fun AddUserDetailBody(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Column(
-                modifier = modifier.verticalScroll(rememberScrollState()).padding(top = 20.dp),
+                modifier = modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(top = 20.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Row (modifier = Modifier
@@ -163,14 +188,19 @@ fun AddUserDetailBody(
                         fontSize = 36.sp,
                         fontWeight = FontWeight.Bold,
                         color = colorResource(R.color.white))
-                    IconButton(onClick = { /*TODO*/ },
-                        colors = IconButtonDefaults
-                            .iconButtonColors(colorResource(R.color.white)),
-                        modifier = Modifier
-                            .size(width = 50.dp, height = 40.dp)
-                            .padding(start = 10.dp)
-                    ) {
-
+                    Column {
+                        Icon(imageVector = Icons.Default.QuestionMark,
+                            contentDescription ="Help",
+                            modifier = Modifier
+                                .size(width = 50.dp, height = 40.dp)
+                                .padding(start = 10.dp)
+                                .background(colorResource(R.color.orange_500), CircleShape)
+                                .border(2.dp, Color.White, CircleShape)
+                                .clickable {
+                                    onHelpClicked()
+                                },
+                            tint = Color.White
+                        )
                     }
                 }
                 Row (modifier = Modifier
@@ -178,6 +208,8 @@ fun AddUserDetailBody(
                     .padding(top = 20.dp),
                     horizontalArrangement = Arrangement.Center){
                     Text(text = "Sign Up",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 32.sp,
                         color = colorResource(R.color.white))
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -280,13 +312,28 @@ fun AddUserDetailBody(
                     modifier = Modifier
                         .padding(top = 20.dp)
                         .fillMaxSize()
-                        .height(70.dp),
+                        .height(50.dp),
                     shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(Color.LightGray),
-                    border = BorderStroke(1.dp,Color.Black)
+                    colors = ButtonDefaults.buttonColors(colorResource(R.color.gray_200)),
+                    border = BorderStroke(2.dp,Color.Black)
                 ) {
                     Text(text = "Sign Up",
+                        fontSize = 24.sp,
                         color = Color.Black)
+                }
+
+                Button(onClick = onCancelClicked,
+                    modifier = Modifier
+                        .padding(top = 20.dp)
+                        .fillMaxSize()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(Color.LightGray),
+                    border = BorderStroke(5.dp,Color.Red)
+                ) {
+                    Text(text = "Cancel",
+                        fontSize = 24.sp,
+                        color = Color.Red)
                 }
             }
         }
@@ -350,6 +397,42 @@ fun EditTextField(
             textAlign = TextAlign.Start
         )
     }
+}
+
+@Composable
+fun RegistrationAlertDialog(
+    onConfirm: () -> Unit,  // Function to handle confirm action
+    onCancel: () -> Unit    // Function to handle cancel action
+) {
+    AlertDialog(
+        onDismissRequest = {
+            // Handle dismiss (when clicking outside the dialog or pressing the back button)
+        },
+        title = {
+            Text(text = "Confirm Registration")
+        },
+        text = {
+            Text("Please makesure your detail is correct. You can change it in the profile page.")
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    onConfirm()  // Trigger the confirm action
+                }
+            ) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            Button(
+                onClick = {
+                    onCancel()  // Trigger the cancel action
+                }
+            ) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 @Preview(showBackground = true)

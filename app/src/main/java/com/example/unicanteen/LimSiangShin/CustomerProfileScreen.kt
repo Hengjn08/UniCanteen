@@ -1,14 +1,12 @@
 package com.example.unicanteen.LimSiangShin
 
 import android.app.Application
-import android.graphics.drawable.Icon
-import android.text.BoringLayout
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -44,8 +42,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
-//import androidx.compose.material.icons.filled.Visibility
-//import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -81,6 +77,7 @@ import com.example.unicanteen.database.SellerRepositoryImpl
 import com.example.unicanteen.database.UserRepository
 import com.example.unicanteen.database.UserRepositoryImpl
 import com.example.unicanteen.model.User
+import com.example.unicanteen.navigation.GlobalVariables
 import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 import com.example.unicanteen.ui.theme.UniCanteenTheme
@@ -90,7 +87,7 @@ object CustomerProfileDestination : NavigationDestination {
     override val route = "User_Profile?userId={userId}"
     override val title = "User_Profile"
     fun routeWithArgs(userId: Int): String{
-        return "$route/$userId"
+        return "User_Profile?userId=?$userId"
     }
 }
 
@@ -99,8 +96,9 @@ fun CustomerProfileScreen(
     application: Application, // Pass application context
     userId: Int,
     userRepository: UserRepository,
-//    sellerRepository: SellerRepository,
-    onSaveButtonClicked: () -> Unit = {},
+    onHelpClicked: () -> Unit,
+    onOrderHistoryClicked: () -> Unit,
+    onLogOutClicked:()->Unit,
     navController: NavController,
     currentDestination: NavDestination?,
     modifier: Modifier = Modifier
@@ -111,23 +109,36 @@ fun CustomerProfileScreen(
         factory = AppViewModelProvider.Factory(application = application, userRepository = userRepository)
     )
 
+    LaunchedEffect(userId) {
+        userViewModel.updateCurrentUserDetail(userId)
+    }
     val currentUserName by userViewModel.userName.collectAsState()
     val currentEmail by userViewModel.email.collectAsState()
     val currentPhoneNumber by userViewModel.phoneNumber.collectAsState()
     val currentPassword by userViewModel.password.collectAsState()
 
-    // Keep a copy of the original values
-    var originalUserName by remember { mutableStateOf(currentUserName) }
-    var originalEmail by remember { mutableStateOf(currentEmail) }
-    var originalPhoneNumber by remember { mutableStateOf(currentPhoneNumber) }
-    var originalPassword by remember { mutableStateOf(currentPassword) }
-
-    var userName by remember { mutableStateOf(currentUserName) }
+    var userName by remember { mutableStateOf(currentUserName)}
     var email by remember { mutableStateOf(currentEmail) }
     var pw by remember { mutableStateOf(currentPassword) }
     var confirmPw by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf(currentPhoneNumber) }
-//    var errorMessage by rememberSaveable { mutableStateOf("") }
+
+    var originalUserName by remember { mutableStateOf(userName) }
+    var originalEmail by remember { mutableStateOf(email) }
+    var originalPhoneNumber by remember { mutableStateOf(phoneNumber) }
+    var originalPassword by remember { mutableStateOf(pw) }
+
+    LaunchedEffect(currentUserName) {
+        userName = currentUserName
+        email = currentEmail
+        phoneNumber = currentPhoneNumber
+        pw = currentPassword
+
+        originalUserName = userName
+        originalEmail = email
+        originalPhoneNumber = phoneNumber
+        originalPassword = pw
+    }
 
     val context = LocalContext.current
 
@@ -157,11 +168,7 @@ fun CustomerProfileScreen(
             onPwChange = { pw = it },
             onPhoneNumberChange = { phoneNumber = it },
             onConfirmPwChange = { confirmPw = it },
-            onSaveButtonClicked = {
-                onSaveButtonClicked()
-                Toast.makeText(context, "Register successfully!", Toast.LENGTH_SHORT).show()
-            },
-            onOrderHistoryClicked = {},
+            onOrderHistoryClicked = {onOrderHistoryClicked()},
             onUpdate = {
                 // Update the original values with the new ones on Save
                 originalUserName = userName
@@ -177,7 +184,8 @@ fun CustomerProfileScreen(
                 pw = originalPassword
                 confirmPw = ""
             },
-            onEditClicked = {},
+            onHelpClicked = {onHelpClicked()},
+            onLogOutClicked = {onLogOutClicked()},
             update = {
                 userName = userViewModel.userName.value
                 email = userViewModel.email.value
@@ -200,18 +208,17 @@ fun CustomerDetailBody(
     password: String,
     phoneNumber: String,
     confirmPassword: String,
-//    navController: NavController,
     onUserNameChange: (String) -> Unit,
     onEmailChange: (String) -> Unit,
     onPwChange: (String) -> Unit,
     onPhoneNumberChange: (String) -> Unit,
-    onSaveButtonClicked: () -> Unit,
     onOrderHistoryClicked: () -> Unit,
+    onLogOutClicked: () -> Unit,
     onConfirmPwChange: (String) -> Unit,
     onCancelUpdate: () -> Unit,
     onUpdate: () -> Unit,
     update:() ->Unit,
-    onEditClicked: () -> Unit
+    onHelpClicked:() -> Unit
 ) {
     LaunchedEffect(userId) {
         viewModel.updateCurrentUserDetail(userId)
@@ -222,7 +229,6 @@ fun CustomerDetailBody(
     Column(
         modifier = modifier.verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Top
-
     ){
         var changeAvailable by rememberSaveable { mutableStateOf(false) }
         val context = LocalContext.current
@@ -241,7 +247,7 @@ fun CustomerDetailBody(
                     .padding(20.dp),
             ) {
                 Text(
-                    text = "Profile $userId",
+                    text = "Profile",
                     fontSize = 36.sp,
                     fontWeight = FontWeight.Bold,
                     color = colorResource(R.color.white),
@@ -250,7 +256,7 @@ fun CustomerDetailBody(
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            CustomerDetailLabel(
+            DetailLabel(
                 value = userName,
                 onValueChange = onUserNameChange,
                 label = "UserName",
@@ -268,7 +274,7 @@ fun CustomerDetailBody(
                 modifier = Modifier
                     .fillMaxWidth()
             )
-            CustomerDetailLabel(
+            DetailLabel(
                 value = email,
                 onValueChange = onEmailChange,
                 label = "Email Address",
@@ -288,7 +294,7 @@ fun CustomerDetailBody(
                     .padding(top = 16.dp)
             )
 
-            CustomerDetailLabel(
+            DetailLabel(
                 value = phoneNumber,
                 onValueChange = onPhoneNumberChange,
                 label = "Phone Number",
@@ -308,7 +314,7 @@ fun CustomerDetailBody(
                     .padding(top = 16.dp)
             )
 
-            CustomerDetailLabel(
+            DetailLabel(
                 value = password,
                 onValueChange = onPwChange,
                 label = "Password",
@@ -338,7 +344,7 @@ fun CustomerDetailBody(
             color = colorResource(R.color.orange_500)
         )
 
-        Button(onClick = onSaveButtonClicked,
+        Button(onClick = onOrderHistoryClicked,
             modifier = Modifier
                 .height(50.dp)
                 .fillMaxWidth(),
@@ -357,7 +363,7 @@ fun CustomerDetailBody(
         )
 
         Button(
-            onClick = onOrderHistoryClicked,
+            onClick = onHelpClicked,
             modifier = Modifier
                 .height(50.dp)
                 .fillMaxWidth(),
@@ -381,7 +387,7 @@ fun CustomerDetailBody(
         Column (verticalArrangement = Arrangement.Bottom,
             modifier = Modifier.fillMaxHeight()){
             Button(
-                onClick = onSaveButtonClicked,
+                onClick = onLogOutClicked,
                 modifier = Modifier
                     .padding(20.dp)
                     .height(50.dp)
@@ -413,12 +419,15 @@ fun CustomerDetailBody(
                 onPhoneNumberChange = onPhoneNumberChange,
                 onPwChange = onPwChange,
                 onUpdate = {
-                    if(viewModel.validateRegistrationForm(userName, password, email, phoneNumber)){
-                        viewModel.updateUserDetail(userId,userName, password, email, phoneNumber)
-                        onUpdate()
-                        changeAvailable = false
-                        Toast.makeText(context, "Detail Changed Successful!", Toast.LENGTH_SHORT).show()
+                    if (password == confirmPassword) {
+                        if (viewModel.register(userName, email, password, phoneNumber)) {
+                            viewModel.updateUserDetail(userId,userName, password, email, phoneNumber)
+                            onUpdate()
+                            changeAvailable = false
+                            Toast.makeText(context, "Detail Changed Successful!", Toast.LENGTH_SHORT).show()
+                        }
                     }
+
                 },
                 onCancel = {
                     // Invoke the onCancelUpdate callback to reset the values
@@ -431,7 +440,7 @@ fun CustomerDetailBody(
 
 
 @Composable
-fun CustomerDetailLabel(
+fun DetailLabel(
     value: String,
     onValueChange: (String) -> Unit,
     onEditClicked: () -> Unit,
@@ -550,8 +559,8 @@ fun EditDialog(
                     onValueChange = onConfirmPasswordChange,
                     modifier = Modifier.padding(top = 8.dp),
                     label = "Confirm Password",
-                    isError = viewModel.passwordError.isNotEmpty(),
-                    errorMessage = viewModel.passwordError
+                    isError = viewModel.confirmPasswordError.isNotEmpty(),
+                    errorMessage = viewModel.confirmPasswordError
                 )
             }
         },
@@ -585,6 +594,7 @@ fun dialogText(
         modifier = modifier,
         label = { Text(label) }
         )
+
     if(isError){
         Text(text = errorMessage,
             style = MaterialTheme.typography.labelSmall,

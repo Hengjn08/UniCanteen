@@ -1,6 +1,8 @@
 package com.example.unicanteen.database
 
+import androidx.lifecycle.LiveData
 import androidx.room.Query
+import com.example.unicanteen.database.UserDao.OrderDetails
 
 interface UserRepository {
     suspend fun getAll():List<User>
@@ -17,4 +19,11 @@ interface UserRepository {
     suspend fun updateUserDetail(userName: String,email: String, phoneNumber: String, password: String, userId: Int)    suspend fun updateUserEmail(email: String,userId: Int)
     suspend fun updateUserPhoneNumber(phoneNumber: String,userId: Int)
     suspend fun updateUserPassword(password: String,userId: Int)
+    suspend fun getUserName(userId: Int?): String
+    suspend fun getEmail(userId: Int?) : String
+    suspend fun getPhoneNumber(userId: Int?): String
+    suspend fun getPassword(userId: Int?): String
+    suspend fun checkUserEmail (email:String):Int
+    suspend fun getOrderDetailsByUserId(userId: Int):List<OrderDetails>
+
 }

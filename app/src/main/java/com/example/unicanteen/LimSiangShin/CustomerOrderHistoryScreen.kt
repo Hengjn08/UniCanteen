@@ -1,35 +1,24 @@
-package com.example.unicanteen.LimSiangShin
-
-import android.Manifest
-import android.content.pm.PackageManager
-import android.net.Uri
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
+/*
+package com.example.unicanteen
+import android.app.Application
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,253 +28,280 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
-import com.example.unicanteen.R
-import com.example.unicanteen.data.Datasource
-import com.example.unicanteen.model.Food
-import coil.compose.AsyncImage
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.ClickableText
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonColors
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.LineBreak
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navOptions
-import com.example.unicanteen.UniCanteenTopBar
-import com.example.unicanteen.model.User
+import androidx.navigation.NavDestination
+import coil.compose.rememberAsyncImagePainter
+import com.example.unicanteen.database.Seller
 import com.example.unicanteen.navigation.NavigationDestination
-import com.example.unicanteen.ui.theme.UniCanteenTheme
-import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.unicanteen.ChiaLiHock.CartViewModel
+import com.example.unicanteen.database.OrderListRepository
+import com.example.unicanteen.database.OrderRepository
+import com.example.unicanteen.database.SellerRepository
+import com.example.unicanteen.ui.theme.AppViewModelProvider
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.lazy.LazyRow
+import com.example.unicanteen.LimSiangShin.OrderHistoryViewModel
+import com.example.unicanteen.LimSiangShin.UserViewModel
+import com.example.unicanteen.database.OrderList
+import com.example.unicanteen.database.UserDao
+import com.example.unicanteen.database.UserRepository
 
 object OrderHistoryDestination : NavigationDestination {
-    override val route = "OrderHistory"
-    override val title = ""
-    const val userIdArg = "userId"
-    val routeWithArgs = "$route/{$userIdArg}"
+    override val route = "order_history?userId={userId}"
+    override val title = "order_history"
+    fun routeWithArgs(userId: Int): String {
+        return "order_history?userId=$userId"
+    }
 }
 
 @Composable
 fun OrderHistoryScreen(
-//    onCancelButtonClicked: () -> Unit = {},
-    onSignUpTextClicked:()->Unit = {},
-    onSignInClicked: () -> Unit = {},
+    application: Application, // Pass application context
+    userId: Int,
     navController: NavController,
-    modifier: Modifier = Modifier
-){
-    var userName by remember { mutableStateOf("")}
-    var pw by remember { mutableStateOf("") }
+    currentDestination: NavDestination?,
+    userRepository: UserRepository
+) {
+    val viewModel: UserViewModel = viewModel(
+        factory = AppViewModelProvider.Factory(application = application, userRepository = userRepository)
+    )
 
-    val context = LocalContext.current
-//    val imagePickerLauncher = rememberLauncherForActivityResult(
-//        contract = ActivityResultContracts.GetContent()
-//    ) { uri: Uri? ->
-//        imageUri = uri
-//    }
+    val orderDetail by viewModel.orderDetail.collectAsState()
 
-//    val permissionLauncher = rememberLauncherForActivityResult(
-//        contract = ActivityResultContracts.RequestPermission()
-//    ) { isGranted: Boolean ->
-//        if (isGranted) {
-//            launchImagePicker(imagePickerLauncher)
-//        } else {
-//            Toast.makeText(context, "Permission denied", Toast.LENGTH_SHORT).show()
-//        }
-//    }
+    LaunchedEffect(userId) {
+        viewModel.getUserOrderHistory(userId)
+    }
 
-    Scaffold(
+
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        if (isPortrait) {
+            UniCanteenTopBar()
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(top = if (isPortrait) 10.dp else 0.dp) // Adjust padding based on orientation
+        ) {
+            // Use LazyColumn for portrait mode and LazyRow for landscape mode
+            if (isPortrait) {
+                OrderListColumn(orderDetail = orderDetail, navController = navController)
+            } else {
+                OrderListRow(orderDetail = orderDetail, navController = navController)
+            }
+        }
+        BottomNavigationBar(navController = navController, currentDestination = currentDestination, isSeller = false)
+    }
+}
+
+@Composable
+fun OrderListColumn(orderDetail: UserDao.OrderDetails, navController: NavController) {
+    LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        topBar = { UniCanteenTopBar()}
-    ){ innerPadding ->
-        OrderHistoryBody(
-            navController = navController,
-            modifier = modifier.padding(innerPadding),
-            userName = userName,
-            pw = pw,
-//            imageUri = imageUri,
-            onUserNameChange = { userName = it },
-            onPwChange = { pw = it },
-            onSignUpTextClicked = {onSignUpTextClicked()
-                navController.navigate(AddUserDestination.route)},
-//            onImageClick = {
-//                when (PackageManager.PERMISSION_GRANTED) {
-//                    ContextCompat.checkSelfPermission(
-//                        context,
-//                        Manifest.permission.READ_EXTERNAL_STORAGE
-//                    ) -> {
-//                        launchImagePicker(imagePickerLauncher)
+        contentPadding = PaddingValues(vertical = 8.dp) // Padding for the list
+    ) {
+        items(orderDetail) { orderList ->
+            OrderCard(
+                orderList = orderList,
+                onClick = {
+//                    navController.navigate("${SelectFoodDestination.route}/${orderList.orderId}")
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun OrderListRow(orderDetail: UserDao.OrderDetails, navController: NavController) {
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp), // Padding for the row
+        contentPadding = PaddingValues(horizontal = 8.dp) // Horizontal padding for the list
+    ) {
+        items(orderDetail) { orderList ->
+            OrderCard(
+                orderList = orderList,
+                onClick = {
+//                    navController.navigate("${SelectFoodDestination.route}/${seller.sellerId}")
+                }
+            )
+        }
+    }
+}
+
+
+
+@Composable
+fun OrderCard(orderDetail: UserDao.OrderDetails, onClick: () -> Unit) {
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+
+
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        if (isPortrait) {
+            // Use original design for portrait mode
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .weight(1f)
+                ) {
+                    Text(
+                        text = orderDetail.createDate,
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.padding(bottom = 4.dp),
+                        color = MaterialTheme.colorScheme.onSecondary
+                    )
+                    Text(
+                        text = orderDetail.totalPrice.toString(),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+//                Image(
+//                    painter = rememberAsyncImagePainter(seller.shopImage),
+//                    contentDescription = null,
+//                    contentScale = ContentScale.Crop,
+//                    modifier = Modifier
+//                        .size(120.dp) // Fixed size for the image
+//                        .clip(RoundedCornerShape(16.dp))
+//                )
+            }
+        } else {
+            // Landscape design
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .defaultMinSize(minWidth = 200.dp)
+            ) {
+                Spacer(modifier = Modifier.width(8.dp))
+//                Image(
+//                    painter = rememberAsyncImagePainter(seller.shopImage),
+//                    contentDescription = null,
+//                    contentScale = ContentScale.Crop,
+//                    modifier = Modifier
+//                        .size(110.dp) // Fixed size for the image
+//                        .clip(RoundedCornerShape(16.dp))
+//                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        //.padding(8.dp)
+                        .weight(1f)
+                ) {
+                    Text(
+                        text = orderDetail.createDate,
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.padding(bottom = 4.dp),
+                        color = MaterialTheme.colorScheme.onSecondary
+                    )
+
+                }
+            }
+        }
+    }
+}
+
+
+
+//@Composable
+//fun SearchAndCartBar(onSearch: (String) -> Unit, onCartClick: () -> Unit, cartItemCount: Int) {
+//    var query by remember { mutableStateOf("") }
+//
+//    Row(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(top = 10.dp, start = 10.dp, end = 10.dp), // Add end padding for better spacing
+//        verticalAlignment = Alignment.CenterVertically
+//    ) {
+//        TextField(
+//            value = query,
+//            onValueChange = {
+//                query = it
+//                onSearch(query)
+//            },
+//            placeholder = {
+//                Text(
+//                    "Search by name",
+//                    style = MaterialTheme.typography.bodyMedium,
+//                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+//                )
+//            },
+//            modifier = Modifier
+//                .weight(1f)
+//                .clip(MaterialTheme.shapes.medium)
+//                .background(MaterialTheme.colorScheme.surface),
+//            trailingIcon = {
+//                if (query.isNotEmpty()) {
+//                    IconButton(onClick = { query = "" }) {
+//                        Icon(Icons.Default.Clear, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurface)
 //                    }
-//                    else -> {
-//                        permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
-//                    }
+//                } else {
+//                    Icon(Icons.Default.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onSurface)
 //                }
 //            },
-//            onCancelButtonClicked = onCancelButtonClicked,
-            onSignInClicked = {
-//                val updatedUser = user?.copy(
-//                    userName = userName,
-//                    email = email,
-//                    pw = pw,
-//                ) ?: User(
-//                    id = Datasource.foods.size + 1,
-//                    userName = userName,
-//                    email = email,
-//                    pw = pw,
+//            singleLine = true,
+//            colors = TextFieldDefaults.colors(
+//                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+//                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+//                focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+//                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+//                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+//                unfocusedIndicatorColor = Color.Transparent,
+//                focusedLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+//            )
+//        )
+//        Box(modifier = Modifier) {
+//            IconButton(onClick = { onCartClick() }) {
+//                Icon(
+//                    imageVector = Icons.Default.ShoppingCart,
+//                    contentDescription = "Cart",
+//                    modifier = Modifier.size(36.dp),
+//                    tint = MaterialTheme.colorScheme.onSurface
 //                )
-//                if (user == null) {
-//                    Datasource.users.add(updatedUser)
-//                }
-                onSignInClicked()
-                Toast.makeText(context, "Register successfully!", Toast.LENGTH_SHORT).show()
-            }
-        )
-    }
+//            }
+//            if (cartItemCount > 0) {
+//                Badge(
+//                    modifier = Modifier
+//                        .align(Alignment.TopEnd)
+//                        .offset(x = (-12).dp, y = (4).dp),
+//                    content = {
+//                        Text(
+//                            text = cartItemCount.toString(),
+//                            style = MaterialTheme.typography.bodySmall,
+//                            color = MaterialTheme.colorScheme.onPrimary
+//                        )
+//                    },
+//                    containerColor = MaterialTheme.colorScheme.error
+//                )
+//            }
+//        }
+//    }
+//}
 
-
-
-}
-
-@Composable
-fun OrderHistoryBody(
-    navController: NavController,
-    modifier: Modifier = Modifier,
-    userName: String,
-    pw: String,
-    onUserNameChange: (String) -> Unit,
-//    onEmailChange: (String) -> Unit,
-    onPwChange: (String) -> Unit,
-//    onConfirmPwChange: (String) -> Unit,
-//    onImageClick: () -> Unit,
-    onSignUpTextClicked: () -> Unit,
-    onSignInClicked: () -> Unit
-) {
-    Column (
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 120.dp)){
-        Row (modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 150.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center){
-            Text(text = "History",)
-
-            IconButton(onClick = { /*TODO*/ },modifier = Modifier.padding(start = 100.dp)) {
-                Icon(painter = painterResource(R.drawable.baseline_upload_24), contentDescription = "")
-            }
-        }
-
-        OrderHistoryLabel(
-            date = "2024 JUN 20",
-            time = "12:44a.m.",
-            totalAmount = 22.20
-
-        )
-    }
-}
-
-@Composable
-fun OrderHistoryLabel(
-    date: String,
-    time: String,
-    totalAmount: Double
-){
-    Column {
-        Text(text = date)
-        HorizontalDivider(thickness = 1.dp)
-        OrderHistoryDetail(time,totalAmount)
-    }
-//    OutlinedTextField(
-//        value = value,
-//        onValueChange = onValueChange,
-//        label = {Text(label)},
-//        singleLine = true,
-//        placeholder = {Text(placeholder)},
-//        keyboardOptions = keyboardOptions,
-//        colors = TextFieldDefaults.colors(unfocusedContainerColor = color,
-//            focusedContainerColor = color,
-//            focusedLabelColor = color),
-//        shape = shape,
-//        //isError = value.isNullOrEmpty(),                          <--- need to do back
-//        modifier = modifier
-//    )
-}
-
-@Composable
-fun OrderHistoryDetail(
-    time: String,
-    totalAmount: Double
-//    value: String,
-//    onValueChange: (String) -> Unit,
-//    label: String,
-//    placeholder: String,
-//    keyboardOptions: KeyboardOptions,
-//    color: Color,
-//    shape: RoundedCornerShape,
-//    visualTransformation: PasswordVisualTransformation,
-//    modifier: Modifier = Modifier
-){
-    Button(onClick = { /*TODO*/ },
-        shape = RectangleShape,
-        modifier = Modifier.fillMaxWidth(),
-        colors = ButtonDefaults.buttonColors(colorResource(R.color.orange_500))) {
-        Row (modifier = Modifier.fillMaxWidth()){
-            Column (modifier = Modifier,
-                horizontalAlignment = Alignment.Start) {
-                Text(text = "Time : $time")
-                Text(text = "Amount : RM $totalAmount")
-            }
-            Column (modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.End){
-                Icon(painter = painterResource(R.drawable.baseline_upload_24), contentDescription ="" )
-            }
-        }
-    }
-//    OutlinedTextField(
-//        value = value,
-//        onValueChange = onValueChange,
-//        label = {Text(label)},
-//        singleLine = true,
-//        placeholder = {Text(placeholder)},
-//        visualTransformation = visualTransformation,
-//        keyboardOptions = keyboardOptions,
-//        colors = TextFieldDefaults.colors(unfocusedContainerColor = color,
-//            focusedContainerColor = color,
-//            focusedLabelColor = color),
-//        shape = shape,
-//        //isError = value.isNullOrEmpty(),                          <--- need to do back
-//        modifier = modifier
-//    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun OrderHistoryPreview() {
-    UniCanteenTheme {
-        //val food = Datasource.foods.get(0)
-        OrderHistoryScreen(navController = rememberNavController())
-    }
-}
+*/
