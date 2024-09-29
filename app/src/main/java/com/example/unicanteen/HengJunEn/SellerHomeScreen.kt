@@ -149,7 +149,7 @@ fun SellerHomeScreen(
                 viewModel.updateFoodStatus(food, newStatus)
             },
             isPortrait = isPortrait,
-            configuration = configuration,
+            viewModel = viewModel,
             modifier = modifier.padding(innerPadding)
         )
     }
@@ -161,7 +161,7 @@ fun SellerHomeBody(
     foods: List<FoodList>,
     onFoodClick: (Int) -> Unit,
     isPortrait: Boolean,
-    configuration: Configuration,
+    viewModel: SellerHomeViewModel,
     modifier: Modifier = Modifier,
 ){
     Column(
@@ -180,7 +180,8 @@ fun SellerHomeBody(
             onAvailableChanged = onAvailableChanged,
             foods = foods,
             onFoodClick = onFoodClick,
-            isPortrait = isPortrait
+            isPortrait = isPortrait,
+            viewModel = viewModel
         )
     }
 
@@ -193,6 +194,7 @@ private fun FoodList(
     foods: List<FoodList>,
     onFoodClick: (Int) -> Unit,
     isPortrait: Boolean,
+    viewModel: SellerHomeViewModel,
     modifier: Modifier = Modifier
 ) {
     if (isPortrait) {
@@ -202,6 +204,7 @@ private fun FoodList(
                     food = food,
                     onAvailableChanged = { isAvailable -> onAvailableChanged(food, isAvailable) },
                     isPortrait = true,
+                    viewModel = viewModel,
                     modifier = Modifier.clickable { onFoodClick(food.foodId) }
                 )
                 // Divider between items
@@ -226,6 +229,7 @@ private fun FoodList(
                     food = food,
                     onAvailableChanged = { isAvailable -> onAvailableChanged(food, isAvailable) },
                     isPortrait = false,
+                    viewModel = viewModel,
                     modifier = Modifier.clickable { onFoodClick(food.foodId) }
                 )
             }
@@ -238,7 +242,8 @@ private fun FoodList(
 fun FoodCard(
     food: FoodList,
     onAvailableChanged: (Boolean) -> Unit,
-    isPortrait: Boolean,  // Determines whether the layout is portrait or landscape
+    isPortrait: Boolean,
+    viewModel: SellerHomeViewModel,
     modifier: Modifier = Modifier
 ) {
     if (isPortrait) {
@@ -255,15 +260,15 @@ fun FoodCard(
                     .padding(8.dp)
             ) {
                 // Display image
-                AsyncImage(
-                    model = food.imageUrl,
-                    contentDescription = "Food Image",
+                LoadFoodImage(
+                    foodImagePath = food.imageUrl,  // Firebase file path
+                    viewModel = viewModel,
                     modifier = Modifier
                         .size(100.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .weight(1f),
-                    contentScale = ContentScale.Crop
+                        .weight(1f)
                 )
+
                 Column(modifier = Modifier.weight(2f)) {
                     Text(
                         text = food.foodName,
@@ -299,18 +304,17 @@ fun FoodCard(
                     .fillMaxWidth()
                     .padding(8.dp)
             ) {
-                // Section 1: Image
-                AsyncImage(
-                    model = food.imageUrl,
-                    contentDescription = "Food Image",
+
+                LoadFoodImage(
+                    foodImagePath = food.imageUrl,  // Firebase file path
+                    viewModel = viewModel,
                     modifier = Modifier
                         .size(100.dp)  // Adjust size for landscape mode
                         .clip(AppShapes.small)
-                        .weight(1f),
-                    contentScale = ContentScale.Crop
+                        .weight(1f)
                 )
 
-                // Section 2: Food details
+
                 Column(
                     modifier = Modifier
                         .weight(2f)  // Take more space for the text and switch
@@ -361,7 +365,31 @@ fun FoodCard(
     }
 }
 
+@Composable
+private fun LoadFoodImage(
+    foodImagePath: String,
+    viewModel: SellerHomeViewModel,
+    modifier: Modifier = Modifier
+) {
+    var imageUrl by remember { mutableStateOf<String?>(null) }
 
+    // Fetch the latest image URL from Firebase when the Composable is first launched
+    LaunchedEffect(foodImagePath) {
+        viewModel.getLatestImageUrl(foodImagePath) { url ->
+            imageUrl = url
+        }
+    }
+
+    // Display the image when the URL is available
+    AsyncImage(
+        model = imageUrl,
+        contentDescription = "Food Image",
+        modifier = Modifier
+            .size(100.dp)
+            .clip(RoundedCornerShape(8.dp)),
+        contentScale = ContentScale.Crop
+    )
+}
 
 
 //Switch to turn on/off availability of food

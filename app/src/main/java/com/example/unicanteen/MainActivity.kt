@@ -44,8 +44,5 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        // Using lifecycleScope to access the database
-
-
     }
 }

@@ -1,11 +1,14 @@
 package com.example.unicanteen.HengJunEn
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.Query
 import com.example.unicanteen.database.FoodList
 import com.example.unicanteen.database.FoodListDao
 import com.example.unicanteen.database.FoodListRepository
+import com.google.firebase.Firebase
+import com.google.firebase.storage.storage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -21,10 +24,24 @@ class EditFoodViewModel(
     val foodDetailsWithAddOns: StateFlow<List<FoodListDao.FoodDetailsWithAddOns>> = _foodDetailsWithAddOns
 
     // Fetch food details along with add-ons based on foodId
+//    fun fetchFoodDetails(foodId: Int) {
+//        viewModelScope.launch {
+//            val foodDetails = foodListRepository.getFoodDetailsWithAddOns(foodId)
+//            _foodDetailsWithAddOns.value = foodDetails
+//        }
+//    }
     fun fetchFoodDetails(foodId: Int) {
         viewModelScope.launch {
             val foodDetails = foodListRepository.getFoodDetailsWithAddOns(foodId)
-            _foodDetailsWithAddOns.value = foodDetails
+
+            // Fetch the latest image URL
+            getLatestImageUrl(foodDetails.imageUrl) { latestImageUrl ->
+                // Update the imageUrl property of foodDetails with the latest URL
+                foodDetails.imageUrl = latestImageUrl
+
+                // Update the state with the modified food details
+                _foodDetailsWithAddOns.value = listOf(foodDetails)  // Wrap in a list if needed
+            }
         }
     }
 
@@ -79,7 +96,6 @@ class EditFoodViewModel(
                 modifyDate = currentDate
             )
 
-            // Pass the object to the repository method
             foodListRepository.updateSellerFoodDetails(updatedFoodDetails)
         }
     }
@@ -87,6 +103,16 @@ class EditFoodViewModel(
     private fun getCurrentDateTimeString(): String {
         val formatter = DateTimeFormatter.ISO_DATE_TIME
         return LocalDateTime.now().format(formatter)
+    }
+
+    fun getLatestImageUrl(filePath: String, onSuccess: (String) -> Unit) {
+        val storageRef = Firebase.storage.reference.child(filePath)
+
+        storageRef.downloadUrl.addOnSuccessListener { uri ->
+            onSuccess(uri.toString())  // Get the latest valid URL
+        }.addOnFailureListener { exception ->
+            Log.e("FirebaseStorage", "Error getting updated image URL", exception)
+        }
     }
 
 }

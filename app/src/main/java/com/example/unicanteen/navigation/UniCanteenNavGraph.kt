@@ -369,7 +369,7 @@ fun UniCanteenNavHost(
                 application = application,
                 foodId = foodId ?: return@composable,
                 foodListRepository = FoodListRepositoryImpl(AppDatabase.getDatabase(navController.context).foodListDao()),
-                onEditClick = {navController.navigate(EditFoodDestination.route)},
+                onEditClick = {navController.navigate("${EditFoodDestination.route}/$foodId")},
                 navigateBack = {navController.navigateUp()},
             )
         }
