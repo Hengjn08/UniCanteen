@@ -9,8 +9,10 @@ import com.example.unicanteen.database.OrderList
 import com.example.unicanteen.database.OrderListRepository
 import com.example.unicanteen.database.OrderRepository
 import com.google.android.gms.tasks.Task
+import com.google.firebase.Firebase
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.storage.storage
 import kotlinx.coroutines.launch
 
 class OrderListViewModel(
@@ -169,7 +171,15 @@ class OrderListViewModel(
                 Log.e("FirebaseUpdate", "Failed to update OrderList item", task.exception)
             }
         }
+    }
+    fun getLatestImageUrl(filePath: String, onSuccess: (String) -> Unit) {
+        val storageRef = Firebase.storage.reference.child(filePath)
 
+        storageRef.downloadUrl.addOnSuccessListener { uri ->
+            onSuccess(uri.toString())  // Get the latest valid URL
+        }.addOnFailureListener { exception ->
+            Log.e("FirebaseStorage", "Error getting updated image URL", exception)
+        }
     }
 }
 

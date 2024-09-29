@@ -14,11 +14,13 @@ import com.example.unicanteen.database.AppDatabase
 import com.example.unicanteen.database.OrderListDao
 import com.example.unicanteen.database.PierreAdminRepository
 import com.google.android.gms.tasks.Task
+import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.storage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -36,6 +38,7 @@ class AdminViewModel(
     private val databaseReference: DatabaseReference = FirebaseDatabase
         .getInstance("https://unicanteen12-default-rtdb.asia-southeast1.firebasedatabase.app/")
         .getReference() // Firebase Database reference
+
     private val _monthlySalesData = MutableStateFlow<List<OrderListDao.FoodTypeSalesData>>(emptyList())
     val monthlySalesData: StateFlow<List<OrderListDao.FoodTypeSalesData>> = _monthlySalesData
     private val _foodSalesData = MutableStateFlow<List<OrderListDao.FoodSalesData>>(emptyList())  // New state flow for food sales data
@@ -264,6 +267,16 @@ fun createPayment(orderId: Int, userId: Int, payType: String) {
 //                updateStatusMessage = "Failed to upload PierreTest data: ${exception.message}"
 //                Log.e("FirebaseUpload", "Error uploading PierreTest data", exception)
 //            }
+    }
+    //To fetch image from firebase
+    fun getLatestImageUrl(filePath: String, onSuccess: (String) -> Unit) {
+        val storageRef = Firebase.storage.reference.child(filePath)
+
+        storageRef.downloadUrl.addOnSuccessListener { uri ->
+            onSuccess(uri.toString())  // Get the latest valid URL
+        }.addOnFailureListener { exception ->
+            Log.e("FirebaseStorage", "Error getting updated image URL", exception)
+        }
     }
 
 

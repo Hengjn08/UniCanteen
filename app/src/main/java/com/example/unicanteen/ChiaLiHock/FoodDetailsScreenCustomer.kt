@@ -2,6 +2,7 @@ package com.example.unicanteen
 
 import android.app.Application
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -27,10 +28,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.example.unicanteen.ChiaLiHock.AddOnViewModel
 import com.example.unicanteen.ChiaLiHock.FoodDetailViewModel
 import com.example.unicanteen.ChiaLiHock.OrderListViewModel
+import com.example.unicanteen.HengJunEn.SellerFoodDetailsViewModel
 import com.example.unicanteen.database.AddOn
 import com.example.unicanteen.database.AddOnRepository
 import com.example.unicanteen.database.FoodList
@@ -104,7 +107,7 @@ fun FoodDetailsScreenCustomer(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    FoodDetailsCard(food = food)
+                    FoodDetailsCard(food = food,viewModel = orderListViewModel)
                     totalAddOnPrice = AddOnSection(addOns = addOns, onPriceChange = { price ->
                         totalAddOnPrice = price
                     })
@@ -136,7 +139,7 @@ fun FoodDetailsScreenCustomer(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    FoodDetailsCard(food = food)
+                    FoodDetailsCard(food = food,viewModel = orderListViewModel,isPortrait)
                     totalAddOnPrice = AddOnSection(addOns = addOns, onPriceChange = { price ->
                         totalAddOnPrice = price
                     })
@@ -150,17 +153,35 @@ fun FoodDetailsScreenCustomer(
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
                     remarks = RemarksSection()
+                    Row{
+                        AddToCartButton(
+                            modifier = Modifier.weight(1f).wrapContentSize(align = Alignment.BottomEnd),
+                            totalPrice = food.price + totalAddOnPrice,
+                            remarks = remarks,
+                            food = food,
+                            orderListViewModel = orderListViewModel,
+                            userId = userId,
+                            navController = navController
+                        )
+                        Spacer(
+                            modifier = Modifier.width(16.dp)
+                        )
+                        Button(onClick = {navController.popBackStack()},colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
+                            modifier = Modifier
+                                .width(150.dp)
+                                .height(80.dp),
+                            shape = AppShapes.medium
+                            ,
+                        ){
+                            Text(text = "Back",
+                                color = Color.White,
+                                fontSize = 18.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
 
-                    AddToCartButton(
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally),
-                        totalPrice = food.price + totalAddOnPrice,
-                        remarks = remarks,
-                        food = food,
-                        orderListViewModel = orderListViewModel,
-                        userId = userId,
-                        navController = navController
-                    )
                 }
             }
         }
@@ -179,17 +200,21 @@ fun FoodDetailsScreenCustomer(
 
 
 @Composable
-fun FoodDetailsCard(food: FoodList) {
+fun FoodDetailsCard(food: FoodList,viewModel: OrderListViewModel,isPortrait: Boolean = true) {
     Card(
-        shape = RoundedCornerShape(0.dp),
+        shape = if(isPortrait){
+            RoundedCornerShape(0.dp)
+        }else{
+            RoundedCornerShape(16.dp)
+        },
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column {
-            Image(
-                painter = rememberAsyncImagePainter(food.imageUrl),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
+            LoadFoodImage(
+                foodImagePath = food.imageUrl,
+                viewModel=viewModel,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(180.dp)
@@ -482,5 +507,30 @@ fun ConfirmationDialog(onDismiss: () -> Unit, onVisitCart: () -> Unit, onContinu
             }
         }
     )
+}
+@Composable
+private fun LoadFoodImage(
+    foodImagePath: String,
+    viewModel: OrderListViewModel,
+    modifier: Modifier = Modifier
+) {
+    var imageUrl by remember { mutableStateOf<String?>(null) }
+    Log.d("FoodImagePath", "FoodImagePath: $foodImagePath")
+    // Fetch the latest image URL from Firebase when the Composable is first launched
+    LaunchedEffect(foodImagePath) {
+        viewModel.getLatestImageUrl(foodImagePath) { url ->
+            imageUrl = url
+        }
+    }
+
+    // Display the image when the URL is available
+    if (imageUrl != null) {
+        AsyncImage(
+            model = imageUrl,
+            contentDescription = "Food Image",
+            modifier = modifier,
+            contentScale = ContentScale.Crop
+        )
+    }
 }
 

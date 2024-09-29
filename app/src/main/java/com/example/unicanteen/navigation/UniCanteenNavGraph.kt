@@ -178,7 +178,8 @@ fun UniCanteenNavHost(
                 application = application,
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
-                onHelpClicked = {navController.navigate(HelpDestination.route)}
+                onHelpClicked = {navController.navigate(HelpDestination.route)},
+                onCancelClicked = {navController.navigate(LoginDestination.route)}
             )
         }
 
@@ -193,7 +194,9 @@ fun UniCanteenNavHost(
                 navController = navController,
                 currentDestination = currentDestination,
                 onHelpClicked = {navController.navigate(HelpDestination.route)},
-                onOrderHistoryClicked = {navController.navigate(OrderHistoryDestination.route)},
+                onOrderHistoryClicked = {
+//                    navController.navigate(OrderHistoryDestination.route)
+                                        },
                 userId = userId,
                 onLogOutClicked = {navController.navigate(LoginDestination.route)}
             )
@@ -218,7 +221,7 @@ fun UniCanteenNavHost(
         }
 
         composable(route = HelpDestination.route){
-            HelpScreen()
+            HelpScreen(navigateBack = {navController.navigateUp()})
         }
 
         composable(route = ForgotPasswordDestination.route){
@@ -230,16 +233,21 @@ fun UniCanteenNavHost(
             )
         }
 
-        composable(route = OrderHistoryDestination.route){
+
+
+
+        composable(route = OrderHistoryDestination.route,
+            arguments = listOf(navArgument("userId") { type = NavType.IntType
+                defaultValue =GlobalVariables.userId})){
+                backStackEntry ->
+            val userId =backStackEntry.arguments?.getInt("userId") ?: 0
             OrderHistoryScreen(
                 application = application,
-                userId = 1,
-                currentDestination = currentDestination,
+                userId = userId,
                 navController = navController,
-                orderListRepository = OrderListRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
-                orderRepository = OrderRepositoryImpl(AppDatabase.getDatabase(navController.context).orderDao()),
-                sellerRepository = SellerRepositoryImpl(AppDatabase.getDatabase(navController.context).sellerDao()),
-                )
+                currentDestination = currentDestination,
+                userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao())
+            )
         }
 
         //Customer module route

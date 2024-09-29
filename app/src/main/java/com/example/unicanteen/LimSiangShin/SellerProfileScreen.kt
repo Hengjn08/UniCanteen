@@ -98,48 +98,27 @@ fun SellerProfileScreen(
         factory = AppViewModelProvider.Factory(application = application, userRepository = userRepository)
     )
 
-    val profileViewModel: ProfileViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(application = application, userRepository = userRepository)
-    )
-
     LaunchedEffect(userId) {
-        Log.d("ProfileViewModel", "get the userId1 : $userId")
         userViewModel.updateCurrentUserDetail(userId)
-        Log.d("ProfileViewModel", "Log complete")
     }
     val currentUserName by userViewModel.userName.collectAsState()
     val currentEmail by userViewModel.email.collectAsState()
     val currentPhoneNumber by userViewModel.phoneNumber.collectAsState()
     val currentPassword by userViewModel.password.collectAsState()
 
-    Log.d("ProfileViewModel", "get the currentuserName : $currentUserName")
-
     var userName by remember { mutableStateOf(currentUserName)}
     var email by remember { mutableStateOf(currentEmail) }
     var pw by remember { mutableStateOf(currentPassword) }
     var confirmPw by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf(currentPhoneNumber) }
-    Log.d("ProfileViewModel", "get the userName : $userName")
 
     var originalUserName by remember { mutableStateOf(userName) }
     var originalEmail by remember { mutableStateOf(email) }
     var originalPhoneNumber by remember { mutableStateOf(phoneNumber) }
     var originalPassword by remember { mutableStateOf(pw) }
 
-//    LaunchedEffect(userId) {
-//        Log.d("ProfileViewModel", "get the userId2 : $userId")
-//        userViewModel.updateCurrentUserDetail(userId)
-//        userName = userViewModel.userName.value
-//        email = userViewModel.email.value
-//        phoneNumber = userViewModel.phoneNumber.value
-//        pw = userViewModel.password.value
-//        Log.d("ProfileViewModel", "get the userName2 : $userName")
-//    }
-
-
     LaunchedEffect(currentUserName) {
         userName = currentUserName
-        Log.d("ProfileViewModel", "get the userName1 : $userName")
         email = currentEmail
         phoneNumber = currentPhoneNumber
         pw = currentPassword
@@ -149,10 +128,6 @@ fun SellerProfileScreen(
         originalPhoneNumber = phoneNumber
         originalPassword = pw
     }
-
-
-
-    Log.d("ProfileViewModel", "get the userName3 : $originalUserName")
 
 
     val context = LocalContext.current
@@ -201,7 +176,12 @@ fun SellerProfileScreen(
                 pw = originalPassword
                 confirmPw = ""
             },
-            update = {}
+            update = {
+                userName = userViewModel.userName.value
+                email = userViewModel.email.value
+                phoneNumber = userViewModel.phoneNumber.value
+                pw = userViewModel.password.value
+            }
         )
     }
 
