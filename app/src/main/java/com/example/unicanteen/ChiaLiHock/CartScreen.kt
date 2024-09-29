@@ -135,10 +135,10 @@ fun CartList(
     onCartItemsChanged: (List<CartItem>) -> Unit,
     cartViewModel: CartViewModel,
     userId: Int,
-    modifier: Modifier = Modifier
 ) {
     LazyColumn(
-        modifier = Modifier
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(vertical = 8.dp)
     ) {
         items(cartItems.size) { index ->
             var unitPrice = cartItems[index].price / cartItems[index].quantity
