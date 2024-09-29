@@ -1,6 +1,7 @@
 package com.example.unicanteen
 
 import android.app.Application
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -36,6 +38,7 @@ import com.example.unicanteen.database.FoodListRepository
 import com.example.unicanteen.database.OrderListRepository
 import com.example.unicanteen.database.OrderRepository
 import com.example.unicanteen.navigation.NavigationDestination
+import com.example.unicanteen.ui.theme.AppShapes
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -60,10 +63,10 @@ fun FoodDetailsScreenCustomer(
     navController: NavController
 ) {
     val foodDetailViewModel: FoodDetailViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(application = application,foodListRepository = foodListRepository)
+        factory = AppViewModelProvider.Factory(application = application, foodListRepository = foodListRepository)
     )
     val addOnViewModel: AddOnViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(application = application,addOnRepository = addOnRepository)
+        factory = AppViewModelProvider.Factory(application = application, addOnRepository = addOnRepository)
     )
     val orderListViewModel: OrderListViewModel = viewModel(
         factory = AppViewModelProvider.Factory(
@@ -86,46 +89,82 @@ fun FoodDetailsScreenCustomer(
         var totalAddOnPrice by remember { mutableStateOf(0.0) }
         var remarks = ""
 
-        // Use a Box to layer the content and button
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .navigationBarsPadding() // Adjusts for navigation bar space
-        ) {
-            // Scrollable content
-            Column(
+        val configuration = LocalConfiguration.current
+        val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+
+        if (isPortrait) {
+            // Portrait layout
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState()), // Make content scrollable
-                verticalArrangement = Arrangement.spacedBy(20.dp) // Space between elements
             ) {
-                // Display the food details card
-                FoodDetailsCard(food = food)
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    FoodDetailsCard(food = food)
+                    totalAddOnPrice = AddOnSection(addOns = addOns, onPriceChange = { price ->
+                        totalAddOnPrice = price
+                    })
+                    remarks = RemarksSection()
+                }
 
-                // Display add-ons with a price update handler
-                totalAddOnPrice = AddOnSection(addOns = addOns, onPriceChange = { price ->
-                    totalAddOnPrice = price
-                })
-
-                // Display the remarks section
-                remarks = RemarksSection()
+                AddToCartButton(
+                    modifier = Modifier.align(Alignment.BottomEnd),
+                    totalPrice = food.price + totalAddOnPrice,
+                    remarks = remarks,
+                    food = food,
+                    orderListViewModel = orderListViewModel,
+                    userId = userId,
+                    navController = navController
+                )
             }
-
-            // Add to cart button fixed at the bottom
-            AddToCartButton(
+        } else {
+            // Landscape layout
+            Row(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter) // Align button to the bottom center
-                    , // Add padding around the button
-                totalPrice = food.price + totalAddOnPrice,
-                remarks = remarks,
-                food = food,
-                orderListViewModel = orderListViewModel,
-                userId = userId,
-                navController = navController
-            )
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                // Left side (food details and add-ons)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    FoodDetailsCard(food = food)
+                    totalAddOnPrice = AddOnSection(addOns = addOns, onPriceChange = { price ->
+                        totalAddOnPrice = price
+                    })
+                }
+
+                // Right side (remarks and add-to-cart button)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    remarks = RemarksSection()
+
+                    AddToCartButton(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally),
+                        totalPrice = food.price + totalAddOnPrice,
+                        remarks = remarks,
+                        food = food,
+                        orderListViewModel = orderListViewModel,
+                        userId = userId,
+                        navController = navController
+                    )
+                }
+            }
         }
     } ?: run {
-        // Show loading state if data is not yet available
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize()
@@ -134,6 +173,7 @@ fun FoodDetailsScreenCustomer(
         }
     }
 }
+
 
 
 
@@ -313,50 +353,92 @@ fun AddToCartButton(
     navController: NavController
 ) {
     var showDialog by rememberSaveable { mutableStateOf(false) } // Save dialog state across rotation
-
-    Button(
-        onClick = {
-            val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-            orderListViewModel.addOrderListItem(
-                sellerId = food.sellerId,
-                foodId = food.foodId,
-                userId = userId,
-                qty = 1,
-                totalPrice = totalPrice,
-                remark = remarks,
-                createDate = date,
-                price = totalPrice
-            )
-            showDialog = true // Show confirmation dialog
-        },
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
-        modifier = modifier
-            .fillMaxWidth()
-            .height(65.dp),
-        shape = RoundedCornerShape(24.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+    if (isPortrait){
+        Button(
+            onClick = {
+                val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                orderListViewModel.addOrderListItem(
+                    sellerId = food.sellerId,
+                    foodId = food.foodId,
+                    userId = userId,
+                    qty = 1,
+                    totalPrice = totalPrice,
+                    remark = remarks,
+                    createDate = date,
+                    price = totalPrice
+                )
+                showDialog = true // Show confirmation dialog
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
+            modifier = modifier
+                .fillMaxWidth()
+                .height(65.dp),
+            shape = AppShapes.large
         ) {
-            Text(
-                text = "Add To Cart",
-                color = Color.White,
-                fontSize = 18.sp,
-                textAlign = TextAlign.End,
-                modifier = Modifier.weight(1f)
-            )
-            Spacer(modifier = Modifier.width(55.dp))
-            Text(
-                text = "RM ${"%.2f".format(totalPrice)}",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Add To Cart",
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(55.dp))
+                Text(
+                    text = "RM ${"%.2f".format(totalPrice)}",
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
         }
     }
+    else{
+        Button(
+            onClick = {
+                val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                orderListViewModel.addOrderListItem(
+                    sellerId = food.sellerId,
+                    foodId = food.foodId,
+                    userId = userId,
+                    qty = 1,
+                    totalPrice = totalPrice,
+                    remark = remarks,
+                    createDate = date,
+                    price = totalPrice
+                )
+                showDialog = true // Show confirmation dialog
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
+            modifier = modifier
+                .width(150.dp)
+                .height(80.dp),
+            shape = AppShapes.medium
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Add To Cart",
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+
 
     // Show confirmation dialog when order is added
     if (showDialog) {

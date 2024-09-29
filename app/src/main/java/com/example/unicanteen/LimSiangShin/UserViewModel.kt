@@ -22,7 +22,7 @@ class UserViewModel(
 //    private val sellerRepository: SellerRepository
 ): ViewModel(){
 
-    var userValue by mutableStateOf("bob")
+    var userValue by mutableStateOf("")
     var emailValue by mutableStateOf("")
     var phoneNumberValue by mutableStateOf("")
     var passwordValue by mutableStateOf("")
@@ -49,7 +49,7 @@ class UserViewModel(
     private var _registerResult = MutableStateFlow<Boolean>(false)  // For login success/failure
     val registerResult: StateFlow<Boolean> = _registerResult  // Expose login result to UI
 
-    private var _currentUserId = MutableStateFlow<Int?>(2)  // Store the current logged-in user ID
+    private var _currentUserId = MutableStateFlow<Int?>(1)  // Store the current logged-in user ID
     val currentUserId: StateFlow<Int?> = _currentUserId  // Expose the userId to UI for navigation
 
     private var _isSellerId = MutableStateFlow<Int?>(null)  // Store the current logged-in user ID
@@ -82,9 +82,9 @@ class UserViewModel(
         viewModelScope.launch {
             val userLogin = userRepository.getUserForLogin(userName, password)
 
-            if (userLogin != null && userLogin.userId != null) {
+            if (userLogin != null) {
                 _currentUserId.value = userLogin.userId
-                userValue = userLogin.userName
+                _userName.value = userLogin.userName
                 emailValue = userLogin.email
                 phoneNumberValue = userLogin.phoneNumber.toString()
                 passwordValue = userLogin.password
@@ -140,7 +140,7 @@ class UserViewModel(
      fun updateCurrentUserDetail(userId: Int){
         viewModelScope.launch {
         val user = userRepository.getUserById(userId)
-        if (user != null) {
+            if (user != null) {
             // Update UI state
             _userName.value = user.userName
             _email.value = user.email
@@ -150,19 +150,6 @@ class UserViewModel(
         }
     }
 
-
-//    fun getCurrentUserDetail(userId: Int){
-//        viewModelScope.launch{
-//            val user = userRepository.getUserById(userId)
-//            if (user != null) {
-//                _userName.value = user.userName
-//                _email.value = user.email
-//                _password.value = user.password
-//                _phoneNumber.value = user.phoneNumber.toString()
-//            }
-//
-//        }
-//    }
 
 
     //Validation for each type of text field
@@ -255,5 +242,4 @@ class UserViewModel(
         }
         return correct
     }
-
 }

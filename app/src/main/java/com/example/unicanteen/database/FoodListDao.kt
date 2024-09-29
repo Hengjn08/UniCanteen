@@ -33,6 +33,10 @@ interface FoodListDao {
     @Query("SELECT DISTINCT type FROM foodList WHERE sellerId = :sellerId")
     suspend fun getFoodTypeBySellerId(sellerId: Int): List<String>
 
+    // Fetch food items by sellerId and status
+    @Query("SELECT * FROM foodList WHERE sellerId = :sellerId AND status = :status")
+    suspend fun getFoodItemsBySellerIdAndStatus(sellerId: Int, status: String): List<FoodList>
+
     // Fetch all available food items (status = 'Available')
     @Query("SELECT * FROM foodList WHERE status = 'Available'")
     fun getAvailableFoodItems(): List<FoodList>

@@ -15,7 +15,7 @@ class OrderListRepositoryImpl( private val orderListDao: OrderListDao): OrderLis
     override suspend fun updateOrderStatus(orderListId: Int, newStatus: String){
         orderListDao.updateOrderStatus(orderListId, newStatus)
     }
-    override suspend fun insertOrder(orderList: OrderList){
+    override suspend fun insertOrder(orderList: OrderList): Long {
         return orderListDao.insertOrderList(orderList)
     }
     override suspend fun getExistingOrderIdForUser(userId: Int, status: String): Int? {
@@ -32,6 +32,14 @@ class OrderListRepositoryImpl( private val orderListDao: OrderListDao): OrderLis
     }
     override suspend fun deleteOrderListById(orderListId: Int) {
         return orderListDao.deleteOrderListById(orderListId)
+    }
+    override suspend fun getOrderListByOrderListId(orderListId: Int): OrderList? {
+        return orderListDao.getOrderListById(orderListId)
+    }
+
+
+    override suspend fun getOrderListByUserId(userId: Int): List<OrderList> {
+        return orderListDao.getOrderListByUserId(userId)
     }
 
 }

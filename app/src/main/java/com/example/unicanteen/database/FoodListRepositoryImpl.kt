@@ -20,6 +20,9 @@ class FoodListRepositoryImpl( private val foodListDao: FoodListDao): FoodListRep
     override suspend fun getFoodsBySellerId(sellerId: Int): List<FoodList> {
         return foodListDao.getFoodItemsBySellerId(sellerId)
     }
+    override suspend fun getFoodsBySellerIdAndStatus(sellerId: Int, status: String): List<FoodList> {
+        return foodListDao.getFoodItemsBySellerIdAndStatus(sellerId,status)
+    }
     override suspend fun getAllFoods(): List<FoodList> {
         return foodListDao.getAllFoodItems()
     }
