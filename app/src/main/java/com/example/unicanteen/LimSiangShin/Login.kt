@@ -155,6 +155,10 @@ fun LoginScreen(
                     userName = "bob"
                     pw = "password123"
                                     },
+                    onFacebookClicked = {
+                        userName = "jane_smith"
+                        pw = "securePass!"
+                    },
                 onSignInClicked = {
                 userViewModel.login(userName, pw)
 //                loginAttempt = !loginAttempt
@@ -175,6 +179,10 @@ fun LoginScreen(
                 onExternalClicked = {
                     userName = "bob"
                     pw = "password123"
+                },
+                onFacebookClicked = {
+                    userName = "jane_smith"
+                    pw = "securePass!"
                 },
                 onSignInClicked = {
                     userViewModel.login(userName, pw)
@@ -221,6 +229,7 @@ fun LoginBodyPortrait(
     onSignUpTextClicked: () -> Unit,
     onForgotPasswordClicked:()->Unit,
     onExternalClicked:()->Unit,
+    onFacebookClicked:() ->Unit,
     onSignInClicked: () -> Unit
 ) {
     Column (
@@ -385,8 +394,8 @@ fun LoginBodyPortrait(
 
                 Button(
                     onClick = {
-                        onExternalClicked()
-                    },
+                        onFacebookClicked()
+                              },
                     modifier = Modifier
                         .padding(vertical = 20.dp)
                         .fillMaxWidth()
@@ -426,6 +435,7 @@ fun LoginBodyLandscape(
     onSignUpTextClicked: () -> Unit,
     onForgotPasswordClicked:()->Unit,
     onExternalClicked:()->Unit,
+    onFacebookClicked:()->Unit,
     onSignInClicked: () -> Unit
 ) {
         Column(
@@ -631,7 +641,7 @@ fun LoginBodyLandscape(
 
                     Button(
                         onClick = {
-                            onExternalClicked()
+                            onFacebookClicked()
                         },
                         modifier = Modifier
                             .padding(vertical = 20.dp)

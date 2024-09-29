@@ -67,6 +67,7 @@ interface UserDao {
         @Query("SELECT password FROM user WHERE userId =:userId")
         suspend fun getPassword(userId: Int?): String
 
+
         @Query("""
         SELECT o.orderId AS orderId,
                o.createDate AS createDate,
@@ -81,6 +82,7 @@ interface UserDao {
                 val createDate: String,
                 val totalAmount: Double
         )
+
 }
 
 

@@ -1,3 +1,4 @@
+/*
 package com.example.unicanteen
 import android.app.Application
 import android.content.res.Configuration
@@ -69,6 +70,7 @@ fun OrderHistoryScreen(
     currentDestination: NavDestination?,
     userRepository: UserRepository
 ) {
+
     val userViewModel: UserViewModel = viewModel(
         factory = AppViewModelProvider.Factory(application = application,userRepository = userRepository)
     )
@@ -79,8 +81,10 @@ fun OrderHistoryScreen(
     }
     val orderDetails by userViewModel.historyorderDetails.collectAsState(emptyList())
 
+
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -131,6 +135,7 @@ fun OrderListColumn(orderList: List<UserDao.OrderDetails>, navController: NavCon
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(vertical = 8.dp) // Padding for the list
     ) {
+
         items(orderList) { orderItem ->
             OrderCard(
                 orderList = orderItem,
@@ -143,13 +148,16 @@ fun OrderListColumn(orderList: List<UserDao.OrderDetails>, navController: NavCon
 }
 
 @Composable
+
 fun OrderListRow(orderList: List<UserDao.OrderDetails>, navController: NavController, userId: Int) {
+ 
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp), // Padding for the row
         contentPadding = PaddingValues(horizontal = 8.dp) // Horizontal padding for the list
     ) {
+
         items(orderList) { orderItem ->
             OrderCard(
                 orderList = orderItem,
@@ -164,6 +172,7 @@ fun OrderListRow(orderList: List<UserDao.OrderDetails>, navController: NavContro
 
 
 @Composable
+
 fun OrderCard(orderList: UserDao.OrderDetails, onClick: () -> Unit) {
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
@@ -191,12 +200,13 @@ fun OrderCard(orderList: UserDao.OrderDetails, onClick: () -> Unit) {
                         .weight(1f)
                 ) {
                     Text(
-                        text = orderList.createDate,
+                        text = orderDetail.createDate,
                         style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier.padding(bottom = 4.dp),
                         color = MaterialTheme.colorScheme.onSecondary
                     )
                     Text(
+
                         text = orderList.totalAmount.toString(),
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -216,7 +226,7 @@ fun OrderCard(orderList: UserDao.OrderDetails, onClick: () -> Unit) {
                         .weight(1f)
                 ) {
                     Text(
-                        text = orderList.createDate,
+                        text = orderDetail.createDate,
                         style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier.padding(bottom = 4.dp),
                         color = MaterialTheme.colorScheme.onSecondary
@@ -234,3 +244,4 @@ fun OrderCard(orderList: UserDao.OrderDetails, onClick: () -> Unit) {
 
 
 
+*/
