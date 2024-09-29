@@ -23,7 +23,5 @@ interface UserRepository {
     suspend fun getEmail(userId: Int?) : String
     suspend fun getPhoneNumber(userId: Int?): String
     suspend fun getPassword(userId: Int?): String
-    suspend fun checkUserEmail (email:String):Int
-    suspend fun getOrderDetailsByUserId(userId: Int):List<OrderDetails>
-
+    suspend fun getOrderDetailsByOrderId(userId: Int): LiveData<List<UserDao.OrderDetails>>
 }

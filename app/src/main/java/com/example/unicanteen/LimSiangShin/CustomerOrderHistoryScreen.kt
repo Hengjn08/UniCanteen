@@ -47,6 +47,7 @@ import com.example.unicanteen.ui.theme.AppViewModelProvider
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.lifecycle.LiveData
 import com.example.unicanteen.LimSiangShin.OrderHistoryViewModel
 import com.example.unicanteen.LimSiangShin.UserViewModel
 import com.example.unicanteen.database.OrderList
@@ -54,10 +55,10 @@ import com.example.unicanteen.database.UserDao
 import com.example.unicanteen.database.UserRepository
 
 object OrderHistoryDestination : NavigationDestination {
-    override val route = "order_history?userId={userId}"
+    override val route = "order_history/{userId}"
     override val title = "order_history"
     fun routeWithArgs(userId: Int): String {
-        return "order_history?userId=$userId"
+        return "order_history/$userId"
     }
 }
 
@@ -69,51 +70,77 @@ fun OrderHistoryScreen(
     currentDestination: NavDestination?,
     userRepository: UserRepository
 ) {
-    val viewModel: UserViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(application = application, userRepository = userRepository)
+
+    val userViewModel: UserViewModel = viewModel(
+        factory = AppViewModelProvider.Factory(application = application,userRepository = userRepository)
     )
 
-    val orderDetail by viewModel.orderDetail.collectAsState()
-
+    // Fetch cart item count when userId changes
     LaunchedEffect(userId) {
-        viewModel.getUserOrderHistory(userId)
+        userViewModel.fetchOrderDetails(userId)
     }
+    val orderDetails by userViewModel.historyorderDetails.collectAsState(emptyList())
 
 
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        if (isPortrait) {
-            UniCanteenTopBar()
 
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(top = if (isPortrait) 10.dp else 0.dp) // Adjust padding based on orientation
-        ) {
-            // Use LazyColumn for portrait mode and LazyRow for landscape mode
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
             if (isPortrait) {
-                OrderListColumn(orderDetail = orderDetail, navController = navController)
-            } else {
-                OrderListRow(orderDetail = orderDetail, navController = navController)
+                UniCanteenTopBar()
+
+            }
+        },
+        bottomBar = {
+            BottomNavigationBar(
+                navController = navController,
+                currentDestination = currentDestination,
+                isSeller = false
+            )
+        },
+        content = { paddingValues ->
+            // Main content layout with padding
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)) {
+                when {
+                    orderDetails.isEmpty() -> {
+                        // Show message if order list is empty
+                        Text(
+                            text = "No Orders Available",
+                            modifier = Modifier.align(Alignment.Center),
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                    }
+                    else -> {
+                        // Show order list in the respective layout (column or row)
+                        if (isPortrait) {
+                            OrderListColumn(orderList = orderDetails, navController = navController,userId)
+                        } else {
+                            OrderListRow(orderList = orderDetails, navController = navController,userId)
+                        }
+                    }
+                }
             }
         }
-        BottomNavigationBar(navController = navController, currentDestination = currentDestination, isSeller = false)
-    }
+    )
 }
 
 @Composable
-fun OrderListColumn(orderDetail: UserDao.OrderDetails, navController: NavController) {
+fun OrderListColumn(orderList: List<UserDao.OrderDetails>, navController: NavController, userId: Int) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(vertical = 8.dp) // Padding for the list
     ) {
-        items(orderDetail) { orderList ->
+
+        items(orderList) { orderItem ->
             OrderCard(
-                orderList = orderList,
+                orderList = orderItem,
                 onClick = {
-//                    navController.navigate("${SelectFoodDestination.route}/${orderList.orderId}")
+                    navController.navigate("payment_receipt/$userId/${orderItem.orderId}")
                 }
             )
         }
@@ -121,18 +148,21 @@ fun OrderListColumn(orderDetail: UserDao.OrderDetails, navController: NavControl
 }
 
 @Composable
-fun OrderListRow(orderDetail: UserDao.OrderDetails, navController: NavController) {
+
+fun OrderListRow(orderList: List<UserDao.OrderDetails>, navController: NavController, userId: Int) {
+ 
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp), // Padding for the row
         contentPadding = PaddingValues(horizontal = 8.dp) // Horizontal padding for the list
     ) {
-        items(orderDetail) { orderList ->
+
+        items(orderList) { orderItem ->
             OrderCard(
-                orderList = orderList,
+                orderList = orderItem,
                 onClick = {
-//                    navController.navigate("${SelectFoodDestination.route}/${seller.sellerId}")
+                    navController.navigate("payment_receipt/$userId/${orderItem.orderId}")
                 }
             )
         }
@@ -142,10 +172,10 @@ fun OrderListRow(orderDetail: UserDao.OrderDetails, navController: NavController
 
 
 @Composable
-fun OrderCard(orderDetail: UserDao.OrderDetails, onClick: () -> Unit) {
+
+fun OrderCard(orderList: UserDao.OrderDetails, onClick: () -> Unit) {
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-
 
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -157,7 +187,6 @@ fun OrderCard(orderDetail: UserDao.OrderDetails, onClick: () -> Unit) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         if (isPortrait) {
-            // Use original design for portrait mode
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -177,21 +206,13 @@ fun OrderCard(orderDetail: UserDao.OrderDetails, onClick: () -> Unit) {
                         color = MaterialTheme.colorScheme.onSecondary
                     )
                     Text(
-                        text = orderDetail.totalPrice.toString(),
+
+                        text = orderList.totalAmount.toString(),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
-//                Image(
-//                    painter = rememberAsyncImagePainter(seller.shopImage),
-//                    contentDescription = null,
-//                    contentScale = ContentScale.Crop,
-//                    modifier = Modifier
-//                        .size(120.dp) // Fixed size for the image
-//                        .clip(RoundedCornerShape(16.dp))
-//                )
             }
         } else {
-            // Landscape design
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -199,19 +220,9 @@ fun OrderCard(orderDetail: UserDao.OrderDetails, onClick: () -> Unit) {
                     .defaultMinSize(minWidth = 200.dp)
             ) {
                 Spacer(modifier = Modifier.width(8.dp))
-//                Image(
-//                    painter = rememberAsyncImagePainter(seller.shopImage),
-//                    contentDescription = null,
-//                    contentScale = ContentScale.Crop,
-//                    modifier = Modifier
-//                        .size(110.dp) // Fixed size for the image
-//                        .clip(RoundedCornerShape(16.dp))
-//                )
-                Spacer(modifier = Modifier.width(8.dp))
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        //.padding(8.dp)
                         .weight(1f)
                 ) {
                     Text(
@@ -220,7 +231,10 @@ fun OrderCard(orderDetail: UserDao.OrderDetails, onClick: () -> Unit) {
                         modifier = Modifier.padding(bottom = 4.dp),
                         color = MaterialTheme.colorScheme.onSecondary
                     )
-
+                    Text(
+                        text = orderList.totalAmount.toString(),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             }
         }
@@ -229,79 +243,5 @@ fun OrderCard(orderDetail: UserDao.OrderDetails, onClick: () -> Unit) {
 
 
 
-//@Composable
-//fun SearchAndCartBar(onSearch: (String) -> Unit, onCartClick: () -> Unit, cartItemCount: Int) {
-//    var query by remember { mutableStateOf("") }
-//
-//    Row(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(top = 10.dp, start = 10.dp, end = 10.dp), // Add end padding for better spacing
-//        verticalAlignment = Alignment.CenterVertically
-//    ) {
-//        TextField(
-//            value = query,
-//            onValueChange = {
-//                query = it
-//                onSearch(query)
-//            },
-//            placeholder = {
-//                Text(
-//                    "Search by name",
-//                    style = MaterialTheme.typography.bodyMedium,
-//                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-//                )
-//            },
-//            modifier = Modifier
-//                .weight(1f)
-//                .clip(MaterialTheme.shapes.medium)
-//                .background(MaterialTheme.colorScheme.surface),
-//            trailingIcon = {
-//                if (query.isNotEmpty()) {
-//                    IconButton(onClick = { query = "" }) {
-//                        Icon(Icons.Default.Clear, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurface)
-//                    }
-//                } else {
-//                    Icon(Icons.Default.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onSurface)
-//                }
-//            },
-//            singleLine = true,
-//            colors = TextFieldDefaults.colors(
-//                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-//                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-//                focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-//                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-//                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-//                unfocusedIndicatorColor = Color.Transparent,
-//                focusedLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-//            )
-//        )
-//        Box(modifier = Modifier) {
-//            IconButton(onClick = { onCartClick() }) {
-//                Icon(
-//                    imageVector = Icons.Default.ShoppingCart,
-//                    contentDescription = "Cart",
-//                    modifier = Modifier.size(36.dp),
-//                    tint = MaterialTheme.colorScheme.onSurface
-//                )
-//            }
-//            if (cartItemCount > 0) {
-//                Badge(
-//                    modifier = Modifier
-//                        .align(Alignment.TopEnd)
-//                        .offset(x = (-12).dp, y = (4).dp),
-//                    content = {
-//                        Text(
-//                            text = cartItemCount.toString(),
-//                            style = MaterialTheme.typography.bodySmall,
-//                            color = MaterialTheme.colorScheme.onPrimary
-//                        )
-//                    },
-//                    containerColor = MaterialTheme.colorScheme.error
-//                )
-//            }
-//        }
-//    }
-//}
 
 */

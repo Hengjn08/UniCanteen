@@ -59,7 +59,10 @@ interface OrderDao {
             f.foodName, 
             f.imageUrl, 
             ol.totalPrice, 
-            ol.qty
+            ol.qty,
+            f.description,
+            f.type,
+            f.status
         FROM 
             foodList AS f
         JOIN 

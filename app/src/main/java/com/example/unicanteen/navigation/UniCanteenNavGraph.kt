@@ -42,8 +42,8 @@ import com.example.unicanteen.LimSiangShin.LoginScreen
 import com.example.unicanteen.LimSiangShin.RegistrationScreen
 import com.example.unicanteen.LimSiangShin.SellerProdileDestination
 import com.example.unicanteen.LimSiangShin.SellerProfileScreen
-//import com.example.unicanteen.OrderHistoryDestination
-//import com.example.unicanteen.OrderHistoryScreen
+import com.example.unicanteen.OrderHistoryDestination
+import com.example.unicanteen.OrderHistoryScreen
 import com.example.unicanteen.Pierre.FoodSalesDetailDestination
 import com.example.unicanteen.Pierre.FoodSalesDetailScreen
 import com.example.unicanteen.Pierre.InputTableNoDestination
@@ -233,17 +233,22 @@ fun UniCanteenNavHost(
             )
         }
 
-/*        composable(route = OrderHistoryDestination.route){
+
+
+
+        composable(route = OrderHistoryDestination.route,
+            arguments = listOf(navArgument("userId") { type = NavType.IntType
+                defaultValue =GlobalVariables.userId})){
+                backStackEntry ->
+            val userId =backStackEntry.arguments?.getInt("userId") ?: 0
             OrderHistoryScreen(
                 application = application,
-                userId = 1,
-                currentDestination = currentDestination,
+                userId = userId,
                 navController = navController,
-                orderListRepository = OrderListRepositoryImpl(AppDatabase.getDatabase(navController.context).orderListDao()),
-                orderRepository = OrderRepositoryImpl(AppDatabase.getDatabase(navController.context).orderDao()),
-                sellerRepository = SellerRepositoryImpl(AppDatabase.getDatabase(navController.context).sellerDao()),
-                )
-        }*/
+                currentDestination = currentDestination,
+                userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao())
+            )
+        }
 
         //Customer module route
         //select restaurant screen

@@ -70,6 +70,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.unicanteen.BottomNavigationBar
+import com.example.unicanteen.OrderHistoryDestination
 import com.example.unicanteen.UniCanteenTopBar
 import com.example.unicanteen.database.AppDatabase
 import com.example.unicanteen.database.SellerRepository
@@ -168,7 +169,7 @@ fun CustomerProfileScreen(
             onPwChange = { pw = it },
             onPhoneNumberChange = { phoneNumber = it },
             onConfirmPwChange = { confirmPw = it },
-            onOrderHistoryClicked = {onOrderHistoryClicked()},
+            onOrderHistoryClicked = { navController.navigate("order_history/$userId")},
             onUpdate = {
                 // Update the original values with the new ones on Save
                 originalUserName = userName

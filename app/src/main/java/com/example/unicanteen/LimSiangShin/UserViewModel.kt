@@ -53,6 +53,7 @@ class UserViewModel(
 //        passwordValue = value
 //    }
 
+
     private var _loginResult = MutableStateFlow<Boolean>(false)  // For login success/failure
     val loginResult: StateFlow<Boolean> = _loginResult  // Expose login result to UI
 
@@ -90,6 +91,21 @@ class UserViewModel(
     var phoneNumberError by mutableStateOf("")
     var confirmPasswordError by mutableStateOf("")
 
+
+
+    // Order Details LiveData
+    private val _orderDetails = MutableStateFlow<List<UserDao.OrderDetails>>(emptyList())
+    val historyorderDetails: MutableStateFlow<List<UserDao.OrderDetails>> = _orderDetails
+
+    // Function to retrieve order details based on the userId
+    fun fetchOrderDetails(userId: Int) {
+        viewModelScope.launch {
+            userRepository.getOrderDetailsByOrderId(userId).observeForever {
+                horderDetails ->
+                _orderDetails.value = horderDetails
+            }
+        }
+    }
 
 
     fun login(userName: String, password: String){
