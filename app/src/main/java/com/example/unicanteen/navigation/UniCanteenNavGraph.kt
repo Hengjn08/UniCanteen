@@ -42,6 +42,8 @@ import com.example.unicanteen.LimSiangShin.LoginScreen
 import com.example.unicanteen.LimSiangShin.RegistrationScreen
 import com.example.unicanteen.LimSiangShin.SellerProdileDestination
 import com.example.unicanteen.LimSiangShin.SellerProfileScreen
+import com.example.unicanteen.OrderHistoryDestination
+import com.example.unicanteen.OrderHistoryScreen
 //import com.example.unicanteen.OrderHistoryDestination
 //import com.example.unicanteen.OrderHistoryScreen
 import com.example.unicanteen.Pierre.FoodSalesDetailDestination
@@ -218,9 +220,9 @@ fun UniCanteenNavHost(
             )
         }
 
-        composable(route = HelpDestination.route){
-            HelpScreen(navigateBack = {navController.navigateUp()})
-        }
+//        composable(route = HelpDestination.route){
+//            HelpScreen(navigateBack = {navController.navigateUp()})
+//        }
 
         composable(route = ForgotPasswordDestination.route){
             ChangePasswordScreen(
