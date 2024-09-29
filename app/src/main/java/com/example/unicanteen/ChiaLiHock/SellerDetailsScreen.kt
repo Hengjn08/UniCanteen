@@ -31,6 +31,9 @@ import com.example.unicanteen.ui.theme.AppShapes
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 import kotlin.math.round
 import android.app.Application
+import android.content.res.Configuration
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalConfiguration
 
 object SellerDetailsDestination : NavigationDestination {
     override val route = "sellerDetails"
@@ -46,57 +49,279 @@ fun SellerDetailScreen(
     navController: NavController
 ) {
     val viewModel: SelectRestaurantViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(application = application,sellerRepository = sellerRepository)
+        factory = AppViewModelProvider.Factory(application = application, sellerRepository = sellerRepository)
     )
+
+    var userRating by rememberSaveable { mutableStateOf(0f) }
+    var showDialog by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(sellerId) {
         viewModel.getSellerById(sellerId)
     }
 
     val sellerDetails by viewModel.singleSeller.collectAsState()
-    var userRating by remember { mutableStateOf(0f) }
 
-    Column(
-        modifier = Modifier
-            .navigationBarsPadding()
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        UniCanteenTopBar(title = "Seller Details")
+    // Detect device orientation
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-        sellerDetails?.let { seller ->
-            SellerDetailsSection(seller = seller)
+    if (isLandscape) {
+        // Landscape layout
+        LandscapeSellerDetailScreen(
+            sellerDetails = sellerDetails,
+            userRating = userRating,
+            onRatingChange = { userRating = it },
+            onSubmitRating = {
+                if (userRating > 0) {
+                    showDialog = true
+                }
+            },
+            showDialog = showDialog,
+            onDialogConfirm = {
+                viewModel.submitRating(sellerId, userRating.toDouble())
+                navController.popBackStack()
+                showDialog = false
+            },
+            onDialogDismiss = { showDialog = false }
+        )
+    } else {
+        // Portrait layout (previous code for portrait mode)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            UniCanteenTopBar(title = "Seller Details")
 
-            RatingSection(
-                userRating = userRating,
-                onRatingChange = { newRating -> userRating = newRating }
-            )
+            sellerDetails?.let { seller ->
+                SellerDetailsSection(seller = seller)
 
-            SubmitRatingButton(
-                onSubmit = {
-                    if (userRating > 0) {
+                RatingSection(
+                    userRating = userRating,
+                    onRatingChange = { newRating -> userRating = newRating }
+                )
+
+                SubmitRatingButton(
+                    onSubmit = {
+                        if (userRating > 0) {
+                            showDialog = true
+                        }
+                    }
+                )
+            } ?: run {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+
+            if (showDialog) {
+                ConfirmRatingDialog(
+                    rating = userRating,
+                    onConfirm = {
                         viewModel.submitRating(sellerId, userRating.toDouble())
                         navController.popBackStack()
-                    }
-                }
-            )
-        } ?: run {
-            // Loading state if seller details are still being fetched
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                        showDialog = false
+                    },
+                    onDismiss = { showDialog = false }
+                )
             }
         }
     }
 }
 
 @Composable
-fun SellerDetailsSection(seller: Seller) {
+fun LandscapeSellerDetailScreen(
+    sellerDetails: Seller?,
+    userRating: Float,
+    onRatingChange: (Float) -> Unit,
+    onSubmitRating: () -> Unit,
+    showDialog: Boolean,
+    onDialogConfirm: () -> Unit,
+    onDialogDismiss: () -> Unit
+) {
+    sellerDetails?.let { seller ->
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            // Seller Details on the left side
+            SellerDetailsSection(
+                seller = seller,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(1f)
+                    .padding(end=16.dp) // Padding between the sections
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(1f),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Rating Section on the right side
+                RatingSection(
+                    userRating = userRating,
+                    onRatingChange = onRatingChange,
+                    modifier = Modifier.weight(1f)
+                )
+
+                SubmitRatingButton(
+                    onSubmit = onSubmitRating
+                )
+            }
+        }
+
+        // Show confirmation dialog
+        if (showDialog) {
+            ConfirmRatingDialog(
+                rating = userRating,
+                onConfirm = onDialogConfirm,
+                onDismiss = onDialogDismiss
+            )
+        }
+    } ?: run {
+        // Loading state if seller details are still being fetched
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+    }
+}
+@Composable
+fun ConfirmRatingDialog(rating: Float, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = "Confirm Rating")
+        },
+        text = {
+            Text(text = "Are you sure you want to submit $rating stars?")
+        },
+        confirmButton = {
+            Button(onClick = onConfirm) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+fun RatingSection(
+    userRating: Float,
+    onRatingChange: (Float) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Card(
         shape = AppShapes.medium,
+        modifier = modifier
+            .padding(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Rate the Shop",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+
+            RatingBar(
+                rating = userRating,
+                onRatingChange = onRatingChange,
+                modifier = Modifier
+                    .padding(vertical = 8.dp)
+                    .height(48.dp)
+            )
+
+            if (userRating > 0) {
+                Text(
+                    text = "You rated: $userRating stars",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            } else {
+                Text(
+                    text = "Please rate the shop",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SubmitRatingButton(onSubmit: () -> Unit) {
+    Button(
+        onClick = onSubmit,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(20.dp),
+            .height(65.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+    ) {
+        Text(
+            text = "Submit Rating",
+            color = Color.White,
+            fontSize = 18.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+fun RatingBar(rating: Float, onRatingChange: (Float) -> Unit, modifier: Modifier = Modifier) {
+    val starCount = 5
+
+    Row(
+        modifier = Modifier
+            .wrapContentWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        for (i in 1..starCount) {
+            val scale = animateFloatAsState(if (rating >= i) 1.2f else 1f)
+
+            IconButton(
+                onClick = { onRatingChange(i.toFloat()) },
+                modifier = Modifier.scale(scale.value)
+            ) {
+                Icon(
+                    imageVector = if (rating >= i) Icons.Filled.Star else Icons.Outlined.Star,
+                    contentDescription = if (rating >= i) "Rated $i star" else "Rate $i star",
+                    tint = if (rating >= i) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
+fun SellerDetailsSection(seller: Seller, modifier: Modifier = Modifier) {
+    Card(
+        shape = AppShapes.medium,
+        modifier = modifier
+            .padding(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -154,114 +379,5 @@ fun SellerDetailsSection(seller: Seller) {
     }
 }
 
-@Composable
-fun RatingSection(
-    userRating: Float,
-    onRatingChange: (Float) -> Unit
-) {
-    Card(
-        shape = AppShapes.medium,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp).padding(bottom = 0.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Section Title
-            Text(
-                text = "Rate the Shop",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
-
-            // Stars Rating Bar (custom UI component or material rating bar)
-            RatingBar(
-                rating = userRating,
-                onRatingChange = onRatingChange,
-                modifier = Modifier
-                    .padding(vertical = 8.dp)
-                    .height(48.dp) // Ensure enough space for larger rating bars
-            )
-
-            // Show selected rating value
-            if (userRating > 0) {
-                Text(
-                    text = "You rated: $userRating stars",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            } else {
-                Text(
-                    text = "Please rate the shop",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.7f),
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun SubmitRatingButton(onSubmit: () -> Unit) {
-    Button(
-        onClick = { onSubmit() },
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(65.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
-    ) {
-        Text(
-            text = "Submit Rating",
-            color = Color.White,
-            fontSize = 18.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.weight(1f)
-        )
-    }
-}
 
 
-
-
-
-@Composable
-fun RatingBar(rating: Float, onRatingChange: (Float) -> Unit, modifier: Modifier = Modifier) {
-    // Define the number of stars in the rating bar
-    val starCount = 5
-
-    Row(
-        modifier = Modifier
-            .wrapContentWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp) // Space between the stars
-    ) {
-        // Loop through the stars from 1 to starCount
-        for (i in 1..starCount) {
-            // Apply a subtle scale animation when a star is clicked
-            val scale = animateFloatAsState(if (rating >= i) 1.2f else 1f)
-
-            IconButton(
-                onClick = { onRatingChange(i.toFloat()) },
-                modifier = Modifier.scale(scale.value)  // Apply scaling effect to stars
-            ) {
-                // Show filled or outlined star based on the rating
-                Icon(
-                    imageVector = if (rating >= i) Icons.Filled.Star else Icons.Outlined.Star,
-                    contentDescription = if (rating >= i) "Rated $i star" else "Rate $i star",
-                    tint = if (rating >= i) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                    modifier = Modifier.size(32.dp) // Increase icon size for better visual feedback
-                )
-            }
-        }
-    }
-}

@@ -6,6 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -50,95 +53,103 @@ object SelectFoodDestination : NavigationDestination {
 
 @Composable
 fun SelectFoodScreen(
-    application: Application, // Pass application context
+    application: Application,
     userId: Int,
     orderRepository: OrderRepository,
     orderListRepository: OrderListRepository,
     foodListRepository: FoodListRepository,
-    sellerId: Int, // Seller ID to filter food by the selected restaurant
+    sellerId: Int,
     navController: NavController,
     currentDestination: NavDestination?
 ) {
-
-    // Create the ViewModel
+    // ViewModel and state observation
     val viewModel: SelectFoodViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(application = application,foodListRepository = foodListRepository)
+        factory = AppViewModelProvider.Factory(application = application, foodListRepository = foodListRepository)
     )
     val cartViewModel: CartViewModel = viewModel(
-        factory = AppViewModelProvider.Factory(application = application,orderRepository = orderRepository, orderListRepository = orderListRepository)
+        factory = AppViewModelProvider.Factory(application = application, orderRepository = orderRepository, orderListRepository = orderListRepository)
     )
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
-    // Observe the food list and selected food type from the ViewModel
-    val foods by viewModel.filteredFoods.collectAsState() // This will be filtered based on food type
+    // State observation
+    val foods by viewModel.filteredFoods.collectAsState()
     val cartItemCount by cartViewModel.cartItemCount.observeAsState(0)
-    val selectedFoodType by viewModel.selectedFoodType.collectAsState() // To track the selected food type
+    val selectedFoodType by viewModel.selectedFoodType.collectAsState()
     val foodTypes by viewModel.foodTypes.collectAsState()
     val shopName by viewModel.shopName.collectAsState()
 
-
     LaunchedEffect(sellerId) {
         viewModel.loadFoodTypeBySellerId(sellerId)
-    }
-
-    LaunchedEffect(sellerId) {
         viewModel.getShopNameBySellerId(sellerId)
-    }
-
-    // Trigger the ViewModel to fetch food list by sellerId when screen is first launched
-    LaunchedEffect(sellerId) {
-        sellerId?.let {
-            viewModel.loadFoodsBySellerId(it)
-        }
+        viewModel.loadFoodsBySellerId(sellerId)
     }
 
     LaunchedEffect(userId) {
         cartViewModel.fetchCartItemsCount(userId)
     }
 
-    Column {
-        // Top Bar with title
-        if(isPortrait){
-            UniCanteenTopBar(title = shopName, onTitleClick = {
-                navController.navigate(
-                    "${SellerDetailsDestination.route}/${sellerId}"
+    if (isPortrait) {
+        // Portrait layout
+        Column {
+            UniCanteenTopBar(
+                title = shopName,
+                onTitleClick = { navController.navigate("${SellerDetailsDestination.route}/${sellerId}") }
+            )
+
+            SearchAndCartBar(
+                onSearch = { query -> viewModel.searchFoodsByName(query) },
+                onCartClick = { navController.navigate("${CartDestination.route}") },
+                cartItemCount = cartItemCount
+            )
+
+            FoodTypeFilterBar(
+                selectedType = selectedFoodType,
+                onFoodTypeSelected = { type -> viewModel.filterFoodsByType(type) },
+                foodTypes = foodTypes
+            )
+
+            FoodList(foods = foods, navController = navController, isPortrait = true)
+
+            BottomNavigationBar(
+                navController = navController,
+                currentDestination = currentDestination,
+                isSeller = false
+            )
+        }
+    } else {
+        // Landscape layout
+        Row(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(1f)
+                    .padding(8.dp)
+            ) {
+                SearchAndCartBar(
+                    onSearch = { query -> viewModel.searchFoodsByName(query) },
+                    onCartClick = { navController.navigate("${CartDestination.route}") },
+                    cartItemCount = cartItemCount
                 )
-            })
+
+                FoodTypeFilterBar(
+                    selectedType = selectedFoodType,
+                    onFoodTypeSelected = { type -> viewModel.filterFoodsByType(type) },
+                    foodTypes = foodTypes
+                )
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(2f)
+                    .padding(8.dp)
+            ) {
+                FoodList(foods = foods, navController = navController, isPortrait = false)
+            }
         }
-
-
-        // Search and Cart bar with search function and cart action
-        SearchAndCartBar(
-            onSearch = { query ->
-                // Perform food search based on the entered query
-                viewModel.searchFoodsByName(query)
-            },
-            onCartClick = {
-                navController.navigate("${CartDestination.route}")
-            },
-            cartItemCount
-        )
-        FoodTypeFilterBar(
-            selectedType = selectedFoodType,
-            onFoodTypeSelected = { type ->
-                viewModel.filterFoodsByType(type)
-            },
-            foodTypes = foodTypes
-        )
-
-
-        // Food List Column, using LazyColumn for food items
-        Column(modifier = Modifier.weight(1f)) {
-            FoodList(foods = foods, navController = navController)
-        }
-
-        // Bottom Navigation Bar
-        BottomNavigationBar(
-            navController = navController,
-            currentDestination = currentDestination,
-            isSeller = false
-        )
     }
 }
 
@@ -152,7 +163,7 @@ fun FoodTypeFilterBar(
         modifier = Modifier
             .fillMaxWidth()
             .padding(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(2.dp), // Add space between items
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         items(foodTypes) { type ->
             FilterChip(
@@ -163,30 +174,25 @@ fun FoodTypeFilterBar(
                     Text(
                         text = type,
                         style = MaterialTheme.typography.labelMedium,
-                        fontWeight = if (selectedType == type) FontWeight.Bold else FontWeight.Normal, // Bold the selected chip
+                        fontWeight = if (selectedType == type) FontWeight.Bold else FontWeight.Normal,
                         color = if (selectedType == type) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                        textAlign = TextAlign.Justify,
+                        textAlign = TextAlign.Justify
                     )
                 },
                 modifier = Modifier
                     .padding(horizontal = 4.dp)
-                    .wrapContentSize(align = Alignment.Center) // Make each chip have a reasonable minimum size
-                    .height(40.dp).wrapContentSize(align = Alignment.Center),
+                    .wrapContentSize(align = Alignment.Center)
+                    .height(40.dp)
+                    .wrapContentSize(align = Alignment.Center),
                 colors = FilterChipDefaults.filterChipColors(
                     containerColor = if (selectedType == type) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-                    labelColor = if (selectedType == type) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                    labelColor = if (selectedType == type) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
                 ),
-                shape = AppShapes.small, // Smooth rounded corners
-
+                shape = AppShapes.small
             )
         }
     }
 }
-
-
-
-
-
 
 @Composable
 fun FoodCard(food: FoodList, onClick: () -> Unit) {
@@ -196,7 +202,7 @@ fun FoodCard(food: FoodList, onClick: () -> Unit) {
             .fillMaxWidth()
             .padding(8.dp)
             .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor =  MaterialTheme.colorScheme.onPrimary),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(
@@ -222,6 +228,14 @@ fun FoodCard(food: FoodList, onClick: () -> Unit) {
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSecondary
                 )
+                food.description?.let {
+                    Text(
+                        text = it, // Display description in landscape mode
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSecondary,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
             }
             Image(
                 painter = rememberAsyncImagePainter(food.imageUrl),
@@ -236,16 +250,81 @@ fun FoodCard(food: FoodList, onClick: () -> Unit) {
 }
 
 @Composable
-fun FoodList(foods: List<FoodList>, navController: NavController, modifier: Modifier = Modifier) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize()
+fun FoodCardLandscape(food: FoodList, onClick: () -> Unit) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        items(foods) { food ->
-            FoodCard(food = food, onClick = {
-                navController.navigate("${FoodDetailCustomerDestination.route}/${food.foodId}") // Navigate to food detail with foodId
-
-            })
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+            Image(
+                painter = rememberAsyncImagePainter(food.imageUrl),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(120.dp) // Larger image in landscape mode
+                    .clip(RoundedCornerShape(16.dp))
+            )
+            //Spacer(modifier = Modifier.width(8.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .weight(1f)
+            ) {
+                Text(
+                    text = food.foodName,
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(bottom = 4.dp),
+                    color = MaterialTheme.colorScheme.onSecondary
+                )
+                Text(
+                    text = "RM ${"%.2f".format(food.price)}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSecondary
+                )
+            }
         }
     }
 }
+
+@Composable
+fun FoodList(foods: List<FoodList>, navController: NavController, isPortrait: Boolean) {
+    if (isPortrait) {
+        // Vertical list for portrait mode
+        LazyColumn(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            items(foods) { food ->
+                FoodCard(food = food, onClick = {
+                    navController.navigate("${FoodDetailCustomerDestination.route}/${food.foodId}")
+                })
+            }
+        }
+    } else {
+        // Grid layout for landscape mode
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2), // Two columns for landscape mode
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(foods) { food ->
+                FoodCardLandscape(food = food, onClick = {
+                    navController.navigate("${FoodDetailCustomerDestination.route}/${food.foodId}")
+                })
+            }
+        }
+    }
+}
+
 
