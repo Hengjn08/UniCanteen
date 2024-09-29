@@ -3,7 +3,6 @@ package com.example.unicanteen.HengJunEn
 import android.app.Application
 import android.widget.Toast
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,15 +12,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -41,10 +37,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -52,15 +46,12 @@ import com.example.unicanteen.ChiaLiHock.AddOnViewModel
 import com.example.unicanteen.UniCanteenTopBar
 import com.example.unicanteen.database.AddOn
 import com.example.unicanteen.database.AddOnRepository
-import com.example.unicanteen.database.FoodList
 import com.example.unicanteen.database.FoodListDao
 import com.example.unicanteen.database.FoodListRepository
-import com.example.unicanteen.database.OrderListDao
 import com.example.unicanteen.navigation.NavigationDestination
 import com.example.unicanteen.ui.theme.AppShapes
 import com.example.unicanteen.ui.theme.AppViewModelProvider
 import com.example.unicanteen.ui.theme.UniCanteenTheme
-import kotlinx.coroutines.launch
 
 object EditFoodDestination : NavigationDestination {
     override val route = "edit_food"
@@ -180,9 +171,6 @@ fun EditFoodBody(
                 contentDescription = "Food Image",
                 modifier = Modifier
                     .fillMaxSize()
-                    .clickable {
-                        // Handle image selection when clicked
-                    }
                     .clip(AppShapes.medium)
                     .border(
                         width = 2.dp,
@@ -278,7 +266,7 @@ fun EditFoodBody(
                         }
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("${addOnOption.option} (RM ${addOnOption.price})")
+                    Text("${addOnOption.option} (RM ${String.format("%.2f", addOnOption.price)})")
                 }
             }
         }
@@ -342,18 +330,6 @@ fun EditFoodBody(
         }
     }
 }
-
-//fun selectImage(onImageSelected: (String?) -> Unit) {
-//    val imagePickerLauncher = rememberLauncherForActivityResult(
-//        contract = ActivityResultContracts.GetContent()
-//    ) { uri: Uri? ->
-//        onImageSelected(uri?.toString())
-//    }
-//
-//    imagePickerLauncher.launch("image/*")
-//}
-
-
 
 @Preview(showBackground = true)
 @Composable

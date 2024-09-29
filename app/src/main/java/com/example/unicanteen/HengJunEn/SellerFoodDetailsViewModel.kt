@@ -7,9 +7,12 @@ import com.example.unicanteen.database.FoodList
 import com.example.unicanteen.database.FoodListRepository
 import com.google.firebase.Firebase
 import com.google.firebase.storage.storage
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 class SellerFoodDetailsViewModel(
     private val foodListRepository: FoodListRepository
@@ -27,15 +30,42 @@ class SellerFoodDetailsViewModel(
     }
 
     // Function to delete the current food item
-    fun deleteFood() {
+    // Function to delete the current food item and image from Firebase
+    fun deleteFoodAndImage(onComplete: () -> Unit) {
         viewModelScope.launch {
             _foodDetails.value?.let { food ->
-                foodListRepository.deleteFood(food)
-                // Optionally clear the food details after deletion
-                _foodDetails.value = null
+                try {
+                    // First, delete the food image
+                    food.imageUrl?.let { imageUrl ->
+                        deleteFoodImage(imageUrl)
+                    }
+
+                    // Then delete the food item
+                    foodListRepository.deleteFood(food)
+
+                    // Clear food details after deletion
+                    _foodDetails.value = null
+
+                    // Call the completion callback
+                    withContext(Dispatchers.Main) {
+                        onComplete()
+                    }
+
+                } catch (e: Exception) {
+                    Log.e("ViewModel", "Error deleting food or image", e)
+                }
             }
         }
     }
+//    fun deleteFood() {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            _foodDetails.value?.let { food ->
+//                foodListRepository.deleteFood(food)
+//                // Optionally clear the food details after deletion
+//                _foodDetails.value = null
+//            }
+//        }
+//    }
 
     fun getLatestImageUrl(filePath: String, onSuccess: (String) -> Unit) {
         val storageRef = Firebase.storage.reference.child(filePath)
@@ -47,4 +77,13 @@ class SellerFoodDetailsViewModel(
         }
     }
 
+    private suspend fun deleteFoodImage(imageUrl: String) {
+        val storageRef = Firebase.storage.reference.child(imageUrl)
+        try {
+            storageRef.delete().await()
+            Log.d("FirebaseStorage", "Image deleted successfully from Firebase Storage")
+        } catch (e: Exception) {
+            Log.e("FirebaseStorage", "Error deleting image from Firebase Storage", e)
+        }
+    }
 }
