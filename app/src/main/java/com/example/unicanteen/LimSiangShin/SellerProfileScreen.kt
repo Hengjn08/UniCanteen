@@ -335,27 +335,8 @@ fun SellerDetailBody(
             color = colorResource(R.color.orange_500)
         )
 
-        Button(
-            onClick = { onManageShopClicked() },
-            modifier = Modifier
-                .height(50.dp)
-                .fillMaxWidth(),
-            shape = RectangleShape,
-            colors = ButtonDefaults.buttonColors(Color.White),
-            border = BorderStroke(0.dp, Color.White)
-        ) {
-            Text(
-                text = "Manage Shop",
-                color = Color.Black
-            )
-        }
 
-        HorizontalDivider(
-            modifier = Modifier
-                .fillMaxWidth(),
-            thickness = 2.dp,
-            color = colorResource(R.color.orange_500)
-        )
+
 
         Button(
             onClick = { onReportClicked() },
