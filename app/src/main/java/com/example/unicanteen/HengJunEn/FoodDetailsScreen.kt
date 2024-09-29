@@ -2,6 +2,7 @@ package com.example.unicanteen.HengJunEn
 
 import android.app.Application
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -107,6 +108,7 @@ fun FoodDetailsScreen(
             },
             onEditClick = onEditClick,
             navigateBack = navigateBack,
+            viewModel = sellerFoodDetailsViewModel,
             modifier = Modifier.padding(innerpadding)
         )
     }
@@ -118,6 +120,7 @@ fun foodDetailsBody(
     onEditClick: () -> Unit,
     onDelete: () -> Unit,
     navigateBack: () -> Unit,
+    viewModel: SellerFoodDetailsViewModel,
     modifier: Modifier = Modifier
 ) {
     var showDialog by rememberSaveable { mutableStateOf(false) }
@@ -138,6 +141,7 @@ fun foodDetailsBody(
         item {
             FoodDetails(
                 food = food,
+                viewModel = viewModel,
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
                     .fillMaxWidth(),
@@ -170,7 +174,7 @@ fun foodDetailsBody(
 
         if (showDialog) {
             item {
-                DeleteConfirmationDialog(
+                ConfirmationDialog(
                     onConfirm = {
                         onDelete()
                         showDialog = false // Dismiss dialog
@@ -178,6 +182,8 @@ fun foodDetailsBody(
                     onCancel = {
                         showDialog = false // Dismiss dialog
                     },
+                    title = "Delete Confirmation",
+                    message = "Are you sure you want to delete this food item?"
                 )
             }
         }
@@ -187,6 +193,7 @@ fun foodDetailsBody(
 @Composable
 fun FoodDetails(
     food: FoodList?,
+    viewModel: SellerFoodDetailsViewModel,
     modifier: Modifier = Modifier
 ){
     Card(
@@ -200,14 +207,16 @@ fun FoodDetails(
                 .padding(16.dp)
         ) {
             if (food != null) {
-
-                AsyncImage(
-                    model = food.imageUrl,  // Image URL from FoodList entity
-                    contentDescription = "Food Image",
+                LoadFoodImage(
+                    foodImagePath = food.imageUrl,  // Firebase file path
+                    viewModel = viewModel,
                     modifier = Modifier
                         .fillMaxSize()
-                        .clip(AppShapes.small),
-                    contentScale = ContentScale.Crop
+                        .clip(RoundedCornerShape(8.dp))
+                        .border(
+                            width = 2.dp,
+                            color = Color.Black,
+                        )
                 )
 
                 FoodDetailsBody(
@@ -284,15 +293,17 @@ fun NavigateBackIconWithTitle(
 }
 
 @Composable
-private fun DeleteConfirmationDialog(
+fun ConfirmationDialog(
     onConfirm: () -> Unit,
     onCancel: () -> Unit,
+    title: String,
+    message: String,
     modifier: Modifier = Modifier
 ) {
     AlertDialog(
         onDismissRequest = onCancel,
-        title = { Text("Delete Confirmation") },
-        text = { Text("Are you sure you want to delete this food item?") },
+        title = { Text(title) },
+        text = { Text(message) },
         confirmButton = {
             TextButton(
                 onClick = onConfirm
@@ -309,6 +320,32 @@ private fun DeleteConfirmationDialog(
         },
         modifier = modifier,
     )
+}
+
+@Composable
+private fun LoadFoodImage(
+    foodImagePath: String,
+    viewModel: SellerFoodDetailsViewModel,
+    modifier: Modifier = Modifier
+) {
+    var imageUrl by remember { mutableStateOf<String?>(null) }
+
+    // Fetch the latest image URL from Firebase when the Composable is first launched
+    LaunchedEffect(foodImagePath) {
+        viewModel.getLatestImageUrl(foodImagePath) { url ->
+            imageUrl = url
+        }
+    }
+
+    // Display the image when the URL is available
+    if (imageUrl != null) {
+        AsyncImage(
+            model = imageUrl,
+            contentDescription = "Food Image",
+            modifier = modifier,
+            contentScale = ContentScale.Crop
+        )
+    }
 }
 
 @Preview(showBackground = true)

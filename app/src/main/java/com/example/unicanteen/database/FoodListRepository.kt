@@ -13,7 +13,7 @@ interface FoodListRepository{
     suspend fun getFoodsBySellerIdAndStatus(sellerId: Int, status: String): List<FoodList>
     suspend fun getAllFoods(): List<FoodList>
     suspend fun searchFoodItemsByName(sellerId: Int, query: String): List<FoodList>
-    suspend fun getFoodDetailsWithAddOns(foodId: Int): List<FoodDetailsWithAddOns>
+    suspend fun getFoodDetailsWithAddOns(foodId: Int): FoodDetailsWithAddOns
     suspend fun updateSellerFoodDetails(updatedFoodDetails: FoodListDao.UpdatedFoodDetails)
     suspend fun getFoodTypeBySellerId(sellerId: Int): List<String>
     suspend fun getShopNameBySellerId(sellerId: Int): String
