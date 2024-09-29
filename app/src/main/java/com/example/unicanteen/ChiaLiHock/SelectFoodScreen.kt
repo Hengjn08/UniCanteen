@@ -1,6 +1,7 @@
 package com.example.unicanteen
 import android.app.Application
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,10 +18,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -31,10 +36,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.wear.compose.material.ChipDefaults
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.example.unicanteen.ChiaLiHock.CartViewModel
+import com.example.unicanteen.ChiaLiHock.OrderListViewModel
 import com.example.unicanteen.ChiaLiHock.SelectFoodViewModel
 import com.example.unicanteen.ChiaLiHock.SellerDetailsDestination
+import com.example.unicanteen.HengJunEn.SellerFoodDetailsViewModel
 import com.example.unicanteen.database.FoodList
 import com.example.unicanteen.database.FoodListRepository
 import com.example.unicanteen.database.OrderListRepository
@@ -92,30 +100,32 @@ fun SelectFoodScreen(
     if (isPortrait) {
         // Portrait layout
         Column {
-            UniCanteenTopBar(
-                title = shopName,
-                onTitleClick = { navController.navigate("${SellerDetailsDestination.route}/${sellerId}") }
-            )
+                UniCanteenTopBar(
+                    title = shopName,
+                    onTitleClick = { navController.navigate("${SellerDetailsDestination.route}/${sellerId}") }
+                )
 
-            SearchAndCartBar(
-                onSearch = { query -> viewModel.searchFoodsByName(query) },
-                onCartClick = { navController.navigate("${CartDestination.route}") },
-                cartItemCount = cartItemCount
-            )
+                SearchAndCartBar(
+                    onSearch = { query -> viewModel.searchFoodsByName(query) },
+                    onCartClick = { navController.navigate("${CartDestination.route}") },
+                    cartItemCount = cartItemCount
+                )
 
-            FoodTypeFilterBar(
-                selectedType = selectedFoodType,
-                onFoodTypeSelected = { type -> viewModel.filterFoodsByType(type) },
-                foodTypes = foodTypes
-            )
+                FoodTypeFilterBar(
+                    selectedType = selectedFoodType,
+                    onFoodTypeSelected = { type -> viewModel.filterFoodsByType(type) },
+                    foodTypes = foodTypes
+                )
+            Column(modifier = Modifier.weight(1f)) {
+                FoodList(foods = foods, navController = navController, isPortrait = true, viewModel=cartViewModel)
+            }
+                BottomNavigationBar(
+                    navController = navController,
+                    currentDestination = currentDestination,
+                    isSeller = false
+                )
 
-            FoodList(foods = foods, navController = navController, isPortrait = true)
 
-            BottomNavigationBar(
-                navController = navController,
-                currentDestination = currentDestination,
-                isSeller = false
-            )
         }
     } else {
         // Landscape layout
@@ -147,7 +157,7 @@ fun SelectFoodScreen(
                     .weight(2f)
                     .padding(8.dp)
             ) {
-                FoodList(foods = foods, navController = navController, isPortrait = false)
+                FoodList(foods = foods, navController = navController, isPortrait = false, viewModel = cartViewModel)
             }
         }
     }
@@ -195,7 +205,7 @@ fun FoodTypeFilterBar(
 }
 
 @Composable
-fun FoodCard(food: FoodList, onClick: () -> Unit) {
+fun FoodCard(food: FoodList, onClick: () -> Unit,viewModel: CartViewModel) {
     Card(
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
@@ -237,10 +247,9 @@ fun FoodCard(food: FoodList, onClick: () -> Unit) {
                     )
                 }
             }
-            Image(
-                painter = rememberAsyncImagePainter(food.imageUrl),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
+            LoadFoodImage(
+                foodImagePath = food.imageUrl,
+                viewModel = viewModel,
                 modifier = Modifier
                     .size(120.dp)
                     .clip(RoundedCornerShape(16.dp))
@@ -250,7 +259,7 @@ fun FoodCard(food: FoodList, onClick: () -> Unit) {
 }
 
 @Composable
-fun FoodCardLandscape(food: FoodList, onClick: () -> Unit) {
+fun FoodCardLandscape(food: FoodList, onClick: () -> Unit,viewModel:CartViewModel) {
     Card(
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
@@ -265,10 +274,9 @@ fun FoodCardLandscape(food: FoodList, onClick: () -> Unit) {
                 .fillMaxWidth()
                 .padding(8.dp)
         ) {
-            Image(
-                painter = rememberAsyncImagePainter(food.imageUrl),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
+            LoadFoodImage(
+                foodImagePath = food.imageUrl,
+                viewModel = viewModel,
                 modifier = Modifier
                     .size(120.dp) // Larger image in landscape mode
                     .clip(RoundedCornerShape(16.dp))
@@ -297,7 +305,7 @@ fun FoodCardLandscape(food: FoodList, onClick: () -> Unit) {
 }
 
 @Composable
-fun FoodList(foods: List<FoodList>, navController: NavController, isPortrait: Boolean) {
+fun FoodList(foods: List<FoodList>, navController: NavController, isPortrait: Boolean,viewModel:CartViewModel) {
     if (isPortrait) {
         // Vertical list for portrait mode
         LazyColumn(
@@ -306,7 +314,7 @@ fun FoodList(foods: List<FoodList>, navController: NavController, isPortrait: Bo
             items(foods) { food ->
                 FoodCard(food = food, onClick = {
                     navController.navigate("${FoodDetailCustomerDestination.route}/${food.foodId}")
-                })
+                },viewModel=viewModel)
             }
         }
     } else {
@@ -321,9 +329,34 @@ fun FoodList(foods: List<FoodList>, navController: NavController, isPortrait: Bo
             items(foods) { food ->
                 FoodCardLandscape(food = food, onClick = {
                     navController.navigate("${FoodDetailCustomerDestination.route}/${food.foodId}")
-                })
+                },viewModel=viewModel)
             }
         }
+    }
+}
+@Composable
+private fun LoadFoodImage(
+    foodImagePath: String,
+    viewModel: CartViewModel,
+    modifier: Modifier = Modifier
+) {
+    var imageUrl by remember { mutableStateOf<String?>(null) }
+    Log.d("FoodImagePath", "FoodImagePath: $foodImagePath")
+    // Fetch the latest image URL from Firebase when the Composable is first launched
+    LaunchedEffect(foodImagePath) {
+        viewModel.getLatestImageUrl(foodImagePath) { url ->
+            imageUrl = url
+        }
+    }
+
+    // Display the image when the URL is available
+    if (imageUrl != null) {
+        AsyncImage(
+            model = imageUrl,
+            contentDescription = "Food Image",
+            modifier = modifier,
+            contentScale = ContentScale.Crop
+        )
     }
 }
 

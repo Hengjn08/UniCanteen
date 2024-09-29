@@ -1,11 +1,14 @@
 package com.example.unicanteen.ChiaLiHock
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.unicanteen.database.FoodList
 import com.example.unicanteen.database.FoodListRepository
+import com.google.firebase.Firebase
+import com.google.firebase.storage.storage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -72,6 +75,7 @@ class SelectFoodViewModel(
             _shopName.value = shopName
         }
     }
+
 
 }
 

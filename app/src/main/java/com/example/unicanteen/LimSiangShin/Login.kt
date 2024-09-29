@@ -82,7 +82,6 @@ import com.example.unicanteen.ui.theme.UniCanteenTheme
 object LoginDestination : NavigationDestination {
     override val route = "Login?userId={userId}"
     override val title = "Login"
-//    const val userIdArg = "userId"
     fun routeWithArgs(userId: Int): String{
         return "${route}/$userId"
     }
@@ -108,7 +107,6 @@ fun LoginScreen(
     val currentSellerId by userViewModel.isSellerId.collectAsState()
     val isSeller by userViewModel.isSeller.collectAsState()
 
-    var loginAttempt by remember { mutableStateOf(true) }
     var showLoginFailed by remember { mutableStateOf(false) }
     var userName by remember { mutableStateOf("") }
     var pw by remember { mutableStateOf("") }
@@ -159,8 +157,8 @@ fun LoginScreen(
                                     },
                 onSignInClicked = {
                 userViewModel.login(userName, pw)
-                loginAttempt = !loginAttempt
-                Log.d("Login", "Login page User logged in with ID: $userId, Global: ${GlobalVariables.userId}, currId: $userId")
+//                loginAttempt = !loginAttempt
+//                Log.d("Login", "Login page User logged in with ID: $userId, Global: ${GlobalVariables.userId}, currId: $userId")
                // navController.navigate("${SelectRestaurantDestination.routeWithArgs(currentUserId!!)}")
             }
         )
@@ -180,8 +178,8 @@ fun LoginScreen(
                 },
                 onSignInClicked = {
                     userViewModel.login(userName, pw)
-                    loginAttempt = !loginAttempt
-                    Log.d("Login", "Login page User logged in with ID: $userId, Global: ${GlobalVariables.userId}, currId: $userId")
+//                    loginAttempt = !loginAttempt
+//                    Log.d("Login", "Login page User logged in with ID: $userId, Global: ${GlobalVariables.userId}, currId: $userId")
                     // navController.navigate("${SelectRestaurantDestination.routeWithArgs(currentUserId!!)}")
                 }
             )
@@ -198,19 +196,17 @@ fun LoginScreen(
                     navController.navigate(SelectRestaurantDestination.routeWithArgs(userId))
                 }
             } else {
-                showLoginFailed = true
-                // Clear username and password for retry
+//                showLoginFailed = true
                 userName = ""
                 pw = ""
             }
-
-            // Show error message for failed login
-            if (showLoginFailed) {
-                Toast.makeText(context, "Login failed. Please try again.", Toast.LENGTH_SHORT).show()
-                kotlinx.coroutines.delay(2000) // Delay before hiding the error message
-                showLoginFailed = false
-            }
         }
+
+//        // Show error message for failed login
+//        if (showLoginFailed) {
+//            Toast.makeText(context, "Login failed. Please try again.", Toast.LENGTH_SHORT).show()
+//            showLoginFailed = false
+//        }
     }
 }
 
@@ -318,8 +314,8 @@ fun LoginBodyPortrait(
                         .fillMaxSize()
                         .height(60.dp),
                     shape = RoundedCornerShape(8.dp),
-                    color = ButtonDefaults.buttonColors(Color.LightGray),
-                    borderStroke = BorderStroke(1.dp,Color.Black),
+                    color = ButtonDefaults.buttonColors(colorResource(R.color.gray_200)),
+                    borderStroke = BorderStroke(2.dp,Color.Black),
                     value = "Sign In",
                     textColor = Color.Black
                 )

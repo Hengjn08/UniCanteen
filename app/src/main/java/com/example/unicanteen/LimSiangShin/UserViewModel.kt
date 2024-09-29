@@ -9,10 +9,15 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.unicanteen.database.FoodList
+import com.example.unicanteen.database.OrderListDao
 import com.example.unicanteen.database.SellerRepository
 import com.example.unicanteen.database.User
 import com.example.unicanteen.database.UserDao
 import com.example.unicanteen.database.UserRepository
+import com.google.android.gms.tasks.Task
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,6 +28,9 @@ class UserViewModel(
 //    private val sellerRepository: SellerRepository
 ): ViewModel(){
 
+    private val databaseReference: DatabaseReference = FirebaseDatabase
+        .getInstance("https://unicanteen12-default-rtdb.asia-southeast1.firebasedatabase.app/")
+        .getReference() // Firebase Database reference
 
     var userValue by mutableStateOf("")
     var emailValue by mutableStateOf("")
@@ -60,6 +68,8 @@ class UserViewModel(
     private var _isSeller = MutableStateFlow<Boolean>(false)  // For login success/failure
     val isSeller: StateFlow<Boolean> = _isSeller  // Expose login result to UI
 
+    private val _orderDetail = MutableStateFlow<List<UserDao.OrderDetails>>(emptyList())
+    val orderDetail: StateFlow<List<UserDao.OrderDetails>> = _orderDetail
 
     private val _userName = MutableStateFlow("")
     val userName: StateFlow<String> = _userName
@@ -78,6 +88,8 @@ class UserViewModel(
     var emailError by mutableStateOf("")
     var passwordError by mutableStateOf("")
     var phoneNumberError by mutableStateOf("")
+    var confirmPasswordError by mutableStateOf("")
+
 
     // Order Details LiveData
     private val _orderDetails = MutableStateFlow<List<UserDao.OrderDetails>>(emptyList())
@@ -100,10 +112,10 @@ class UserViewModel(
 
             if (userLogin != null) {
                 _currentUserId.value = userLogin.userId
-                _userName.value = userLogin.userName
-                emailValue = userLogin.email
-                phoneNumberValue = userLogin.phoneNumber.toString()
-                passwordValue = userLogin.password
+//                _userName.value = userLogin.userName
+//                emailValue = userLogin.email
+//                phoneNumberValue = userLogin.phoneNumber.toString()
+//                passwordValue = userLogin.password
                 // Check if the user is a seller using a non-null userId
                 val isSellerId = userRepository.checkUserIsSeller(userLogin.userId)
                 if (isSellerId != null) {
@@ -138,6 +150,17 @@ class UserViewModel(
                     // Asynchronous operation: Insert the new user into the database
                     val newUser = User(0, userName, password, "", email, phoneNumber)
                     userRepository.insertUser(newUser)
+                    val newUser1 = userRepository.getUserForLogin(userName, password)
+                    if (newUser1 != null) {
+                        uploadNewUserToFirebase(newUser1.userId,newUser1).addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                // Load the payment receipt after uploading to Firebase
+                                Log.e("CreatePayment", "upload  to Firebase")
+                            } else {
+                                Log.e("CreatePayment", "Failed to upload  to Firebase")
+                            }
+                        }
+                    }
                 }
             }else{
                 correct = false
@@ -145,6 +168,27 @@ class UserViewModel(
         }
         return correct
     }
+
+    // Function to upload payment details to Firebase
+    private fun uploadNewUserToFirebase(userId:Int, user: User?): Task<Void> {
+
+        // Create a path for the payment receipt data in Firebase
+        val userPath = "users/$userId/details"
+        Log.d("FirebaseUpload", "user Id: $userId")
+
+        // Specify the correct path for the payment data
+        val userRef = databaseReference.child(userPath)
+
+        // Uploading data to Firebase
+        return userRef.setValue(user).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Log.d("FirebaseUpload", "Payment receipt uploaded successfully at path: details")
+            } else {
+                Log.e("FirebaseUpload", "Failed to upload payment receipt", task.exception)
+            }
+        }
+    }
+
 
     fun updateUserDetail (userId: Int,userName: String,password: String, email: String, phoneNumber: String) {
         viewModelScope.launch() {
@@ -227,6 +271,20 @@ class UserViewModel(
         passwordError = errorMessage
         return isValid
     }
+
+//    fun validateConfirmPassword(confirmPassword: String, password: String): Boolean {
+//        val cPW = confirmPassword.trim()
+//        var isValid = true
+//        var errorMessage = ""
+//
+//        if (cPW != password) {
+//            errorMessage = "Password must more than 6 character"
+//            isValid = false
+//        }
+//        confirmPasswordError = errorMessage
+//        return isValid
+//    }
+
 
     fun validateRegistrationForm(userName: String, email: String,phoneNumber:String, password: String):Boolean {
         var correct = false

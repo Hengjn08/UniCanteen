@@ -10,8 +10,10 @@ import com.example.unicanteen.database.OrderList
 import com.example.unicanteen.database.OrderListRepository
 import com.example.unicanteen.database.OrderRepository
 import com.google.android.gms.tasks.Task
+import com.google.firebase.Firebase
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.storage.storage
 import kotlinx.coroutines.launch
 
 class CartViewModel(
@@ -140,7 +142,17 @@ class CartViewModel(
             }
         }
     }
+    fun getLatestImageUrl(filePath: String, onSuccess: (String) -> Unit) {
+        val storageRef = Firebase.storage.reference.child(filePath)
+
+        storageRef.downloadUrl.addOnSuccessListener { uri ->
+            onSuccess(uri.toString())  // Get the latest valid URL
+        }.addOnFailureListener { exception ->
+            Log.e("FirebaseStorage", "Error getting updated image URL", exception)
+        }
+    }
 }
+
 
 data class CartItem(
     @ColumnInfo(name = "orderId") val orderId: Int,
@@ -149,4 +161,7 @@ data class CartItem(
     @ColumnInfo(name = "imageUrl") val imageRes: String,
     @ColumnInfo(name = "totalPrice") var price: Double,
     @ColumnInfo(name = "qty") var quantity: Int,
+    @ColumnInfo(name = "description") var description: String,
+    @ColumnInfo(name = "type") var type: String,
+    @ColumnInfo(name = "status") val status: String
     )

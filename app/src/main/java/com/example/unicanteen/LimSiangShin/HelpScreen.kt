@@ -5,6 +5,7 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Edit
@@ -19,6 +20,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,7 +36,10 @@ object HelpDestination : NavigationDestination {
     }
 }
 @Composable
-fun HelpScreen() {
+fun HelpScreen(
+    navigateBack: () -> Unit,
+
+) {
     Scaffold(
         topBar = {
             UniCanteenTopBar()
@@ -47,11 +52,20 @@ fun HelpScreen() {
                     .padding(16.dp)
                     .verticalScroll(rememberScrollState())
             ) {
+                TitleWithTheNavigateBackButton(
+                    title = "Help Center",
+                    navigateBack = { navigateBack }
+                )
+
                 Text(
                     text = "Frequently Asked Questions",
                     style = MaterialTheme.typography.titleLarge,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 16.sp,
+                    color = colorResource(R.color.orange_500),
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp)
                 )
                 HorizontalDivider(
                     thickness = 4.dp,
@@ -62,18 +76,18 @@ fun HelpScreen() {
                 Spacer(modifier = Modifier.height(16.dp))
                 FAQItem(
                     question = "How can I reset my password?",
-                    answer = "You can reset your password by going to the 'Forgot Password' section on the login page.",
-                    imageIds = listOf(R.drawable.pan_mee, R.drawable.pan_mee)
+                    answer = "You can reset your password by going to the 'Forgot Password' section on the login page. Or you also can go to the profile screen for clicking the edit icon.",
+                    imageIds = listOf(R.drawable.forgot_password, R.drawable.edit)
                 )
                 FAQItem(
                     question = "How do I update my profile?",
-                    answer = "To update your profile, navigate to your profile section and click on 'Edit Profile' " + Icons.Default.Edit + " .",
+                    answer = "To update your profile, navigate to your profile section and click on edit icon.",
                     imageIds = emptyList()
                 )
                 FAQItem(
                     question = "How do I contact customer support?",
                     answer = "You can reach out to our customer support via email at support@example.com or call us at 123-456-789.",
-                    imageIds = emptyList()  // No images for this FAQ
+                    imageIds = emptyList()
                 )
                 FAQItem(
                     question = "How do I track my order?",
@@ -82,7 +96,7 @@ fun HelpScreen() {
                 )
                 FAQItem(
                     question = "Can I cancel my order?",
-                    answer = "Yes, you can cancel your order within 30 minutes of placing it by going to the 'Orders' section and clicking on 'Cancel Order'.",
+                    answer = "Yes, you can cancel your order within 30 minutes at the shop that you make the order.",
                     imageIds = emptyList()
                 )
                 FAQItem(
@@ -93,29 +107,15 @@ fun HelpScreen() {
                 FAQItem(
                     question = "How do I report an issue with my order?",
                     answer = "You can report any issues by contacting our support team via email at support@example.com or through the 'Report Issue' button on your order details page.",
-                    imageIds = listOf(R.drawable.pan_mee)
+                    imageIds = emptyList()
                 )
 
-                FAQItem(
-                    question = "What payment methods are accepted?",
-                    answer = "We accept payments via credit/debit cards, PayPal, and mobile payment options like Google Pay and Apple Pay.",
-                    imageIds = emptyList()
-                )
-                FAQItem(
-                    question = "How do I apply a promo code?",
-                    answer = "You can apply a promo code at checkout. Enter the code in the 'Promo Code' field and click 'Apply'.",
-                    imageIds = emptyList()
-                )
                 FAQItem(
                     question = "Why was my payment declined?",
                     answer = "Payments can be declined for various reasons. Please check with your bank or payment provider to ensure there are no issues with your account.",
                     imageIds = emptyList()
                 )
-                FAQItem(
-                    question = "How do I leave feedback for a restaurant?",
-                    answer = "After completing an order, you can leave feedback by going to 'Orders', selecting the order, and clicking 'Leave Feedback'.",
-                    imageIds = emptyList()
-                )
+
                 FAQItem(
                     question = "Is my personal information secure?",
                     answer = "Yes, we take your privacy seriously. All your personal information is encrypted and securely stored.",
@@ -133,8 +133,8 @@ fun HelpScreen() {
                 )
                 FAQItem(
                     question = "How can I become a seller?",
-                    answer = "To become a seller, go to the 'Profile' section and click on 'Become a Seller'. Follow the instructions to complete your registration.",
-                    imageIds = listOf(R.drawable.pan_mee)
+                    answer = "To become a seller, you need to contact the office to register your business.",
+                    imageIds = emptyList()
                 )
             }
         }
@@ -156,7 +156,10 @@ fun FAQItem(question: String, answer: String, imageIds: List<Int>) {
             Icon(
                 imageVector = if(isExpanded)Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown,
                 contentDescription = "Show description",
-                modifier = Modifier.fillMaxWidth().wrapContentWidth(AbsoluteAlignment.Right).clickable { isExpanded = !isExpanded },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentWidth(AbsoluteAlignment.Right)
+                    .clickable { isExpanded = !isExpanded },
 
             )
         }
@@ -195,8 +198,39 @@ fun FAQItem(question: String, answer: String, imageIds: List<Int>) {
     }
 }
 
+@Composable
+fun TitleWithTheNavigateBackButton(
+    title: String,
+    navigateBack: () -> Unit,
+    modifier: Modifier = Modifier.fillMaxWidth()
+) {
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+    ) {
+        IconButton(onClick = navigateBack) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back",
+                modifier = modifier.size(40.dp)
+            )
+        }
+
+        Text(
+            text = title,
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 32.dp),
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
 @Preview
 @Composable
 fun HelpScreenPreview() {
-    HelpScreen()
+    HelpScreen(navigateBack = {})
 }

@@ -19,7 +19,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         PaymentDetails::class,
         AddOn::class
     ],
-    version = 5 // Incremented version number
+    version = 4 // Incremented version number
 )
 @TypeConverters(Converters::class) // Correct placement of TypeConverters annotation
 abstract class AppDatabase : RoomDatabase() {
@@ -60,7 +60,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context,
                     AppDatabase::class.java,
-                    "test1011_database"
+                    "test1012_database"
                 )
                     .createFromAsset("Database/uniDatabase.db") // Load from assets
 

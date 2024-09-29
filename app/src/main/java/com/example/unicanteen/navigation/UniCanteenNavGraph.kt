@@ -42,8 +42,8 @@ import com.example.unicanteen.LimSiangShin.LoginScreen
 import com.example.unicanteen.LimSiangShin.RegistrationScreen
 import com.example.unicanteen.LimSiangShin.SellerProdileDestination
 import com.example.unicanteen.LimSiangShin.SellerProfileScreen
-import com.example.unicanteen.OrderHistoryDestination
-import com.example.unicanteen.OrderHistoryScreen
+//import com.example.unicanteen.OrderHistoryDestination
+//import com.example.unicanteen.OrderHistoryScreen
 import com.example.unicanteen.Pierre.FoodSalesDetailDestination
 import com.example.unicanteen.Pierre.FoodSalesDetailScreen
 import com.example.unicanteen.Pierre.InputTableNoDestination
@@ -178,7 +178,8 @@ fun UniCanteenNavHost(
                 application = application,
                 userRepository = UserRepositoryImpl(AppDatabase.getDatabase(navController.context).userDao()),
                 navController = navController,
-                onHelpClicked = {navController.navigate(HelpDestination.route)}
+                onHelpClicked = {navController.navigate(HelpDestination.route)},
+                onCancelClicked = {navController.navigate(LoginDestination.route)}
             )
         }
 
@@ -218,7 +219,7 @@ fun UniCanteenNavHost(
         }
 
         composable(route = HelpDestination.route){
-            HelpScreen()
+            HelpScreen(navigateBack = {navController.navigateUp()})
         }
 
         composable(route = ForgotPasswordDestination.route){

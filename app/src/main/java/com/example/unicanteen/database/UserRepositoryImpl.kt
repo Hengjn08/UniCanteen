@@ -2,6 +2,7 @@ package com.example.unicanteen.database
 
 import androidx.lifecycle.LiveData
 import androidx.room.Query
+import com.example.unicanteen.database.UserDao.OrderDetails
 
 class UserRepositoryImpl(private val userDao: UserDao): UserRepository {
 
