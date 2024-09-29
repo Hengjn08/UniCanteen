@@ -315,9 +315,19 @@ fun CartCard(
                     Text(
                         text = item.description.dropLast(
                             if (item.description.length > 20) {
+                                25
+                            }
+                            else if( item.description.length > 15) {
+                                20
+                            }
+                            else if( item.description.length > 10) {
                                 15
-                            } else {
-                                15
+                            }
+                            else if( item.description.length > 5) {
+                                10
+                            }
+                            else {
+                                5
                             }
                         ).plus("..."),
                         fontSize = 16.sp,
@@ -566,10 +576,19 @@ fun CheckOutButton(totalPrice: Double, orderId: Int, cartViewModel: CartViewMode
 
             Text(
                 text = "Checkout",
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                fontSize = 18.sp,
+                textAlign = TextAlign.End,
+                modifier = Modifier.weight(1.2f)
+            )
+            Text(
+                text = "RM ${"%.2f".format(totalPrice)}",
+                fontWeight = FontWeight.Bold,
                 color = Color.White,
                 fontSize = 18.sp,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.weight(1.8f)
+                modifier = Modifier.weight(0.8f)
             )
         }
     }
